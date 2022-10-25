@@ -1,0 +1,555 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 55;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		8121890229087C1D00354733 /* BitcoinDevKit in Frameworks */ = {isa = PBXBuildFile; productRef = 8121890129087C1D00354733 /* BitcoinDevKit */; };
+		8121890629087CEE00354733 /* LightningDevKit.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8121890429087CA200354733 /* LightningDevKit.xcframework */; };
+		8121890729087CEE00354733 /* LightningDevKit.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 8121890429087CA200354733 /* LightningDevKit.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		8121891129087D8C00354733 /* VelasLightningFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 81481A6329087B2300DA3224 /* VelasLightningFramework.framework */; };
+		8121891929087FD400354733 /* Bitcoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8121891829087FD400354733 /* Bitcoin.swift */; };
+		8121891B290880DF00354733 /* Lightning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8121891A290880DF00354733 /* Lightning.swift */; };
+		8121891D2908832200354733 /* BitcoinTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8121891C2908832200354733 /* BitcoinTests.swift */; };
+		8121891F2908844000354733 /* LightningTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8121891E2908844000354733 /* LightningTests.swift */; };
+		81481A6729087B2300DA3224 /* VelasLightningFramework.h in Headers */ = {isa = PBXBuildFile; fileRef = 81481A6629087B2300DA3224 /* VelasLightningFramework.h */; settings = {ATTRIBUTES = (Public, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		8121891229087D8C00354733 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 81481A5A29087B2300DA3224 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 81481A6229087B2300DA3224;
+			remoteInfo = VelasLightningFramework;
+		};
+		81481A9129087B5200DA3224 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 81481A8D29087B5200DA3224 /* VelasLightningExample.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 81481A7629087B5000DA3224;
+			remoteInfo = VelasLightningExample;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		8121890829087CEE00354733 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				8121890729087CEE00354733 /* LightningDevKit.xcframework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		8121890429087CA200354733 /* LightningDevKit.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = LightningDevKit.xcframework; sourceTree = "<group>"; };
+		8121890D29087D8C00354733 /* VelasLightningTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VelasLightningTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		8121891829087FD400354733 /* Bitcoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bitcoin.swift; sourceTree = "<group>"; };
+		8121891A290880DF00354733 /* Lightning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lightning.swift; sourceTree = "<group>"; };
+		8121891C2908832200354733 /* BitcoinTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BitcoinTests.swift; sourceTree = "<group>"; };
+		8121891E2908844000354733 /* LightningTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LightningTests.swift; sourceTree = "<group>"; };
+		81481A6329087B2300DA3224 /* VelasLightningFramework.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = VelasLightningFramework.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		81481A6629087B2300DA3224 /* VelasLightningFramework.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VelasLightningFramework.h; sourceTree = "<group>"; };
+		81481A8D29087B5200DA3224 /* VelasLightningExample.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = VelasLightningExample.xcodeproj; path = ../VelasLightningExample/VelasLightningExample.xcodeproj; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8121890A29087D8C00354733 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8121891129087D8C00354733 /* VelasLightningFramework.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		81481A6029087B2300DA3224 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8121890229087C1D00354733 /* BitcoinDevKit in Frameworks */,
+				8121890629087CEE00354733 /* LightningDevKit.xcframework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		8121890E29087D8C00354733 /* VelasLightningTests */ = {
+			isa = PBXGroup;
+			children = (
+				8121891C2908832200354733 /* BitcoinTests.swift */,
+				8121891E2908844000354733 /* LightningTests.swift */,
+			);
+			path = VelasLightningTests;
+			sourceTree = "<group>";
+		};
+		81481A5929087B2300DA3224 = {
+			isa = PBXGroup;
+			children = (
+				8121890429087CA200354733 /* LightningDevKit.xcframework */,
+				81481A8D29087B5200DA3224 /* VelasLightningExample.xcodeproj */,
+				81481A6529087B2300DA3224 /* VelasLightningFramework */,
+				8121890E29087D8C00354733 /* VelasLightningTests */,
+				81481A6429087B2300DA3224 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		81481A6429087B2300DA3224 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				81481A6329087B2300DA3224 /* VelasLightningFramework.framework */,
+				8121890D29087D8C00354733 /* VelasLightningTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		81481A6529087B2300DA3224 /* VelasLightningFramework */ = {
+			isa = PBXGroup;
+			children = (
+				81481A6629087B2300DA3224 /* VelasLightningFramework.h */,
+				8121891829087FD400354733 /* Bitcoin.swift */,
+				8121891A290880DF00354733 /* Lightning.swift */,
+			);
+			path = VelasLightningFramework;
+			sourceTree = "<group>";
+		};
+		81481A8E29087B5200DA3224 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				81481A9229087B5200DA3224 /* VelasLightningExample.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		81481A5E29087B2300DA3224 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				81481A6729087B2300DA3224 /* VelasLightningFramework.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		8121890C29087D8C00354733 /* VelasLightningTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8121891429087D8C00354733 /* Build configuration list for PBXNativeTarget "VelasLightningTests" */;
+			buildPhases = (
+				8121890929087D8C00354733 /* Sources */,
+				8121890A29087D8C00354733 /* Frameworks */,
+				8121890B29087D8C00354733 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8121891329087D8C00354733 /* PBXTargetDependency */,
+			);
+			name = VelasLightningTests;
+			productName = VelasLightningTests;
+			productReference = 8121890D29087D8C00354733 /* VelasLightningTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		81481A6229087B2300DA3224 /* VelasLightningFramework */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 81481A6A29087B2300DA3224 /* Build configuration list for PBXNativeTarget "VelasLightningFramework" */;
+			buildPhases = (
+				81481A5E29087B2300DA3224 /* Headers */,
+				81481A5F29087B2300DA3224 /* Sources */,
+				81481A6029087B2300DA3224 /* Frameworks */,
+				81481A6129087B2300DA3224 /* Resources */,
+				8121890829087CEE00354733 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = VelasLightningFramework;
+			packageProductDependencies = (
+				8121890129087C1D00354733 /* BitcoinDevKit */,
+			);
+			productName = VelasLightningFramework;
+			productReference = 81481A6329087B2300DA3224 /* VelasLightningFramework.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		81481A5A29087B2300DA3224 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1340;
+				LastUpgradeCheck = 1340;
+				TargetAttributes = {
+					8121890C29087D8C00354733 = {
+						CreatedOnToolsVersion = 13.4.1;
+					};
+					81481A6229087B2300DA3224 = {
+						CreatedOnToolsVersion = 13.4.1;
+						LastSwiftMigration = 1340;
+					};
+				};
+			};
+			buildConfigurationList = 81481A5D29087B2300DA3224 /* Build configuration list for PBXProject "VelasLightningFramework" */;
+			compatibilityVersion = "Xcode 13.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 81481A5929087B2300DA3224;
+			packageReferences = (
+				8121890029087C1D00354733 /* XCRemoteSwiftPackageReference "bdk-swift" */,
+			);
+			productRefGroup = 81481A6429087B2300DA3224 /* Products */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 81481A8E29087B5200DA3224 /* Products */;
+					ProjectRef = 81481A8D29087B5200DA3224 /* VelasLightningExample.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				81481A6229087B2300DA3224 /* VelasLightningFramework */,
+				8121890C29087D8C00354733 /* VelasLightningTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		81481A9229087B5200DA3224 /* VelasLightningExample.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = VelasLightningExample.app;
+			remoteRef = 81481A9129087B5200DA3224 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8121890B29087D8C00354733 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		81481A6129087B2300DA3224 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8121890929087D8C00354733 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8121891F2908844000354733 /* LightningTests.swift in Sources */,
+				8121891D2908832200354733 /* BitcoinTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		81481A5F29087B2300DA3224 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8121891929087FD400354733 /* Bitcoin.swift in Sources */,
+				8121891B290880DF00354733 /* Lightning.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		8121891329087D8C00354733 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 81481A6229087B2300DA3224 /* VelasLightningFramework */;
+			targetProxy = 8121891229087D8C00354733 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		8121891529087D8C00354733 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RQQDN4L35D;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.velas.VelasLightningTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		8121891629087D8C00354733 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RQQDN4L35D;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.velas.VelasLightningTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		81481A6829087B2300DA3224 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		81481A6929087B2300DA3224 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		81481A6B29087B2300DA3224 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = RQQDN4L35D;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.velas.VelasLightningFramework;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		81481A6C29087B2300DA3224 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = RQQDN4L35D;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.velas.VelasLightningFramework;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		8121891429087D8C00354733 /* Build configuration list for PBXNativeTarget "VelasLightningTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8121891529087D8C00354733 /* Debug */,
+				8121891629087D8C00354733 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		81481A5D29087B2300DA3224 /* Build configuration list for PBXProject "VelasLightningFramework" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				81481A6829087B2300DA3224 /* Debug */,
+				81481A6929087B2300DA3224 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		81481A6A29087B2300DA3224 /* Build configuration list for PBXNativeTarget "VelasLightningFramework" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				81481A6B29087B2300DA3224 /* Debug */,
+				81481A6C29087B2300DA3224 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		8121890029087C1D00354733 /* XCRemoteSwiftPackageReference "bdk-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/bitcoindevkit/bdk-swift";
+			requirement = {
+				kind = exactVersion;
+				version = 0.4.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		8121890129087C1D00354733 /* BitcoinDevKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8121890029087C1D00354733 /* XCRemoteSwiftPackageReference "bdk-swift" */;
+			productName = BitcoinDevKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 81481A5A29087B2300DA3224 /* Project object */;
+}
