@@ -11,12 +11,11 @@ import VelasLightningFramework
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-
-
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
         do {
-            let velasWallet = try Velas();
+            let _ = try Velas();
         } catch {}
         
         return true
