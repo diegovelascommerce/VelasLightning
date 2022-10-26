@@ -21,8 +21,19 @@ public class Velas {
         return "lntb10u1p34nzegpp5740edx88s2dq605hrmadncqjutwgp2qmp0tue3lx3x7v4csmex0sdqqcqzpgxq9zm3kqsp59fr9mzs0yaaccvgx9vq74j2pljyk98arcnj7zl6rq0evmhz96c9s9qyyssq98leckfmjeunhweuulf3mc3cgqy2c8962w4gy2x2qzanfv93gxn38f4fancp9jmkmlp306l7rk6vhgcptxatsx9t5heletnag5avq3gq7lm5p4"
     }
     
-    
-    public func sendAward(sats: Int, callback:(String)->Void) -> Void {
+    /// Request an award in the form of a bolt11 invoice.
+    ///
+    /// once bolt11 invoice is created you need to provide the callback/clojure
+    /// to submit that bolt11 string to the backend of your choseing.
+    ///
+    /// params:
+    ///   sats:  amount in satoshis that your would want to create an invoice from
+    ///   callback:  the clojure that you passin to deside what to do with the bolt11 string
+    ///     you just created
+    ///
+    /// return:
+    ///   void
+    public func requestAward(sats: Int, callback:(String)->Void) -> Void {
         let bolt11 = createBolt11(sats: sats);
         callback(bolt11);
     }

@@ -23,8 +23,9 @@ class VelasTests: XCTestCase {
         XCTAssertNotNil(velas)
     }
     
-    func testSendAward() throws {
-        velas.sendAward(sats: 200) {(bolt11) in
+    func testRequestAward() throws {
+        velas.requestAward(sats: 200) {(bolt11) in
+            // here enter you code to submit the bolt11 string to the backend of your choosing
             XCTAssertEqual(bolt11, TEST_BOLT11)
         }
     }
