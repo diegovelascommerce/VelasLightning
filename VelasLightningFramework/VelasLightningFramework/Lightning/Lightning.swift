@@ -165,7 +165,8 @@ public class Lightning {
 //        )
 //        let channelManager = channelManagerConstructor.channelManager
         
-          // causing problems
+        /* this is where exception is thrown
+         
         let channelManagerConstructor = try ChannelManagerConstructor(
             channel_manager_serialized: serializedChannelManager,
             channel_monitors_serialized: serializedChannelMonitors,
@@ -185,6 +186,8 @@ public class Lightning {
         
         // If you need to serialize a channel manager, you can simply call its write method on itself:
         //let serializedChannelManager: [UInt8] = channelManager.write(obj: channelManager)
+         
+         */
     }
 }
 
