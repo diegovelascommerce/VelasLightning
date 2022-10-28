@@ -8,7 +8,7 @@ public class Velas {
     /// Initialize Bitcoin and Lightning
     public init() throws {
         btc = try Bitcoin()
-        ln = Lightning()
+        ln = try Lightning()
     }
     
     /// Create a bolt11 invoice from the amount of satoshis passed in.

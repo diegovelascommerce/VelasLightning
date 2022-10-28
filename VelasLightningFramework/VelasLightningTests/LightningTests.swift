@@ -13,7 +13,7 @@ class LightningTests: XCTestCase {
     private var ln:Lightning!
 
     override func setUpWithError() throws {
-        ln = Lightning()
+        ln = try Lightning()
     }
 
     func testStartLightning() throws {

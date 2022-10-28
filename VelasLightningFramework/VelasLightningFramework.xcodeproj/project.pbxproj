@@ -15,6 +15,11 @@
 		8121891B290880DF00354733 /* Lightning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8121891A290880DF00354733 /* Lightning.swift */; };
 		8121891D2908832200354733 /* BitcoinTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8121891C2908832200354733 /* BitcoinTests.swift */; };
 		8121891F2908844000354733 /* LightningTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8121891E2908844000354733 /* LightningTests.swift */; };
+		812D385C290C3ED8005EA7E9 /* MyFeeEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 812D385B290C3ED8005EA7E9 /* MyFeeEstimator.swift */; };
+		812D385E290C40C3005EA7E9 /* MyLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 812D385D290C40C3005EA7E9 /* MyLogger.swift */; };
+		812D3860290C441A005EA7E9 /* MyBroadcasterInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 812D385F290C441A005EA7E9 /* MyBroadcasterInterface.swift */; };
+		812D3862290C46C8005EA7E9 /* MyPersister.swift in Sources */ = {isa = PBXBuildFile; fileRef = 812D3861290C46C8005EA7E9 /* MyPersister.swift */; };
+		812D3864290C4A25005EA7E9 /* MyFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 812D3863290C4A25005EA7E9 /* MyFilter.swift */; };
 		81481A6729087B2300DA3224 /* VelasLightningFramework.h in Headers */ = {isa = PBXBuildFile; fileRef = 81481A6629087B2300DA3224 /* VelasLightningFramework.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		81D31EE12909ABA500A621A0 /* Velas.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81D31EE02909ABA500A621A0 /* Velas.swift */; };
 		81D31EE32909ACE900A621A0 /* VelasTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81D31EE22909ACE900A621A0 /* VelasTests.swift */; };
@@ -58,6 +63,11 @@
 		8121891A290880DF00354733 /* Lightning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lightning.swift; sourceTree = "<group>"; };
 		8121891C2908832200354733 /* BitcoinTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BitcoinTests.swift; sourceTree = "<group>"; };
 		8121891E2908844000354733 /* LightningTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LightningTests.swift; sourceTree = "<group>"; };
+		812D385B290C3ED8005EA7E9 /* MyFeeEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyFeeEstimator.swift; sourceTree = "<group>"; };
+		812D385D290C40C3005EA7E9 /* MyLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyLogger.swift; sourceTree = "<group>"; };
+		812D385F290C441A005EA7E9 /* MyBroadcasterInterface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyBroadcasterInterface.swift; sourceTree = "<group>"; };
+		812D3861290C46C8005EA7E9 /* MyPersister.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyPersister.swift; sourceTree = "<group>"; };
+		812D3863290C4A25005EA7E9 /* MyFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyFilter.swift; sourceTree = "<group>"; };
 		81481A6329087B2300DA3224 /* VelasLightningFramework.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = VelasLightningFramework.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		81481A6629087B2300DA3224 /* VelasLightningFramework.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VelasLightningFramework.h; sourceTree = "<group>"; };
 		81481A8D29087B5200DA3224 /* VelasLightningExample.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = VelasLightningExample.xcodeproj; path = ../VelasLightningExample/VelasLightningExample.xcodeproj; sourceTree = "<group>"; };
@@ -96,6 +106,19 @@
 			path = VelasLightningTests;
 			sourceTree = "<group>";
 		};
+		812D3857290C3CCE005EA7E9 /* Lightning */ = {
+			isa = PBXGroup;
+			children = (
+				8121891A290880DF00354733 /* Lightning.swift */,
+				812D385B290C3ED8005EA7E9 /* MyFeeEstimator.swift */,
+				812D385D290C40C3005EA7E9 /* MyLogger.swift */,
+				812D385F290C441A005EA7E9 /* MyBroadcasterInterface.swift */,
+				812D3861290C46C8005EA7E9 /* MyPersister.swift */,
+				812D3863290C4A25005EA7E9 /* MyFilter.swift */,
+			);
+			path = Lightning;
+			sourceTree = "<group>";
+		};
 		81481A5929087B2300DA3224 = {
 			isa = PBXGroup;
 			children = (
@@ -121,7 +144,7 @@
 			children = (
 				81481A6629087B2300DA3224 /* VelasLightningFramework.h */,
 				8121891829087FD400354733 /* Bitcoin.swift */,
-				8121891A290880DF00354733 /* Lightning.swift */,
+				812D3857290C3CCE005EA7E9 /* Lightning */,
 				81D31EE02909ABA500A621A0 /* Velas.swift */,
 			);
 			path = VelasLightningFramework;
@@ -279,6 +302,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				81D31EE12909ABA500A621A0 /* Velas.swift in Sources */,
+				812D385C290C3ED8005EA7E9 /* MyFeeEstimator.swift in Sources */,
+				812D3860290C441A005EA7E9 /* MyBroadcasterInterface.swift in Sources */,
+				812D385E290C40C3005EA7E9 /* MyLogger.swift in Sources */,
+				812D3862290C46C8005EA7E9 /* MyPersister.swift in Sources */,
+				812D3864290C4A25005EA7E9 /* MyFilter.swift in Sources */,
 				8121891929087FD400354733 /* Bitcoin.swift in Sources */,
 				8121891B290880DF00354733 /* Lightning.swift in Sources */,
 			);
