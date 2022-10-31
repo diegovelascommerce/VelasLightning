@@ -11,7 +11,7 @@ public class Lightning {
     /// - https://lightningdevkit.org/tutorials/build_a_node_in_java/
     /// - https://lightningdevkit.org/tutorials/build_a_node_in_rust/
     public init() throws {
-        print("----- Started with setting up the LDK -----")
+        print("----- Start LDK setup -----")
         
         ///  Setup:  Setup steps to run the LDK
         
@@ -68,8 +68,8 @@ public class Lightning {
         // We will keep needing to pass around a keysInterface instance,
         // and we will also need to pass its node secret to the peer manager initialization,
         // so let's prepare it right here:
-        let recipient:LDKRecipient = LDKRecipient(0)
-        let nodeSecret = keysInterface.get_node_secret(recipient: recipient)
+//        let recipient:LDKRecipient = LDKRecipient(0)
+//        let nodeSecret = keysInterface.get_node_secret(recipient: recipient)
         
         /// Step 8.  Initialize the NetworkGraph
         ///
@@ -96,41 +96,10 @@ public class Lightning {
         /// What it's used for:
         ///   if LDK is restarting and has at least 1 channel,
         ///   its channel state will need to be read from disk and fed to the ChannelManager on the next step.
+    
         
-        /*  -- Java Example --
-         *
-        // Initialize the array where we'll store the `ChannelMonitor`s read from disk.
-        final ArrayList channel_monitor_list = new ArrayList<>();
-
-        // For each monitor stored on disk, deserialize it and place it in
-        // `channel_monitors`.
-        for (... : monitor_files) {
-            byte[] channel_monitor_bytes = // read the bytes from disk the same way you
-                                           // wrote them in Step 5
-            channel_monitor_list.add(channel_monitor_bytes);
-        }
-
-        // Convert the ArrayList into an array so we can pass it to
-        // `ChannelManagerConstructor` in Step 11.
-        final byte[][] channel_monitors = (byte[][])channel_monitor_list.toArray(new byte[1][]);
-        */
-        
-        /* -- Rust example --
-         *
-         // Use LDK's sample persister module provided method
-         let mut channel_monitors =
-             persister.read_channelmonitors(keys_manager.clone()).unwrap();
-
-         // If you are using Electrum or BIP 157/158, you must call load_outputs_to_watch
-         // on each ChannelMonitor to prepare for chain synchronization in Step 9.
-         for chan_mon in channel_monitors.iter() {
-             chan_mon.load_outputs_to_watch(&filter);
-         }
-
-         */
-        
-        let serializedChannelManager: [UInt8] = [2, 1, 111, 226, 140, 10, 182, 241, 179, 114, 193, 166, 162, 70, 174, 99, 247, 79, 147, 30, 131, 101, 225, 90, 8, 156, 104, 214, 25, 0, 0, 0, 0, 0, 0, 10, 174, 219, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 238, 87, 135, 110, 67, 215, 108, 228, 66, 226, 192, 37, 6, 193, 120, 186, 5, 214, 209, 16, 169, 31, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] // <insert bytes you would have written in following the later step "Persist channel manager">
-        let serializedChannelMonitors: [[UInt8]] = []
+//        let serializedChannelManager: [UInt8] = [2, 1, 111, 226, 140, 10, 182, 241, 179, 114, 193, 166, 162, 70, 174, 99, 247, 79, 147, 30, 131, 101, 225, 90, 8, 156, 104, 214, 25, 0, 0, 0, 0, 0, 0, 10, 174, 219, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 238, 87, 135, 110, 67, 215, 108, 228, 66, 226, 192, 37, 6, 193, 120, 186, 5, 214, 209, 16, 169, 31, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] // <insert bytes you would have written in following the later step "Persist channel manager">
+//        let serializedChannelMonitors: [[UInt8]] = []
         
         /// Step 10.  Initialize the ChannelManager
         ///
@@ -151,43 +120,43 @@ public class Lightning {
         
         let userConfig = UserConfig()
         
-//        let channelManagerConstructor = ChannelManagerConstructor(
-//            network: LDKNetwork_Bitcoin,
-//            config: userConfig,
-//            current_blockchain_tip_hash: latestBlockHash,
-//            current_blockchain_tip_height: latestBlockHeight,
-//            keys_interface: keysInterface,
-//            fee_estimator: feeEstimator,
-//            chain_monitor: chainMonitor,
-//            net_graph: nil, // see `NetworkGraph`
-//            tx_broadcaster: broadcaster,
-//            logger: logger
-//        )
-//        let channelManager = channelManagerConstructor.channelManager
-        
-        /* this is where exception is thrown
-         
-        let channelManagerConstructor = try ChannelManagerConstructor(
-            channel_manager_serialized: serializedChannelManager,
-            channel_monitors_serialized: serializedChannelMonitors,
+        let channelManagerConstructor = ChannelManagerConstructor(
+            network: LDKNetwork_Testnet,
+            config: userConfig,
+            current_blockchain_tip_hash: latestBlockHash,
+            current_blockchain_tip_height: latestBlockHeight,
             keys_interface: keysInterface,
             fee_estimator: feeEstimator,
             chain_monitor: chainMonitor,
-            filter: filter,
-            net_graph_serialized: nil, // or networkGraph
+            net_graph: networkGraph, // see `NetworkGraph`
             tx_broadcaster: broadcaster,
             logger: logger
         )
+//        let channelManager = channelManagerConstructor.channelManager
+        
+        
+         
+//        let channelManagerConstructor = try ChannelManagerConstructor(
+//            channel_manager_serialized: serializedChannelManager,
+//            channel_monitors_serialized: serializedChannelMonitors,
+//            keys_interface: keysInterface,
+//            fee_estimator: feeEstimator,
+//            chain_monitor: chainMonitor,
+//            filter: filter,
+//            net_graph_serialized: nil, // or networkGraph
+//            tx_broadcaster: broadcaster,
+//            logger: logger
+//        )
 
-        let channelManager = channelManagerConstructor.channelManager
+        let _ = channelManagerConstructor.channelManager
         
         /// Step 11. Peer handler
-        let peerManager = channelManagerConstructor.peerManager
+        let _ = channelManagerConstructor.peerManager
         
         // If you need to serialize a channel manager, you can simply call its write method on itself:
         //let serializedChannelManager: [UInt8] = channelManager.write(obj: channelManager)
+        print("---- End LDK setup -----")
          
-         */
     }
 }
 

@@ -20,13 +20,15 @@ public class Bitcoin {
     }
     
     public init() throws {
-        print("***** Hello from workitLightningWallet *****")
+        print("***** Start BDK setup *****")
         
         let desc = "wpkh([c258d2e4/84h/1h/0h]tpubDDYkZojQFQjht8Tm4jsS3iuEmKjTiEGjG6KnuFNKKJb5A6ZUCUZKdvLdSDWofKi4ToRCwb9poe1XdqfUnP4jaJjCB2Zwv11ZLgSbnZSNecE/0/*)"
                 
         wallet = try Wallet.init(descriptor: desc, changeDescriptor: nil, network: Network.testnet, databaseConfig:DatabaseConfig.memory)
             
         addressInfo = try wallet.getAddress(addressIndex: AddressIndex.new)
+        
+        print("***** End BDK setup *****")
     }
     
     public func getMnemonic(){
@@ -37,4 +39,15 @@ public class Bitcoin {
         
     }
     
+    public func getGenesisBlock(){
+        
+    }
+    
+    public func getLatestBlockHeight(){
+        
+    }
+    
+    public func getLatestBlockHash(){
+        
+    }
 }
