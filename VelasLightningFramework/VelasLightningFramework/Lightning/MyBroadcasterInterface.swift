@@ -6,6 +6,7 @@ class MyBroadcasterInterface: BroadcasterInterface {
     
     override func broadcast_transaction(tx: [UInt8]) {
         // insert code to broadcast transaction
+        print("LDK/broadcast_transaction: \(bytesToHex(bytes: tx))")
     }
     
 }

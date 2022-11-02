@@ -8,14 +8,21 @@
 import UIKit
 import VelasLightningFramework
 
+
+var velas: Velas!
+
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
+    
+//    var velas: Velas!
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
         do {
-            let _ = try Velas();
+            velas = try Velas();
+            let _ = try velas.getNodeId()
+            let _ = try velas.bindNode()
         } catch {}
         
         return true

@@ -29,6 +29,17 @@ class VelasTests: XCTestCase {
             XCTAssertEqual(bolt11, TEST_BOLT11)
         }
     }
+    
+    func testGetNodeId() throws {
+        let res = try velas.getNodeId()
+        XCTAssertFalse(res.isEmpty)
+        print("testGetNodeId: \(res)")
+    }
+    
+    func testBindNode() throws {
+        let res = try velas.bindNode()
+        XCTAssertTrue(res)
+    }
 
     
 

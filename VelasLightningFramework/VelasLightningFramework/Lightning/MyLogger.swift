@@ -5,7 +5,7 @@ import LightningDevKit
 class MyLogger: Logger {
     
     override func log(record: Record) {
-        print("log event: \(record.get_args())")
+        print("LDK/log: \(record.get_args())")
     }
     
 }

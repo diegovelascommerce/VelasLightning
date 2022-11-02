@@ -37,4 +37,13 @@ public class Velas {
         let bolt11 = createBolt11(sats: sats);
         callback(bolt11);
     }
+    
+    /// Gets the lightning node ID of this machine.
+    public func getNodeId() throws -> String {
+        return try ln.getNodeId()
+    }
+    
+    public func bindNode() throws -> Bool {
+        return try ln.bindNode()
+    }
 }

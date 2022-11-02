@@ -11,19 +11,23 @@ import LightningDevKit
 class MyPersister: Persist {
     
     override func persist_new_channel(channel_id: OutPoint, data: ChannelMonitor, update_id: MonitorUpdateId) -> Result_NoneChannelMonitorUpdateErrZ {
+        print("LDK/persist_new_channel: persist_new_channel")
+        
         let idBytes: [UInt8] = channel_id.write()
         let monitorBytes: [UInt8] = data.write()
-        
-        // persist monitorBytes to disk, keyed by idBytes
-        
+        print("LDK/persist_new_channel idBytes: \(bytesToHex(bytes: idBytes))")
+        print("LDK/persist_new_channel monitorBytes: \(bytesToHex(bytes: monitorBytes))")
+                
         return Result_NoneChannelMonitorUpdateErrZ.ok()
     }
     
     override func update_persisted_channel(channel_id: OutPoint, update: ChannelMonitorUpdate, data: ChannelMonitor, update_id: MonitorUpdateId) -> Result_NoneChannelMonitorUpdateErrZ {
+        print("LDK/update_persisted_channel: persist_new_channel")
+        
         let idBytes: [UInt8] = channel_id.write()
         let monitorBytes: [UInt8] = data.write()
-        
-        // modify persisted monitorBytes keyed by idBytes on disk
+        print("LDK/update_persisted_channel idBytes: \(bytesToHex(bytes: idBytes))")
+        print("LDK/update_persisted_channel monitorBytes: \(bytesToHex(bytes: monitorBytes))")
         
         return Result_NoneChannelMonitorUpdateErrZ.ok()
     }

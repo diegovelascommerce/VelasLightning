@@ -4,17 +4,14 @@ import LightningDevKit
 /// This is the main class for handling interactions with the Lightning Network
 public class Lightning {
     
-    /// Setup the LDK and run the LDK
-    ///
-    /// based on setup procedures explained in
-    /// - https://github.com/lightningdevkit/ldk-swift/blob/main/docs/setup.md,
-    /// - https://lightningdevkit.org/tutorials/build_a_node_in_java/
-    /// - https://lightningdevkit.org/tutorials/build_a_node_in_rust/
+    var channel_manager: LightningDevKit.ChannelManager?
+    var peer_manager: LightningDevKit.PeerManager?
+    var peer_handler: TCPPeerHandler?
+    
+    /// Setup the LDK
     public init() throws {
         print("----- Start LDK setup -----")
-        
-        ///  Setup:  Setup steps to run the LDK
-        
+                
         // Step 1. initialize the FeeEstimator
         let feeEstimator = MyFeeEstimator()
         
@@ -35,9 +32,11 @@ public class Lightning {
         /// What it is used for:
         ///   monitoring the chain for lightning transactions that are relevant to our node,
         ///   and broadcasting transactions
-        let filterOption = Option_FilterZ(value: filter)
-        let chainMonitor = ChainMonitor(chain_source: filterOption, broadcaster: broadcaster, logger: logger,
+//        let filterOption = Option_FilterZ(value: filter)
+        let chainMonitor = ChainMonitor(chain_source: Option_FilterZ(value: filter), broadcaster: broadcaster, logger: logger,
                                         feeest: feeEstimator, persister: persister)
+        
+//        let chainMonitor = ChainMonitor.init(chain_source: Option_FilterZ(value: filter), broadcaster: broadcaster, logger: logger, feeest: feeEstimator, persister: persister)
         
         /// Step 7. Initialize the KeysManager
         ///
@@ -132,48 +131,146 @@ public class Lightning {
             tx_broadcaster: broadcaster,
             logger: logger
         )
-//        let channelManager = channelManagerConstructor.channelManager
-        
-        
-         
-//        let channelManagerConstructor = try ChannelManagerConstructor(
-//            channel_manager_serialized: serializedChannelManager,
-//            channel_monitors_serialized: serializedChannelMonitors,
-//            keys_interface: keysInterface,
-//            fee_estimator: feeEstimator,
-//            chain_monitor: chainMonitor,
-//            filter: filter,
-//            net_graph_serialized: nil, // or networkGraph
-//            tx_broadcaster: broadcaster,
-//            logger: logger
-//        )
 
-        let _ = channelManagerConstructor.channelManager
+        channel_manager = channelManagerConstructor.channelManager
         
-        /// Step 11. Peer handler
-        let _ = channelManagerConstructor.peerManager
+        peer_manager = channelManagerConstructor.peerManager
         
-        // If you need to serialize a channel manager, you can simply call its write method on itself:
-        //let serializedChannelManager: [UInt8] = channelManager.write(obj: channelManager)
+        peer_handler = channelManagerConstructor.getTCPPeerHandler()
+        
         print("---- End LDK setup -----")
-         
+    }
+    
+    /// get the node id of our node.
+    func getNodeId() throws -> String {
+        if let nodeId = channel_manager?.get_our_node_id() {
+            let res = bytesToHex(bytes: nodeId)
+            print("Lightning/getNodeId: \(res)")
+            return res
+        } else {
+            let error = NSError(domain: "getNodeId", code: 1, userInfo: nil)
+            throw error
+        }
+    }
+    
+    /// Bind node to an IP address and port.
+    ///
+    /// so that it can receive connection request from another node in the lightning network
+    ///
+    /// throws:
+    ///   NSError - if there was a problem connecting
+    ///
+    /// return:
+    ///   a boolean to indicate that binding of node was a success
+    public func bindNode(_ address:String, _ port:UInt16) throws -> Bool {
+        guard let peer_handler = peer_handler else {
+            let error = NSError(domain: "bindNode", code: 1, userInfo: nil)
+            throw error
+        }
+        
+//        let address = getLocalIPAdress()
+//        let address = getPublicIPAddress()
+//        let address:String? = "1.2.3.4"
+//        let port = UInt16(9735)
+       
+            
+        let res = peer_handler.bind(address: address, port: port)
+        if(!res){
+            let error = NSError(domain: "bindNode", code: 1)
+            throw error
+        }
+        print("Lightning/bindNode: connected")
+        print("Lightning/bindNode address: \(address)")
+        print("Lightning/bindNode port: \(port)")
+        return res
+    }
+    
+    func bindNode() throws -> Bool {
+//        let address = getLocalIPAdress()
+        let address:String? = "0.0.0.0"
+        let port = UInt16(9735)
+        if let address = address {
+            return try bindNode(address, port)
+        }
+        return false
     }
 }
 
+/// convert bytes array to Hex String
+///
+/// params:
+///     bytes:  bytes to convert
+///
+/// return:
+///     hex string of byte array
+func bytesToHex(bytes: [UInt8]) -> String
+{
+    var hexString: String = ""
+    var count = bytes.count
+    for byte in bytes
+    {
+        hexString.append(String(format:"%02X", byte))
+        count = count - 1
+    }
+    return hexString.lowercased()
+}
 
 
+/// Get the Local IP address of current machine
+///
+/// from https://gist.github.com/SergLam/9a90ffda7c57740beb18fb28da125b8a
+///
+/// return:
+///     optional of String of IP address
+func getLocalIPAdress() -> String? {
+        
+    var address: String?
+    var ifaddr: UnsafeMutablePointer<ifaddrs>?
+    
+    if getifaddrs(&ifaddr) == 0 {
+        
+        var ptr = ifaddr
+        while ptr != nil {
+            defer { ptr = ptr?.pointee.ifa_next } // memory has been renamed to pointee in swift 3 so changed memory to pointee
+            
+            guard let interface = ptr?.pointee else {
+                return nil
+            }
+            let addrFamily = interface.ifa_addr.pointee.sa_family
+            if addrFamily == UInt8(AF_INET) || addrFamily == UInt8(AF_INET6) {
+                
+                guard let ifa_name = interface.ifa_name else {
+                    return nil
+                }
+                let name: String = String(cString: ifa_name)
+                
+                print("getIPAdress name: \(name)")
+                
+                if name == "en0" {  // String.fromCString() is deprecated in Swift 3. So use the following code inorder to get the exact IP Address.
+                    var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+                    getnameinfo(interface.ifa_addr, socklen_t((interface.ifa_addr.pointee.sa_len)), &hostname, socklen_t(hostname.count), nil, socklen_t(0), NI_NUMERICHOST)
+                    address = String(cString: hostname)
+                    print("getIPAdress address: \(address!)")
+                }
+                
+            }
+        }
+        freeifaddrs(ifaddr)
+    }
+    
+    return address
+}
 
-
-
-
-
-
-
-
-/*** Running LDK
- Everything you need to do while LDK is running to keep it operational
- 
- */
-
-
+/// Get the public IP address of device
+func getPublicIPAddress() -> String? {
+    var publicIP: String?
+    do {
+        try publicIP = String(contentsOf: URL(string: "https://www.bluewindsolution.com/tools/getpublicip.php")!, encoding: String.Encoding.utf8)
+        publicIP = publicIP?.trimmingCharacters(in: CharacterSet.whitespaces)
+    }
+    catch {
+        print("Error: \(error)")
+    }
+    return publicIP
+}
 
