@@ -40,6 +40,12 @@ class VelasTests: XCTestCase {
         let res = try velas.bindNode()
         XCTAssertTrue(res)
     }
+    
+    func testGetIPAddresses() {
+        let (local,pub) = velas.getIPAddresses()
+        XCTAssertNotNil(local)
+        XCTAssertNotNil(pub)
+    }
 
     
 

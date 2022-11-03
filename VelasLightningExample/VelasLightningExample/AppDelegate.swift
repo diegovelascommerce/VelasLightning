@@ -21,8 +21,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         do {
             velas = try Velas();
-            let _ = try velas.getNodeId()
-            let _ = try velas.bindNode()
+//            let _ = try velas.getNodeId()
+//            let _ = try velas.bindNode()
+//            let _ = velas.getIPAddresses()
+            
         } catch {}
         
         return true

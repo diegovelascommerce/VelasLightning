@@ -194,6 +194,31 @@ public class Lightning {
         }
         return false
     }
+    
+    func connect(pubkeyHex: String, hostname: String, port: NSNumber) throws -> Bool {
+        guard let peer_handler = peer_handler else {
+            let error = NSError(domain: "bindNode", code: 1, userInfo: nil)
+            throw error
+        }
+        
+        if (!peer_handler.connect(address: hostname, port: UInt16(truncating: port),  theirNodeId: hexStringToByteArray(pubkeyHex))) {
+            let error = NSError(domain: "connectPeer", code: 1, userInfo: nil)
+            throw error
+        }
+        
+        return true
+    }
+    
+    func listPeers() throws -> [[UInt8]] {
+        guard let peer_manager = peer_manager else {
+            let error = NSError(domain: "listPeers", code: 1, userInfo: nil)
+            throw error
+        }
+        
+        let peer_node_ids = peer_manager.get_peer_node_ids()
+        print("peer_node_ids: \(peer_node_ids)")
+        return peer_node_ids
+    }
 }
 
 /// convert bytes array to Hex String
@@ -213,6 +238,26 @@ func bytesToHex(bytes: [UInt8]) -> String
         count = count - 1
     }
     return hexString.lowercased()
+}
+
+private func hexStringToByteArray(_ string: String) -> [UInt8] {
+    let length = string.count
+    if length & 1 != 0 {
+        return []
+    }
+    var bytes = [UInt8]()
+    bytes.reserveCapacity(length/2)
+    var index = string.startIndex
+    for _ in 0..<length/2 {
+        let nextIndex = string.index(index, offsetBy: 2)
+        if let b = UInt8(string[index..<nextIndex], radix: 16) {
+            bytes.append(b)
+        } else {
+            return []
+        }
+        index = nextIndex
+    }
+    return bytes
 }
 
 
@@ -244,7 +289,7 @@ func getLocalIPAdress() -> String? {
                 }
                 let name: String = String(cString: ifa_name)
                 
-                print("getIPAdress name: \(name)")
+//                print("getIPAdress name: \(name)")
                 
                 if name == "en0" {  // String.fromCString() is deprecated in Swift 3. So use the following code inorder to get the exact IP Address.
                     var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))

@@ -46,4 +46,15 @@ public class Velas {
     public func bindNode() throws -> Bool {
         return try ln.bindNode()
     }
+    
+    public func getIPAddresses() -> (String?, String?) {
+        let local = getLocalIPAdress()
+        let pub = getPublicIPAddress()
+        if let local = local, let pub = pub {
+            print("local IP Address: \(local)")
+            print("public IP Address: \(pub)")
+        }
+        
+        return (local, pub)
+    }
 }

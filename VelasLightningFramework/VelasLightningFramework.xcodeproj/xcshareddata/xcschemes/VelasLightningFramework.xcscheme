@@ -39,6 +39,9 @@
             </BuildableReference>
             <SkippedTests>
                <Test
+                  Identifier = "LightningTests/testBindNode()">
+               </Test>
+               <Test
                   Identifier = "LightningTests/testBindNode_WithHostIPAddress()">
                </Test>
                <Test

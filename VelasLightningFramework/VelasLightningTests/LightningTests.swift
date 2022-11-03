@@ -89,5 +89,41 @@ class LightningTests: XCTestCase {
             XCTFail("this shouldn't happen")
         }
     }
+    
+    func testConnect() throws {
+        let nodeId = "03e347d089c071c27680e26299223e80a740cf3e3fc4b4237fa219bb67121a670b"
+//        let address = "45.33.22.210"
+        let address = "45.33.22.210"
+        let port = NSNumber(9735)
+        
+        do {
+            let res = try ln.connect(pubkeyHex: nodeId, hostname: address, port: port)
+            XCTAssertTrue(res)
+            
+            let _ = try ln.getNodeId()
+        }
+        catch {
+            XCTFail("this shouldn't happen")
+        }
+    }
+    
+    func testListPeers(){
+        let nodeId = "03e347d089c071c27680e26299223e80a740cf3e3fc4b4237fa219bb67121a670b"
+//        let address = "45.33.22.210"
+        let address = "45.33.22.210"
+        let port = NSNumber(9735)
+        
+        do {
+            let res = try ln.connect(pubkeyHex: nodeId, hostname: address, port: port)
+            XCTAssertTrue(res)
+            
+            let _ = try ln.getNodeId()
+            
+            let _ = try ln.listPeers()
+        }
+        catch {
+            XCTFail("this shouldn't happen")
+        }
+    }
 
 }
