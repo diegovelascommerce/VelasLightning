@@ -32,9 +32,7 @@ public class Lightning {
         /// What it is used for:
         ///   monitoring the chain for lightning transactions that are relevant to our node,
         ///   and broadcasting transactions
-//        let filterOption = Option_FilterZ(value: filter)
-        let chainMonitor = ChainMonitor(chain_source: Option_FilterZ(value: filter), broadcaster: broadcaster, logger: logger,
-                                        feeest: feeEstimator, persister: persister)
+        let chainMonitor = ChainMonitor(chain_source: Option_FilterZ(value: filter), broadcaster: broadcaster, logger: logger, feeest: feeEstimator, persister: persister)
         
 //        let chainMonitor = ChainMonitor.init(chain_source: Option_FilterZ(value: filter), broadcaster: broadcaster, logger: logger, feeest: feeEstimator, persister: persister)
         
@@ -89,15 +87,15 @@ public class Lightning {
         ///   which in turn requires the genesis block hash.
 
         let networkGraph = NetworkGraph(genesis_hash: [UInt8](Data(base64Encoded: "AAAAAAAZ1micCFrhZYMek0/3Y65GoqbBcrPxtgqM4m8=")!), logger: logger)
-        
-        /// Step 9. Read ChannelMonitors from disk
-        ///
-        /// What it's used for:
-        ///   if LDK is restarting and has at least 1 channel,
-        ///   its channel state will need to be read from disk and fed to the ChannelManager on the next step.
-    
-        
-//        let serializedChannelManager: [UInt8] = [2, 1, 111, 226, 140, 10, 182, 241, 179, 114, 193, 166, 162, 70, 174, 99, 247, 79, 147, 30, 131, 101, 225, 90, 8, 156, 104, 214, 25, 0, 0, 0, 0, 0, 0, 10, 174, 219, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 238, 87, 135, 110, 67, 215, 108, 228, 66, 226, 192, 37, 6, 193, 120, 186, 5, 214, 209, 16, 169, 31, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] // <insert bytes you would have written in following the later step "Persist channel manager">
+//        
+//        /// Step 9. Read ChannelMonitors from disk
+//        ///
+//        /// What it's used for:
+//        ///   if LDK is restarting and has at least 1 channel,
+//        ///   its channel state will need to be read from disk and fed to the ChannelManager on the next step.
+//    
+//        
+////        let serializedChannelManager: [UInt8] = [2, 1, 111, 226, 140, 10, 182, 241, 179, 114, 193, 166, 162, 70, 174, 99, 247, 79, 147, 30, 131, 101, 225, 90, 8, 156, 104, 214, 25, 0, 0, 0, 0, 0, 0, 10, 174, 219, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 238, 87, 135, 110, 67, 215, 108, 228, 66, 226, 192, 37, 6, 193, 120, 186, 5, 214, 209, 16, 169, 31, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] // <insert bytes you would have written in following the later step "Persist channel manager">
 //        let serializedChannelMonitors: [[UInt8]] = []
         
         /// Step 10.  Initialize the ChannelManager

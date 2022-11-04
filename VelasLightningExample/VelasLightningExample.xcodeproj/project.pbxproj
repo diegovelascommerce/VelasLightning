@@ -15,6 +15,8 @@
 		81481A8129087B5000DA3224 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81481A7F29087B5000DA3224 /* Main.storyboard */; };
 		81481A8329087B5200DA3224 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 81481A8229087B5200DA3224 /* Assets.xcassets */; };
 		81481A8629087B5200DA3224 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81481A8429087B5200DA3224 /* LaunchScreen.storyboard */; };
+		817D1E922915A0D000F7FF71 /* BitcoinDevKit in Frameworks */ = {isa = PBXBuildFile; productRef = 817D1E912915A0D000F7FF71 /* BitcoinDevKit */; };
+		817D1E952915A4C800F7FF71 /* LightningDevKit in Frameworks */ = {isa = PBXBuildFile; productRef = 817D1E942915A4C800F7FF71 /* LightningDevKit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -48,6 +50,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				817D1E922915A0D000F7FF71 /* BitcoinDevKit in Frameworks */,
+				817D1E952915A4C800F7FF71 /* LightningDevKit in Frameworks */,
 				81218922290885B300354733 /* VelasLightningFramework.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -111,6 +115,10 @@
 			dependencies = (
 			);
 			name = VelasLightningExample;
+			packageProductDependencies = (
+				817D1E912915A0D000F7FF71 /* BitcoinDevKit */,
+				817D1E942915A4C800F7FF71 /* LightningDevKit */,
+			);
 			productName = VelasLightningExample;
 			productReference = 81481A7629087B5000DA3224 /* VelasLightningExample.app */;
 			productType = "com.apple.product-type.application";
@@ -139,6 +147,10 @@
 				Base,
 			);
 			mainGroup = 81481A6D29087B5000DA3224;
+			packageReferences = (
+				817D1E902915A0D000F7FF71 /* XCRemoteSwiftPackageReference "bdk-swift" */,
+				817D1E932915A4C800F7FF71 /* XCRemoteSwiftPackageReference "ldk-swift" */,
+			);
 			productRefGroup = 81481A7729087B5000DA3224 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -228,6 +240,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_BITCODE = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -288,6 +301,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_BITCODE = NO;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -316,6 +330,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = RQQDN4L35D;
+				ENABLE_BITCODE = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = VelasLightningExample/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -323,6 +338,7 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.3;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -344,6 +360,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = RQQDN4L35D;
+				ENABLE_BITCODE = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = VelasLightningExample/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -351,6 +368,7 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.3;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -386,6 +404,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		817D1E902915A0D000F7FF71 /* XCRemoteSwiftPackageReference "bdk-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/bitcoindevkit/bdk-swift";
+			requirement = {
+				kind = exactVersion;
+				version = 0.4.0;
+			};
+		};
+		817D1E932915A4C800F7FF71 /* XCRemoteSwiftPackageReference "ldk-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/lightningdevkit/ldk-swift/";
+			requirement = {
+				kind = exactVersion;
+				version = 0.0.112;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		817D1E912915A0D000F7FF71 /* BitcoinDevKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 817D1E902915A0D000F7FF71 /* XCRemoteSwiftPackageReference "bdk-swift" */;
+			productName = BitcoinDevKit;
+		};
+		817D1E942915A4C800F7FF71 /* LightningDevKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 817D1E932915A4C800F7FF71 /* XCRemoteSwiftPackageReference "ldk-swift" */;
+			productName = LightningDevKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 81481A6E29087B5000DA3224 /* Project object */;
 }
