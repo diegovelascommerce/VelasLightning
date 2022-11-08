@@ -32,7 +32,26 @@ class ViewController: UIViewController {
 //        peerlistLable.sizeToFit()
 //        peerlistLable.center.x = self.view.center.x
     }
-
-
+    
+    @IBAction func connectClick(_ sender: Any) {
+        NSLog("connect to a peer")
+        let nodeId = "03e347d089c071c27680e26299223e80a740cf3e3fc4b4237fa219bb67121a670b"
+        let address = "45.33.22.210"
+        let port = NSNumber(9735)
+        do {
+            let res = try velas.connect(nodeId: nodeId, address: address, port: port)
+            NSLog("connect: \(res)")
+        }
+        catch {
+            NSLog("there was a problem: \(error)")
+        }
+    }
+    
+    @IBAction func showPeerList(_ sender: Any) throws {
+        NSLog("show peer list")
+        let res = try velas.listPeers()
+        NSLog("peers: \(res)")
+    }
+    
 }
 

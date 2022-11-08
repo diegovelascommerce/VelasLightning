@@ -47,6 +47,14 @@ public class Velas {
         return try ln.bindNode()
     }
     
+    public func connect(nodeId: String, address: String, port: NSNumber) throws -> Bool {
+        return try ln.connect(nodeId: nodeId, address: address, port: port)
+    }
+    
+    public func listPeers() throws -> [[UInt8]] {
+        return try ln.listPeers()
+    }
+    
     public func getIPAddresses() -> (String?, String?) {
         let local = getLocalIPAdress()
         let pub = getPublicIPAddress()

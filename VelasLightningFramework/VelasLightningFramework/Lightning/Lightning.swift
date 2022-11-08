@@ -5,6 +5,7 @@ import LightningDevKit
 public class Lightning {
     
     var channel_manager: LightningDevKit.ChannelManager?
+    var channel_manager_persister: MyChannelManagerPersister
     var peer_manager: LightningDevKit.PeerManager?
     var peer_handler: TCPPeerHandler?
     
@@ -32,10 +33,10 @@ public class Lightning {
         /// What it is used for:
         ///   monitoring the chain for lightning transactions that are relevant to our node,
         ///   and broadcasting transactions
+        
         let chainMonitor = ChainMonitor(chain_source: Option_FilterZ(value: filter), broadcaster: broadcaster, logger: logger, feeest: feeEstimator, persister: persister)
         
-//        let chainMonitor = ChainMonitor.init(chain_source: Option_FilterZ(value: filter), broadcaster: broadcaster, logger: logger, feeest: feeEstimator, persister: persister)
-        
+
         /// Step 7. Initialize the KeysManager
         ///
         ///   What it is used for:
@@ -50,6 +51,7 @@ public class Lightning {
         ///     The current time is part of the KeysManager's parameters because
         ///     it is used to derive random numbers from the seed where required,
         ///     to ensure all random generation is unique across restarts.
+        
         var keyData = Data(count: 32)
         keyData.withUnsafeMutableBytes {
             // returns 0 on success
@@ -62,11 +64,6 @@ public class Lightning {
         let keysManager = KeysManager(seed: seed, starting_time_secs: timestamp_seconds, starting_time_nanos: timestamp_nanos)
         let keysInterface = keysManager.as_KeysInterface()
         
-        // We will keep needing to pass around a keysInterface instance,
-        // and we will also need to pass its node secret to the peer manager initialization,
-        // so let's prepare it right here:
-//        let recipient:LDKRecipient = LDKRecipient(0)
-//        let nodeSecret = keysInterface.get_node_secret(recipient: recipient)
         
         /// Step 8.  Initialize the NetworkGraph
         ///
@@ -87,16 +84,13 @@ public class Lightning {
         ///   which in turn requires the genesis block hash.
 
         let networkGraph = NetworkGraph(genesis_hash: [UInt8](Data(base64Encoded: "AAAAAAAZ1micCFrhZYMek0/3Y65GoqbBcrPxtgqM4m8=")!), logger: logger)
-//        
-//        /// Step 9. Read ChannelMonitors from disk
-//        ///
-//        /// What it's used for:
-//        ///   if LDK is restarting and has at least 1 channel,
-//        ///   its channel state will need to be read from disk and fed to the ChannelManager on the next step.
-//    
-//        
-////        let serializedChannelManager: [UInt8] = [2, 1, 111, 226, 140, 10, 182, 241, 179, 114, 193, 166, 162, 70, 174, 99, 247, 79, 147, 30, 131, 101, 225, 90, 8, 156, 104, 214, 25, 0, 0, 0, 0, 0, 0, 10, 174, 219, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 238, 87, 135, 110, 67, 215, 108, 228, 66, 226, 192, 37, 6, 193, 120, 186, 5, 214, 209, 16, 169, 31, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] // <insert bytes you would have written in following the later step "Persist channel manager">
-//        let serializedChannelMonitors: [[UInt8]] = []
+        
+        /// Step 9. Read ChannelMonitors from disk
+        ///
+        /// What it's used for:
+        ///   if LDK is restarting and has at least 1 channel,
+        ///   its channel state will need to be read from disk and fed to the ChannelManager on the next step.
+
         
         /// Step 10.  Initialize the ChannelManager
         ///
@@ -129,12 +123,17 @@ public class Lightning {
             tx_broadcaster: broadcaster,
             logger: logger
         )
+        
 
         channel_manager = channelManagerConstructor.channelManager
         
         peer_manager = channelManagerConstructor.peerManager
         
         peer_handler = channelManagerConstructor.getTCPPeerHandler()
+        
+        channel_manager_persister = MyChannelManagerPersister()
+        
+        channelManagerConstructor.chain_sync_completed(persister: channel_manager_persister, scorer: nil)
         
         print("---- End LDK setup -----")
     }
@@ -166,12 +165,6 @@ public class Lightning {
             throw error
         }
         
-//        let address = getLocalIPAdress()
-//        let address = getPublicIPAddress()
-//        let address:String? = "1.2.3.4"
-//        let port = UInt16(9735)
-       
-            
         let res = peer_handler.bind(address: address, port: port)
         if(!res){
             let error = NSError(domain: "bindNode", code: 1)
@@ -183,8 +176,8 @@ public class Lightning {
         return res
     }
     
+    /// Bind node to local address
     func bindNode() throws -> Bool {
-//        let address = getLocalIPAdress()
         let address:String? = "0.0.0.0"
         let port = UInt16(9735)
         if let address = address {
@@ -193,18 +186,23 @@ public class Lightning {
         return false
     }
     
-    func connect(pubkeyHex: String, hostname: String, port: NSNumber) throws -> Bool {
+    /// Connect to a lightning node
+    func connect(nodeId: String, address: String, port: NSNumber) throws -> Bool {
         guard let peer_handler = peer_handler else {
             let error = NSError(domain: "bindNode", code: 1, userInfo: nil)
             throw error
         }
         
-        if (!peer_handler.connect(address: hostname, port: UInt16(truncating: port),  theirNodeId: hexStringToByteArray(pubkeyHex))) {
+        let res = peer_handler.connect(address: address,
+                                       port: UInt16(truncating: port),
+                                       theirNodeId: hexStringToByteArray(nodeId))
+        
+        if (!res) {
             let error = NSError(domain: "connectPeer", code: 1, userInfo: nil)
             throw error
         }
         
-        return true
+        return res
     }
     
     func listPeers() throws -> [[UInt8]] {
