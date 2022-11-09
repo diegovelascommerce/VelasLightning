@@ -1,12 +1,12 @@
 
 import LightningDevKit
 
-public var channel_manager: LightningDevKit.ChannelManager?
+//public var channel_manager: LightningDevKit.ChannelManager?
 
 /// This is the main class for handling interactions with the Lightning Network
 public class Lightning {
     
-//    var channel_manager: LightningDevKit.ChannelManager?
+    static var channel_manager: LightningDevKit.ChannelManager?
     var channel_manager_persister: MyChannelManagerPersister
     var peer_manager: LightningDevKit.PeerManager?
     var peer_handler: TCPPeerHandler?
@@ -127,7 +127,7 @@ public class Lightning {
         )
         
 
-        channel_manager = channelManagerConstructor.channelManager
+        Lightning.channel_manager = channelManagerConstructor.channelManager
         
         peer_manager = channelManagerConstructor.peerManager
         
@@ -142,7 +142,7 @@ public class Lightning {
     
     /// get the node id of our node.
     func getNodeId() throws -> String {
-        if let nodeId = channel_manager?.get_our_node_id() {
+        if let nodeId = Lightning.channel_manager?.get_our_node_id() {
             let res = bytesToHex(bytes: nodeId)
             print("Lightning/getNodeId: \(res)")
             return res
