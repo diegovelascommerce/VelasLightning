@@ -26,6 +26,11 @@ class LightningTests: XCTestCase {
         print("testGetNodeId: \(res)")
     }
     
+    func testCreateInvoice() throws {
+        let res = try ln.createInvoice(amtMsat: 200000, description: "testing createInvoice")
+        XCTAssertFalse(res.isEmpty)
+    }
+    
     func testGetLocalIPAddress() {
         let res = getLocalIPAdress()
         XCTAssertNotNil(res)
@@ -46,7 +51,7 @@ class LightningTests: XCTestCase {
     }
     
     func testBindNode_WithLocalIpAddress() throws {
-       
+        try XCTSkipIf(true)
         let address = getLocalIPAdress()
         let port = UInt16(9735)
         if let address = address {
@@ -56,7 +61,7 @@ class LightningTests: XCTestCase {
     }
     
     func testBindNode_WithPublicIpAddress() throws {
-       
+        try XCTSkipIf(true)
         let address = getPublicIPAddress()
         let port = UInt16(9735)
         if let address = address {
@@ -67,7 +72,7 @@ class LightningTests: XCTestCase {
     }
     
     func testBindNode_WithRandomIPAddress() throws {
-       
+        try XCTSkipIf(true)
 //        let address = "123.456.789.123"
         let address = "0.0.0.1"
         let port = UInt16(9735)
@@ -77,7 +82,7 @@ class LightningTests: XCTestCase {
     }
     
     func testBindNode_WithHostIPAddress() throws {
-       
+        try XCTSkipIf(true)
         let address = "0.0.0.0"
         let port = UInt16(9735)
         
@@ -104,7 +109,8 @@ class LightningTests: XCTestCase {
         }
     }
     
-    func testListPeers(){
+    func testListPeers() throws {
+        try XCTSkipIf(true)
         let nodeId = "03e347d089c071c27680e26299223e80a740cf3e3fc4b4237fa219bb67121a670b"
         let address = "45.33.22.210"
         let port = NSNumber(9735)

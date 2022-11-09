@@ -37,26 +37,6 @@
                BlueprintName = "VelasLightningTests"
                ReferencedContainer = "container:VelasLightningFramework.xcodeproj">
             </BuildableReference>
-            <SkippedTests>
-               <Test
-                  Identifier = "LightningTests/testBindNode()">
-               </Test>
-               <Test
-                  Identifier = "LightningTests/testBindNode_WithHostIPAddress()">
-               </Test>
-               <Test
-                  Identifier = "LightningTests/testBindNode_WithLocalIpAddress()">
-               </Test>
-               <Test
-                  Identifier = "LightningTests/testBindNode_WithPublicIpAddress()">
-               </Test>
-               <Test
-                  Identifier = "LightningTests/testBindNode_WithRandomIPAddress()">
-               </Test>
-               <Test
-                  Identifier = "VelasTests/testBindNode()">
-               </Test>
-            </SkippedTests>
          </TestableReference>
       </Testables>
    </TestAction>

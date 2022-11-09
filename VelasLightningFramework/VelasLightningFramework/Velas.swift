@@ -1,3 +1,4 @@
+import Foundation
 
 /// Main Class that projects will use to interact with Bitcoin and Lightning
 public class Velas {
@@ -11,50 +12,89 @@ public class Velas {
         ln = try Lightning()
     }
     
-    /// Create a bolt11 invoice from the amount of satoshis passed in.
-    ///
-    /// params:
-    ///   amt: amount in satoshis
-    /// return:
-    ///   A bolt11 string of the invoice just created
-    private func createBolt11(sats: Int) -> String {
-        return "lntb10u1p34nzegpp5740edx88s2dq605hrmadncqjutwgp2qmp0tue3lx3x7v4csmex0sdqqcqzpgxq9zm3kqsp59fr9mzs0yaaccvgx9vq74j2pljyk98arcnj7zl6rq0evmhz96c9s9qyyssq98leckfmjeunhweuulf3mc3cgqy2c8962w4gy2x2qzanfv93gxn38f4fancp9jmkmlp306l7rk6vhgcptxatsx9t5heletnag5avq3gq7lm5p4"
+    public func getNodeInformation() throws -> (nodeID:String, address:String, port:String) {
+        let nodeID = try getNodeId()
+        let address = getPublicIPAddress()
+        let port = String(ln.port)
+        return (nodeID,address!,port)
     }
     
-    /// Request an award in the form of a bolt11 invoice.
+    /// Close your channel this nice way.
     ///
-    /// once bolt11 invoice is created you need to provide the callback/clojure
-    /// to submit that bolt11 string to the backend of your choseing.
+    /// throws:
+    ///     NSError
+    public func closeChannel() throws -> Bool {
+        return try ln.closeChannelCooperatively()
+    }
+    
+    /// Create a bolt11 invoice
     ///
     /// params:
-    ///   sats:  amount in satoshis that your would want to create an invoice from
-    ///   callback:  the clojure that you passin to deside what to do with the bolt11 string
-    ///     you just created
+    ///   amt: amount in milisatoshis
+    ///   description: text for description field of invoice
+    /// return:
+    ///   A bolt11 string of the invoice just created
+    public func createInvoice(amtMsat: Int, description: String) throws -> String {
+        let res = try ln.createInvoice(amtMsat: amtMsat, description: description)
+        return res
+    }
+    
+    
+    /// Pay invoice.
+    ///
+    /// params:
+    ///     bolt11:  the bolt11 invoice you want to pay
+    ///     amtMsat: amount you want to pay in milisats
+    ///
+    /// throws:
+    ///     NSError
     ///
     /// return:
-    ///   void
-    public func requestAward(sats: Int, callback:(String)->Void) -> Void {
-        let bolt11 = createBolt11(sats: sats);
-        callback(bolt11);
+    ///     true if payment went through
+    public func payInvoice(bolt11: String, amtMsat: String) throws -> Bool {
+        if let amtMsat = Int(amtMsat) {
+            let res = try ln.payInvoice(bolt11, amtMSat:amtMsat)
+            return res
+        }
+        return false
     }
+    
     
     /// Gets the lightning node ID of this machine.
     public func getNodeId() throws -> String {
         return try ln.getNodeId()
     }
     
+    /// bind our node to listen for peer requests
     public func bindNode() throws -> Bool {
         return try ln.bindNode()
     }
     
-    public func connect(nodeId: String, address: String, port: NSNumber) throws -> Bool {
+    /// Connect to a lightning peer
+    ///
+    /// params:
+    ///     nodeId: lightning nodeId
+    ///     address: IP address of lightning node
+    ///     port: port number to lighting node
+    ///
+    /// return:
+    ///     true is succeded
+    public func connectToPeer(nodeId: String, address: String, port: NSNumber) throws -> Bool {
         return try ln.connect(nodeId: nodeId, address: address, port: port)
     }
     
+    /// List all the peers that we are connected to.
+    ///
+    /// return:
+    ///     array of peers
     public func listPeers() throws -> [[UInt8]] {
         return try ln.listPeers()
     }
     
+    /// Get the local and public IP addresses of this node
+    ///
+    /// return:
+    ///     return the local and public IP of this node
     public func getIPAddresses() -> (String?, String?) {
         let local = getLocalIPAdress()
         let pub = getPublicIPAddress()

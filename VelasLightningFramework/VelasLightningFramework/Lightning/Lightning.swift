@@ -6,10 +6,19 @@ import LightningDevKit
 /// This is the main class for handling interactions with the Lightning Network
 public class Lightning {
     
-    static var channel_manager: LightningDevKit.ChannelManager?
+    var logger: MyLogger!
+    var keys_manager: KeysManager?
+    var channel_manager_constructor: ChannelManagerConstructor?
+    var channel_manager: LightningDevKit.ChannelManager?
     var channel_manager_persister: MyChannelManagerPersister
     var peer_manager: LightningDevKit.PeerManager?
     var peer_handler: TCPPeerHandler?
+    
+    let port = UInt16(9735)
+    let channelId = "testChannelID"
+    let counterpartyNodeId = "testNodeID"
+    let currency: LDKCurrency = LDKCurrency_BitcoinTestnet
+    let network: LDKNetwork = LDKNetwork_Testnet
     
     /// Setup the LDK
     public init() throws {
@@ -19,7 +28,7 @@ public class Lightning {
         let feeEstimator = MyFeeEstimator()
         
         // Step 2. Initialize the Logger
-        let logger = MyLogger()
+        logger = MyLogger()
         
         // Step 3. Initialize the BroadcasterInterface
         let broadcaster = MyBroadcasterInterface()
@@ -63,8 +72,8 @@ public class Lightning {
         let seed = [UInt8](keyData)
         let timestamp_seconds = UInt64(NSDate().timeIntervalSince1970)
         let timestamp_nanos = UInt32.init(truncating: NSNumber(value: timestamp_seconds * 1000 * 1000))
-        let keysManager = KeysManager(seed: seed, starting_time_secs: timestamp_seconds, starting_time_nanos: timestamp_nanos)
-        let keysInterface = keysManager.as_KeysInterface()
+        keys_manager = KeysManager(seed: seed, starting_time_secs: timestamp_seconds, starting_time_nanos: timestamp_nanos)
+        let keysInterface = keys_manager!.as_KeysInterface()
         
         
         /// Step 8.  Initialize the NetworkGraph
@@ -113,8 +122,8 @@ public class Lightning {
         
         let userConfig = UserConfig()
         
-        let channelManagerConstructor = ChannelManagerConstructor(
-            network: LDKNetwork_Testnet,
+        channel_manager_constructor = ChannelManagerConstructor(
+            network: network,
             config: userConfig,
             current_blockchain_tip_hash: latestBlockHash,
             current_blockchain_tip_height: latestBlockHeight,
@@ -127,22 +136,22 @@ public class Lightning {
         )
         
 
-        Lightning.channel_manager = channelManagerConstructor.channelManager
+        channel_manager = channel_manager_constructor?.channelManager
         
-        peer_manager = channelManagerConstructor.peerManager
+        peer_manager = channel_manager_constructor?.peerManager
         
-        peer_handler = channelManagerConstructor.getTCPPeerHandler()
+        peer_handler = channel_manager_constructor?.getTCPPeerHandler()
         
         channel_manager_persister = MyChannelManagerPersister()
         
-        channelManagerConstructor.chain_sync_completed(persister: channel_manager_persister, scorer: nil)
+        channel_manager_constructor?.chain_sync_completed(persister: channel_manager_persister, scorer: nil)
         
         print("---- End LDK setup -----")
     }
     
     /// get the node id of our node.
     func getNodeId() throws -> String {
-        if let nodeId = Lightning.channel_manager?.get_our_node_id() {
+        if let nodeId = channel_manager?.get_our_node_id() {
             let res = bytesToHex(bytes: nodeId)
             print("Lightning/getNodeId: \(res)")
             return res
@@ -181,7 +190,7 @@ public class Lightning {
     /// Bind node to local address
     func bindNode() throws -> Bool {
         let address:String? = "0.0.0.0"
-        let port = UInt16(9735)
+//        let port = UInt16(9735)
         if let address = address {
             return try bindNode(address, port)
         }
@@ -217,6 +226,125 @@ public class Lightning {
         print("peer_node_ids: \(peer_node_ids)")
         return peer_node_ids
     }
+    
+    /// Close channel in the nice way.
+    ///
+    /// both parties aggree to close the channel
+    ///
+    /// throws:
+    ///     NSError
+    func closeChannelCooperatively() throws -> Bool {
+        guard let close_result = channel_manager?.close_channel(channel_id: hexStringToByteArray(channelId), counterparty_node_id: hexStringToByteArray(counterpartyNodeId)), close_result.isOk() else {
+            let error = NSError(domain: "closeChannelCooperatively",
+                                code: 1,
+                                userInfo: [NSLocalizedDescriptionKey: "closeChannelCooperatively Failed"])
+            throw error
+        }
+        
+        return true
+    }
+    
+    /// Close channel the bad way.
+    ///
+    /// force to close the channel due to maybe the other member is inactive
+    func closeChannelForce() throws -> Bool {
+        guard let close_result = channel_manager?.force_close_broadcasting_latest_txn(channel_id: hexStringToByteArray(channelId), counterparty_node_id: hexStringToByteArray(counterpartyNodeId)) else {
+            let error = NSError(domain: "closeChannelForce",
+                                code: 1,
+                                userInfo: [NSLocalizedDescriptionKey: "closeChannelForce Failed"])
+            throw error
+        }
+        if (close_result.isOk()) {
+            return true
+        } else {
+            let error = NSError(domain: "closeChannelForce",
+                                code: 1,
+                                userInfo: [NSLocalizedDescriptionKey: "closeChannelForce Failed"])
+            throw error
+        }
+    }
+    
+    /// Create Bolt11 Invoice.
+    ///
+    /// params:
+    ///     amtMsat:  amount in mili satoshis
+    ///     description:  descrition of invoice
+    ///
+    /// returns:
+    ///     bolt11 invoice
+    ///
+    /// throws:
+    ///     NSError
+    func createInvoice(amtMsat: Int, description: String) throws -> String {
+        
+        guard let channel_manager = channel_manager, let keys_manager = keys_manager else {
+            let error = NSError(domain: "addInvoice",
+                                code: 1,
+                                userInfo: [NSLocalizedDescriptionKey: "No channel_manager or keys_manager initialized"])
+            throw error
+        }
+        
+        let invoiceResult = Bindings.swift_create_invoice_from_channelmanager(
+            channelmanager: channel_manager,
+            keys_manager: keys_manager.as_KeysInterface(),
+            logger: logger,
+            network: currency,
+            amt_msat: Bindings.Option_u64Z(value: UInt64(exactly: amtMsat)),
+            description: description,
+            invoice_expiry_delta_secs: 24 * 3600)
+
+        if let invoice = invoiceResult.getValue() {
+            return invoice.to_str()
+        } else {
+            let error = NSError(domain: "addInvoice",
+                                code: 1,
+                                userInfo: [NSLocalizedDescriptionKey: "addInvoice failed"])
+            throw error
+        }
+    }
+    
+    func payInvoice(_ bolt11: String, amtMSat: Int) throws -> Bool {
+
+        guard let payer = channel_manager_constructor?.payer else {
+            let error = NSError(domain: "payInvoice", code: 1, userInfo: nil)
+            throw error
+        }
+
+        let parsedInvoice = Invoice.from_str(s: bolt11)
+
+        guard let parsedInvoiceValue = parsedInvoice.getValue(), parsedInvoice.isOk() else {
+            let error = NSError(domain: "payInvoice", code: 1, userInfo: nil)
+            throw error
+        }
+
+        if let _ = parsedInvoiceValue.amount_milli_satoshis().getValue() {
+            let sendRes = payer.pay_invoice(invoice: parsedInvoiceValue)
+            if sendRes.isOk() {
+                return true
+            } else {
+                print("pay_invoice error")
+                print(String(describing: sendRes.getError()))
+            }
+        } else {
+            if amtMSat == 0 {
+                let error = NSError(domain: "payInvoice", code: 1, userInfo: nil)
+                throw error
+            }
+            let unsignedAmount = UInt64(truncating: NSNumber(value: amtMSat))
+            let amountInMillisatoshis = unsignedAmount * 1000
+            let sendRes = payer.pay_zero_value_invoice(invoice: parsedInvoiceValue, amount_msats: amountInMillisatoshis)
+            if sendRes.isOk()  {
+                return true
+            } else {
+                print("pay_zero_value_invoice error")
+                print(String(describing: sendRes.getError()))
+            }
+        }
+
+        let error = NSError(domain: "payInvoice", code: 1, userInfo: nil)
+        throw error
+    }
+
 }
 
 /// convert bytes array to Hex String

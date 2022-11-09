@@ -39,7 +39,7 @@ class ViewController: UIViewController {
         let address = "45.33.22.210"
         let port = NSNumber(9735)
         do {
-            let res = try velas.connect(nodeId: nodeId, address: address, port: port)
+            let res = try velas.connectToPeer(nodeId: nodeId, address: address, port: port)
             NSLog("connect: \(res)")
         }
         catch {
@@ -47,10 +47,16 @@ class ViewController: UIViewController {
         }
     }
     
-    @IBAction func showPeerList(_ sender: Any) throws {
+    @IBAction func showPeerList(_ sender: Any) {
         NSLog("show peer list")
-        let res = try velas.listPeers()
-        NSLog("peers: \(res)")
+        do {
+            let res = try velas.listPeers()
+            NSLog("peers: \(res)")
+        }
+        catch {
+            NSLog("problem with showPeerList \(error)")
+        }
+
     }
     
 }
