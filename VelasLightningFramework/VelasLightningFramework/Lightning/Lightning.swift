@@ -1,7 +1,7 @@
 
 import LightningDevKit
 
-var channel_manager: LightningDevKit.ChannelManager?
+public var channel_manager: LightningDevKit.ChannelManager?
 
 /// This is the main class for handling interactions with the Lightning Network
 public class Lightning {
