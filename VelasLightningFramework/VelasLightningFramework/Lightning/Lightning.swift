@@ -1,10 +1,12 @@
 
 import LightningDevKit
 
+var channel_manager: LightningDevKit.ChannelManager?
+
 /// This is the main class for handling interactions with the Lightning Network
 public class Lightning {
     
-    var channel_manager: LightningDevKit.ChannelManager?
+//    var channel_manager: LightningDevKit.ChannelManager?
     var channel_manager_persister: MyChannelManagerPersister
     var peer_manager: LightningDevKit.PeerManager?
     var peer_handler: TCPPeerHandler?

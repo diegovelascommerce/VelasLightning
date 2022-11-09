@@ -17,3 +17,7 @@ def configure_routes(app, velas):
         bolt11 = data.get('bolt11')
         velas.payBolt11(bolt11)
         return "Ok", 200
+
+    @app.route('/getNodeId', methods-['get'])
+    def getNodeId():
+        return velas.getNodeID

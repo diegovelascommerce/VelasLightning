@@ -17,11 +17,11 @@
 		812D3860290C441A005EA7E9 /* MyBroadcasterInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 812D385F290C441A005EA7E9 /* MyBroadcasterInterface.swift */; };
 		812D3862290C46C8005EA7E9 /* MyPersister.swift in Sources */ = {isa = PBXBuildFile; fileRef = 812D3861290C46C8005EA7E9 /* MyPersister.swift */; };
 		812D3864290C4A25005EA7E9 /* MyFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 812D3863290C4A25005EA7E9 /* MyFilter.swift */; };
+		813649C6291BEE3100C344B6 /* BitcoinDevKit in Frameworks */ = {isa = PBXBuildFile; productRef = 813649C5291BEE3100C344B6 /* BitcoinDevKit */; settings = {ATTRIBUTES = (Required, ); }; };
+		813649C9291BEE8100C344B6 /* LightningDevKit in Frameworks */ = {isa = PBXBuildFile; productRef = 813649C8291BEE8100C344B6 /* LightningDevKit */; settings = {ATTRIBUTES = (Required, ); }; };
 		81481A6729087B2300DA3224 /* VelasLightningFramework.h in Headers */ = {isa = PBXBuildFile; fileRef = 81481A6629087B2300DA3224 /* VelasLightningFramework.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		81D31EE12909ABA500A621A0 /* Velas.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81D31EE02909ABA500A621A0 /* Velas.swift */; };
 		81D31EE32909ACE900A621A0 /* VelasTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81D31EE22909ACE900A621A0 /* VelasTests.swift */; };
-		81FC2CBA291AC12D001EE52E /* BitcoinDevKit in Frameworks */ = {isa = PBXBuildFile; productRef = 81FC2CB9291AC12D001EE52E /* BitcoinDevKit */; };
-		81FC2CBE291AC23B001EE52E /* LightningDevKit in Frameworks */ = {isa = PBXBuildFile; productRef = 81FC2CBD291AC23B001EE52E /* LightningDevKit */; };
 		81FC2CC0291ACF36001EE52E /* MyChannelManagerPersister.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81FC2CBF291ACF36001EE52E /* MyChannelManagerPersister.swift */; };
 /* End PBXBuildFile section */
 
@@ -87,8 +87,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				81FC2CBE291AC23B001EE52E /* LightningDevKit in Frameworks */,
-				81FC2CBA291AC12D001EE52E /* BitcoinDevKit in Frameworks */,
+				813649C9291BEE8100C344B6 /* LightningDevKit in Frameworks */,
+				813649C6291BEE3100C344B6 /* BitcoinDevKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -213,8 +213,8 @@
 			);
 			name = VelasLightningFramework;
 			packageProductDependencies = (
-				81FC2CB9291AC12D001EE52E /* BitcoinDevKit */,
-				81FC2CBD291AC23B001EE52E /* LightningDevKit */,
+				813649C5291BEE3100C344B6 /* BitcoinDevKit */,
+				813649C8291BEE8100C344B6 /* LightningDevKit */,
 			);
 			productName = VelasLightningFramework;
 			productReference = 81481A6329087B2300DA3224 /* VelasLightningFramework.framework */;
@@ -249,8 +249,8 @@
 			);
 			mainGroup = 81481A5929087B2300DA3224;
 			packageReferences = (
-				81FC2CB8291AC12D001EE52E /* XCRemoteSwiftPackageReference "bdk-swift" */,
-				81FC2CBC291AC23B001EE52E /* XCRemoteSwiftPackageReference "ldk-swift" */,
+				813649C4291BEE3100C344B6 /* XCRemoteSwiftPackageReference "bdk-swift" */,
+				813649C7291BEE8100C344B6 /* XCRemoteSwiftPackageReference "ldk-swift" */,
 			);
 			productRefGroup = 81481A6429087B2300DA3224 /* Products */;
 			projectDirPath = "";
@@ -583,33 +583,33 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		81FC2CB8291AC12D001EE52E /* XCRemoteSwiftPackageReference "bdk-swift" */ = {
+		813649C4291BEE3100C344B6 /* XCRemoteSwiftPackageReference "bdk-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/bitcoindevkit/bdk-swift";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.6.1;
+				kind = exactVersion;
+				version = 0.6.0;
 			};
 		};
-		81FC2CBC291AC23B001EE52E /* XCRemoteSwiftPackageReference "ldk-swift" */ = {
+		813649C7291BEE8100C344B6 /* XCRemoteSwiftPackageReference "ldk-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/lightningdevkit/ldk-swift/";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.0.112;
+				kind = exactVersion;
+				version = 0.0.112;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		81FC2CB9291AC12D001EE52E /* BitcoinDevKit */ = {
+		813649C5291BEE3100C344B6 /* BitcoinDevKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 81FC2CB8291AC12D001EE52E /* XCRemoteSwiftPackageReference "bdk-swift" */;
+			package = 813649C4291BEE3100C344B6 /* XCRemoteSwiftPackageReference "bdk-swift" */;
 			productName = BitcoinDevKit;
 		};
-		81FC2CBD291AC23B001EE52E /* LightningDevKit */ = {
+		813649C8291BEE8100C344B6 /* LightningDevKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 81FC2CBC291AC23B001EE52E /* XCRemoteSwiftPackageReference "ldk-swift" */;
+			package = 813649C7291BEE8100C344B6 /* XCRemoteSwiftPackageReference "ldk-swift" */;
 			productName = LightningDevKit;
 		};
 /* End XCSwiftPackageProductDependency section */
