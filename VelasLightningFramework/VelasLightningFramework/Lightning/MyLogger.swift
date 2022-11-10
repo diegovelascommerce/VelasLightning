@@ -5,7 +5,9 @@ import LightningDevKit
 class MyLogger: Logger {
     
     override func log(record: Record) {
-        print("LDK/log: \(record.get_args())")
+        
+        NSLog("\(String(describing: type(of: self))):\(#function) LDK/log: \(record.get_args())")
+        //NSLog("LDK/log: \(record.get_args())")
     }
     
 }

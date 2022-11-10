@@ -53,7 +53,7 @@ public class Velas {
     ///     true if payment went through
     public func payInvoice(bolt11: String, amtMsat: String) throws -> Bool {
         if let amtMsat = Int(amtMsat) {
-            let res = try ln.payInvoice(bolt11, amtMSat:amtMsat)
+            let res = try ln.payInvoice(bolt11:bolt11, amtMSat:amtMsat)
             return res
         }
         return false
@@ -87,7 +87,7 @@ public class Velas {
     ///
     /// return:
     ///     array of peers
-    public func listPeers() throws -> [[UInt8]] {
+    public func listPeers() throws -> String {
         return try ln.listPeers()
     }
     

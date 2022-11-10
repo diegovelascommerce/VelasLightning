@@ -1,7 +1,4 @@
-
 import LightningDevKit
-
-//public var channel_manager: LightningDevKit.ChannelManager?
 
 /// This is the main class for handling interactions with the Lightning Network
 public class Lightning {
@@ -22,7 +19,7 @@ public class Lightning {
     
     /// Setup the LDK
     public init() throws {
-        print("----- Start LDK setup -----")
+        NSLog("----- Start LDK setup -----")
                 
         // Step 1. initialize the FeeEstimator
         let feeEstimator = MyFeeEstimator()
@@ -42,27 +39,18 @@ public class Lightning {
         /// Step 6. Initialize the ChainMonitor
         ///
         /// What it is used for:
-        ///   monitoring the chain for lightning transactions that are relevant to our node,
-        ///   and broadcasting transactions
+        ///     monitoring the chain for lightning transactions that are relevant to our node,
+        ///     and broadcasting transactions
+        let chainMonitor = ChainMonitor(chain_source: Option_FilterZ(value: filter),
+                                        broadcaster: broadcaster,
+                                        logger: logger,
+                                        feeest: feeEstimator,
+                                        persister: persister)
         
-        let chainMonitor = ChainMonitor(chain_source: Option_FilterZ(value: filter), broadcaster: broadcaster, logger: logger, feeest: feeEstimator, persister: persister)
-        
-
         /// Step 7. Initialize the KeysManager
         ///
-        ///   What it is used for:
+        /// What it is used for:
         ///     providing keys for signing Lightning transactions
-        ///
-        ///   notes:
-        ///     Note that you must write the key_seed you give to the KeysManager on startup to disk,
-        ///     and keep using it to initialize the KeysManager every time you restart.
-        ///     This key_seed is used to derive your node's secret key (which corresponds to its node pubkey)
-        ///     and all other secret key material
-        ///
-        ///     The current time is part of the KeysManager's parameters because
-        ///     it is used to derive random numbers from the seed where required,
-        ///     to ensure all random generation is unique across restarts.
-        
         var keyData = Data(count: 32)
         keyData.withUnsafeMutableBytes {
             // returns 0 on success
@@ -79,49 +67,50 @@ public class Lightning {
         /// Step 8.  Initialize the NetworkGraph
         ///
         /// You must follow this step if:
-        ///   you need LDK to provide routes for sending payments (i.e. you are not providing your own routes)
+        ///     you need LDK to provide routes for sending payments (i.e. you are not providing your own routes)
         ///
         /// What it's used for:
-        ///   generating routes to send payments over
+        ///     generating routes to send payments over
         ///
         /// notes:
-        ///   this struct is not required if you are providing your own routes.
-        ///   It will be used internally in ChannelManagerConstructor to build a NetGraphMsgHandler
+        ///     It will be used internally in ChannelManagerConstructor to build a NetGraphMsgHandler
         ///
-        ///   If you intend to use the LDK's built-in routing algorithm,
-        ///   you will need to instantiate a NetworkGraph that can later be passed to the ChannelManagerConstructor
+        ///     If you intend to use the LDK's built-in routing algorithm,
+        ///     you will need to instantiate a NetworkGraph that can later be passed to the ChannelManagerConstructor
         ///
-        ///   Note that a network graph instance needs to be provided upon initialization,
-        ///   which in turn requires the genesis block hash.
-
+        ///     A network graph instance needs to be provided upon initialization,
+        ///     which in turn requires the genesis block hash.
         let networkGraph = NetworkGraph(genesis_hash: [UInt8](Data(base64Encoded: "AAAAAAAZ1micCFrhZYMek0/3Y65GoqbBcrPxtgqM4m8=")!), logger: logger)
         
         /// Step 9. Read ChannelMonitors from disk
         ///
-        /// What it's used for:
-        ///   if LDK is restarting and has at least 1 channel,
-        ///   its channel state will need to be read from disk and fed to the ChannelManager on the next step.
-
+        /// you must follow this step if:
+        ///     if LDK is restarting and has at least 1 channel,
+        ///     its channel state will need to be read from disk and fed to the ChannelManager on the next step.
+        ///
+        /// what it's used for:
+        ///     managing channel state
         
         /// Step 10.  Initialize the ChannelManager
+        ///
+        /// you must follow this step if:
+        ///     this is the first time you are initializing the ChannelManager
         ///
         /// what it's used for:
         ///   managing channel state
         ///
         /// notes:
         ///
-        ///  To instantiate the channel manager, we need a couple minor prerequisites.
+        ///     To instantiate the channel manager, we need a couple minor prerequisites.
         ///
-        ///  First, we need the current block height and hash.
+        ///     First, we need the current block height and hash.
         ///
-        ///  Second, we also need to initialize a default user config,
+        ///     Second, we also need to initialize a default user config,
         ///
-        ///  Finally, we can proceed by instantiating the ChannelManager using ChannelManagerConstructor.
+        ///     Finally, we can proceed by instantiating the ChannelManager using ChannelManagerConstructor.
         let latestBlockHash = [UInt8](Data(base64Encoded: "AAAAAAAAAAAABe5Xh25D12zkQuLAJQbBeLoF1tEQqR8=")!)
         let latestBlockHeight = UInt32(700123)
-        
         let userConfig = UserConfig()
-        
         channel_manager_constructor = ChannelManagerConstructor(
             network: network,
             config: userConfig,
@@ -146,17 +135,25 @@ public class Lightning {
         
         channel_manager_constructor?.chain_sync_completed(persister: channel_manager_persister, scorer: nil)
         
-        print("---- End LDK setup -----")
+        NSLog("---- End LDK setup -----")
     }
     
-    /// get the node id of our node.
+    /// Get return the node id of our node.
+    ///
+    /// throws:
+    ///     NSError
+    ///
+    /// return:
+    ///     the nodeId of our lightning node
     func getNodeId() throws -> String {
         if let nodeId = channel_manager?.get_our_node_id() {
             let res = bytesToHex(bytes: nodeId)
-            print("Lightning/getNodeId: \(res)")
+            NSLog("Velas/Lightning/getNodeId: \(res)")
             return res
         } else {
-            let error = NSError(domain: "getNodeId", code: 1, userInfo: nil)
+            let error = NSError(domain: "getNodeId",
+                                code: 1,
+                                userInfo: [NSLocalizedDescriptionKey: "failed to get nodeId"])
             throw error
         }
     }
@@ -172,32 +169,49 @@ public class Lightning {
     ///   a boolean to indicate that binding of node was a success
     public func bindNode(_ address:String, _ port:UInt16) throws -> Bool {
         guard let peer_handler = peer_handler else {
-            let error = NSError(domain: "bindNode", code: 1, userInfo: nil)
+            let error = NSError(domain: "bindNode",
+                                code: 1,
+                                userInfo: [NSLocalizedDescriptionKey: "peer_handler is not available"])
             throw error
         }
         
         let res = peer_handler.bind(address: address, port: port)
         if(!res){
-            let error = NSError(domain: "bindNode", code: 1)
+            let error = NSError(domain: "bindNode",
+                                code: 1,
+                                userInfo: [NSLocalizedDescriptionKey: "failed to bind \(address):\(port)"])
             throw error
         }
-        print("Lightning/bindNode: connected")
-        print("Lightning/bindNode address: \(address)")
-        print("Lightning/bindNode port: \(port)")
+        NSLog("Velas/Lightning/bindNode: connected")
+        NSLog("Velas/Lightning/bindNode address: \(address)")
+        NSLog("Velas/Lightning/bindNode port: \(port)")
         return res
     }
     
-    /// Bind node to local address
+    /// Bind node to local address.
+    ///
+    /// throws:
+    ///     NSError
+    ///
+    /// return:
+    ///     true if bind was a success
     func bindNode() throws -> Bool {
-        let address:String? = "0.0.0.0"
-//        let port = UInt16(9735)
-        if let address = address {
-            return try bindNode(address, port)
-        }
-        return false
+        let res = try bindNode("0.0.0.0", port)
+        return res
     }
     
     /// Connect to a lightning node
+    ///
+    /// params:
+    ///     nodeId: node id that you want to connect to
+    ///     address: ip address of node
+    ///     port: port of node
+    ///
+    /// throws:
+    ///     NSError
+    ///
+    /// return:
+    ///     true if connection went through
     func connect(nodeId: String, address: String, port: NSNumber) throws -> Bool {
         guard let peer_handler = peer_handler else {
             let error = NSError(domain: "bindNode", code: 1, userInfo: nil)
@@ -209,22 +223,43 @@ public class Lightning {
                                        theirNodeId: hexStringToByteArray(nodeId))
         
         if (!res) {
-            let error = NSError(domain: "connectPeer", code: 1, userInfo: nil)
+            let error = NSError(domain: "connectPeer",
+                                code: 1,
+                                userInfo: [NSLocalizedDescriptionKey: "failed to connect to peer \(nodeId)@\(address):\(port)"])
             throw error
         }
         
         return res
     }
     
-    func listPeers() throws -> [[UInt8]] {
+    /// List peers that you are connected to.
+    ///
+    /// throws:
+    ///     NSError
+    ///
+    /// return:
+    ///     array of bytes that represent the node
+    func listPeers() throws -> String {
         guard let peer_manager = peer_manager else {
-            let error = NSError(domain: "listPeers", code: 1, userInfo: nil)
+            let error = NSError(domain: "listPeers",
+                                code: 1,
+                                userInfo: [NSLocalizedDescriptionKey: "peer_manager not available"])
             throw error
         }
         
         let peer_node_ids = peer_manager.get_peer_node_ids()
-        print("peer_node_ids: \(peer_node_ids)")
-        return peer_node_ids
+        
+        
+        var json = "["
+        var first = true
+        for it in peer_node_ids {
+            if (!first) { json += "," }
+            first = false
+            json += "\"" + bytesToHex(bytes: it) + "\""
+        }
+        json += "]"
+        
+        return json
     }
     
     /// Close channel in the nice way.
@@ -233,6 +268,9 @@ public class Lightning {
     ///
     /// throws:
     ///     NSError
+    ///
+    /// return:
+    ///     true if close correctly
     func closeChannelCooperatively() throws -> Bool {
         guard let close_result = channel_manager?.close_channel(channel_id: hexStringToByteArray(channelId), counterparty_node_id: hexStringToByteArray(counterpartyNodeId)), close_result.isOk() else {
             let error = NSError(domain: "closeChannelCooperatively",
@@ -246,7 +284,13 @@ public class Lightning {
     
     /// Close channel the bad way.
     ///
-    /// force to close the channel due to maybe the other member is inactive
+    /// force to close the channel due to maybe the other peer being unresponsive
+    ///
+    /// throws:
+    ///     NSError
+    ///
+    /// return:
+    ///     true is channel was closed
     func closeChannelForce() throws -> Bool {
         guard let close_result = channel_manager?.force_close_broadcasting_latest_txn(channel_id: hexStringToByteArray(channelId), counterparty_node_id: hexStringToByteArray(counterpartyNodeId)) else {
             let error = NSError(domain: "closeChannelForce",
@@ -303,7 +347,18 @@ public class Lightning {
         }
     }
     
-    func payInvoice(_ bolt11: String, amtMSat: Int) throws -> Bool {
+    /// Pay a bolt11 invoice.
+    ///
+    /// params:
+    ///     bolt11: the bolt11 invoice we want to pay
+    ///     amtMSat: amount we want to pay in milisatoshis
+    ///
+    /// throws:
+    ///     NSError
+    ///
+    /// return:
+    ///     true is payment when through
+    func payInvoice(bolt11: String, amtMSat: Int) throws -> Bool {
 
         guard let payer = channel_manager_constructor?.payer else {
             let error = NSError(domain: "payInvoice", code: 1, userInfo: nil)
@@ -366,17 +421,25 @@ func bytesToHex(bytes: [UInt8]) -> String
     return hexString.lowercased()
 }
 
-private func hexStringToByteArray(_ string: String) -> [UInt8] {
-    let length = string.count
+
+/// Convert string of hex to a byte array.
+///
+/// params:
+///     string:  string of hex to convert
+///
+/// return:
+///     array of bytes that was converted from hexstring
+private func hexStringToByteArray(_ hexString: String) -> [UInt8] {
+    let length = hexString.count
     if length & 1 != 0 {
         return []
     }
     var bytes = [UInt8]()
     bytes.reserveCapacity(length/2)
-    var index = string.startIndex
+    var index = hexString.startIndex
     for _ in 0..<length/2 {
-        let nextIndex = string.index(index, offsetBy: 2)
-        if let b = UInt8(string[index..<nextIndex], radix: 16) {
+        let nextIndex = hexString.index(index, offsetBy: 2)
+        if let b = UInt8(hexString[index..<nextIndex], radix: 16) {
             bytes.append(b)
         } else {
             return []
@@ -392,7 +455,7 @@ private func hexStringToByteArray(_ string: String) -> [UInt8] {
 /// from https://gist.github.com/SergLam/9a90ffda7c57740beb18fb28da125b8a
 ///
 /// return:
-///     optional of String of IP address
+///     the local ip address of this node
 func getLocalIPAdress() -> String? {
         
     var address: String?
@@ -415,13 +478,10 @@ func getLocalIPAdress() -> String? {
                 }
                 let name: String = String(cString: ifa_name)
                 
-//                print("getIPAdress name: \(name)")
-                
                 if name == "en0" {  // String.fromCString() is deprecated in Swift 3. So use the following code inorder to get the exact IP Address.
                     var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
                     getnameinfo(interface.ifa_addr, socklen_t((interface.ifa_addr.pointee.sa_len)), &hostname, socklen_t(hostname.count), nil, socklen_t(0), NI_NUMERICHOST)
                     address = String(cString: hostname)
-                    print("getIPAdress address: \(address!)")
                 }
                 
             }
@@ -433,6 +493,9 @@ func getLocalIPAdress() -> String? {
 }
 
 /// Get the public IP address of device
+///
+/// return:
+///     the public IP of this node
 func getPublicIPAddress() -> String? {
     var publicIP: String?
     do {
@@ -444,4 +507,6 @@ func getPublicIPAddress() -> String? {
     }
     return publicIP
 }
+
+
 
