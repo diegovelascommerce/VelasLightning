@@ -71,15 +71,6 @@ class LightningTests: XCTestCase {
         }
     }
     
-    func testBindNode_WithRandomIPAddress() throws {
-        try XCTSkipIf(true)
-//        let address = "123.456.789.123"
-        let address = "0.0.0.1"
-        let port = UInt16(9735)
-        XCTAssertThrowsError(try ln.bindNode(address,port)) { error in
-            XCTAssertEqual(error as NSError, NSError(domain: "bindNode", code: 1, userInfo: nil))
-        }
-    }
     
     func testBindNode_WithHostIPAddress() throws {
         try XCTSkipIf(true)
@@ -110,7 +101,6 @@ class LightningTests: XCTestCase {
     }
     
     func testListPeers() throws {
-        try XCTSkipIf(true)
         let nodeId = "03e347d089c071c27680e26299223e80a740cf3e3fc4b4237fa219bb67121a670b"
         let address = "45.33.22.210"
         let port = NSNumber(9735)
@@ -119,12 +109,23 @@ class LightningTests: XCTestCase {
             let res = try ln.connect(nodeId: nodeId, address: address, port: port)
             XCTAssertTrue(res)
             
+            // give it time to handshake
+            Thread.sleep(forTimeInterval: 1)
+            
             let peers = try ln.listPeers()
             XCTAssertFalse(peers.isEmpty)
+            XCTAssertTrue(peers.count > 5)
         }
         catch {
             XCTFail("this shouldn't happen")
         }
+    }
+    
+    func testListChannels() throws {
+        try XCTSkipIf(true)
+        let res = try ln.listChannels()
+        XCTAssertFalse(res.isEmpty)
+        XCTAssertTrue(res.count > 5)
     }
 
 }

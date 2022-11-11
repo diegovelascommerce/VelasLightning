@@ -262,6 +262,69 @@ public class Lightning {
         return json
     }
     
+    /// Get list of channels that were established with partner node.
+    /// 
+    func listChannels() throws -> String {
+        guard let channel_manager = channel_manager else {
+            let error = NSError(domain: "listChannels",
+                                code: 1,
+                                userInfo: [NSLocalizedDescriptionKey: "Channel Manager not initialized"])
+            throw error
+        }
+
+        let channels = channel_manager.list_channels().isEmpty ? [] : channel_manager.list_channels()
+        var jsonArray = "["
+        var first = true
+        _ = channels.map { (it: ChannelDetails) in
+            let channelObject = self.channel2ChannelObject(it: it)
+
+            if (!first) { jsonArray += "," }
+            jsonArray += channelObject
+            first = false
+        }
+
+        jsonArray += "]"
+        return jsonArray
+    }
+
+    func channel2ChannelObject(it: ChannelDetails) -> String {
+        let short_channel_id = it.get_short_channel_id().getValue() ?? 0
+        let confirmations_required = it.get_confirmations_required().getValue() ?? 0;
+        let force_close_spend_delay = it.get_force_close_spend_delay().getValue() ?? 0;
+        let unspendable_punishment_reserve = it.get_unspendable_punishment_reserve().getValue() ?? 0;
+
+        var channelObject = "{"
+        channelObject += "\"channel_id\":" + "\"" + bytesToHex(bytes: it.get_channel_id()) + "\","
+        channelObject += "\"channel_value_satoshis\":" + String(it.get_channel_value_satoshis()) + ","
+        channelObject += "\"inbound_capacity_msat\":" + String(it.get_inbound_capacity_msat()) + ","
+        channelObject += "\"outbound_capacity_msat\":" + String(it.get_outbound_capacity_msat()) + ","
+        channelObject += "\"short_channel_id\":" + "\"" + String(short_channel_id) + "\","
+        channelObject += "\"is_usable\":" + (it.get_is_usable() ? "true" : "false") + ","
+        channelObject += "\"is_outbound\":" + (it.get_is_outbound() ? "true" : "false") + ","
+        channelObject += "\"is_public\":" + (it.get_is_public() ? "true" : "false") + ","
+        channelObject += "\"remote_node_id\":" + "\"" + bytesToHex(bytes: it.get_counterparty().get_node_id()) + "\"," // @deprecated fixme
+
+        // fixme:
+        if let funding_txo = it.get_funding_txo() {
+            channelObject += "\"funding_txo_txid\":" + "\"" + bytesToHex(bytes: funding_txo.get_txid()) + "\","
+            channelObject += "\"funding_txo_index\":" + String(funding_txo.get_index()) + ","
+        }else{
+            channelObject += "\"funding_txo_txid\": null,"
+            channelObject += "\"funding_txo_index\": null,"
+        }
+
+        channelObject += "\"counterparty_unspendable_punishment_reserve\":" + String(it.get_counterparty().get_unspendable_punishment_reserve()) + ","
+        channelObject += "\"counterparty_node_id\":" + "\"" + bytesToHex(bytes: it.get_counterparty().get_node_id()) + "\","
+        channelObject += "\"unspendable_punishment_reserve\":" + String(unspendable_punishment_reserve) + ","
+        channelObject += "\"confirmations_required\":" + String(confirmations_required) + ","
+        channelObject += "\"force_close_spend_delay\":" + String(force_close_spend_delay) + ","
+        channelObject += "\"user_id\":" + String(it.get_user_channel_id()) + ","
+        channelObject += "\"counterparty_node_id\":" + bytesToHex(bytes: it.get_counterparty().get_node_id())
+        channelObject += "}"
+
+        return channelObject
+    }
+    
     /// Close channel in the nice way.
     ///
     /// both parties aggree to close the channel

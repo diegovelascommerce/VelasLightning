@@ -51,12 +51,9 @@ public class Velas {
     ///
     /// return:
     ///     true if payment went through
-    public func payInvoice(bolt11: String, amtMsat: String) throws -> Bool {
-        if let amtMsat = Int(amtMsat) {
-            let res = try ln.payInvoice(bolt11:bolt11, amtMSat:amtMsat)
-            return res
-        }
-        return false
+    public func payInvoice(bolt11: String, amtMsat: Int) throws -> Bool {
+        let res = try ln.payInvoice(bolt11:bolt11, amtMSat:amtMsat)
+        return res
     }
     
     
@@ -89,6 +86,15 @@ public class Velas {
     ///     array of peers
     public func listPeers() throws -> String {
         return try ln.listPeers()
+    }
+    
+    /// Get all the channels that this node is setup for.
+    ///
+    /// return:
+    ///     list of peers
+    public func listChannels() throws -> String {
+        let res = try ln.listChannels()
+        return res
     }
     
     /// Get the local and public IP addresses of this node
