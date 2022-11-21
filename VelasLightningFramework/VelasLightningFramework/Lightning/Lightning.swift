@@ -123,8 +123,6 @@ public class Lightning {
             tx_broadcaster: broadcaster,
             logger: logger
         )
-        
-
         channel_manager = channel_manager_constructor?.channelManager
         
         peer_manager = channel_manager_constructor?.peerManager

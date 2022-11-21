@@ -3,8 +3,8 @@
 import LightningDevKit
 
 var feerate_fast = 7500 // estimate fee rate in BTC/kB
-var feerate_medium = 7500 // estimate fee rate in BTC/kB
-var feerate_slow = 7500 // estimate fee rate in BTC/kB
+var feerate_medium = 1000 // estimate fee rate in BTC/kB
+var feerate_slow = 253 // estimate fee rate in BTC/kB
 
 /// What it is used for:  estimating fees for on-chain transactions
 ///
@@ -16,17 +16,16 @@ var feerate_slow = 7500 // estimate fee rate in BTC/kB
 class MyFeeEstimator: FeeEstimator {
     
     override func get_est_sat_per_1000_weight(confirmation_target: LDKConfirmationTarget) -> UInt32 {
-        if (confirmation_target as AnyObject === LDKConfirmationTarget_HighPriority as AnyObject) {
-            print("LDK/FeeEstimator: \(UInt32(feerate_fast))")
-            return UInt32(feerate_fast)
-        }
-        if (confirmation_target as AnyObject === LDKConfirmationTarget_Normal as AnyObject) {
-            print("LDK/FeeEstimator: \(UInt32(feerate_medium))")
-            return UInt32(feerate_medium)
-        }
-        print("LDK/FeeEstimator: \(UInt32(feerate_medium))")
+//        if (confirmation_target as AnyObject === LDKConfirmationTarget_HighPriority as AnyObject) {
+//            print("LDK/FeeEstimator: \(UInt32(feerate_fast))")
+//            return UInt32(feerate_fast)
+//        }
+//        if (confirmation_target as AnyObject === LDKConfirmationTarget_Normal as AnyObject) {
+//            print("LDK/FeeEstimator: \(UInt32(feerate_medium))")
+//            return UInt32(feerate_medium)
+//        }
+        print("Velas/LDK/FeeEstimator: \(UInt32(feerate_slow))")
         return UInt32(feerate_slow)
-        //return 253
     }
     
 }
