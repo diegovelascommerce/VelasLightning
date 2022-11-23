@@ -11,43 +11,53 @@ import BitcoinDevKit
 
 public class Bitcoin {
     
+    private let network: Network
+    
     private var wallet: Wallet
     
-    private var addressInfo: AddressInfo
+    public let mnemonic: String
+        
+    public let privKey: [UInt8]
     
-    public var address:String {
-        addressInfo.address
+    public let pubKey: String
+    
+    public var genesis: String {
+        if(network == Network.bitcoin){
+            return "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"
+        }
+        else {
+            return "000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943"
+        }
     }
-    
-    public init() throws {
+        
+    public init(main: Bool = false) throws {
         print("***** Start BDK setup *****")
         
-        let desc = "wpkh([c258d2e4/84h/1h/0h]tpubDDYkZojQFQjht8Tm4jsS3iuEmKjTiEGjG6KnuFNKKJb5A6ZUCUZKdvLdSDWofKi4ToRCwb9poe1XdqfUnP4jaJjCB2Zwv11ZLgSbnZSNecE/0/*)"
+        network = main ? Network.bitcoin : Network.testnet
+        
+        mnemonic = try generateMnemonic(wordCount: WordCount.words12)
+        
+        let bip32RootKey = try DescriptorSecretKey(network: Network.testnet,
+                                               mnemonic: mnemonic,
+                                               password: nil)
+        
+        pubKey = bip32RootKey.asPublic().asString()
+        
+        privKey = bip32RootKey.secretBytes()
+        
+        let desc = "wpkh(\(pubKey)/0/*)"
                 
         wallet = try Wallet.init(descriptor: desc, changeDescriptor: nil, network: Network.testnet, databaseConfig:DatabaseConfig.memory)
             
-        addressInfo = try wallet.getAddress(addressIndex: AddressIndex.new)
+        
         
         print("***** End BDK setup *****")
     }
     
-    public func getMnemonic(){
-        
-    }
     
-    public func getPrivateKey(){
-        
+    public func getNewAddress() throws -> String {
+        let addressInfo = try wallet.getAddress(addressIndex: AddressIndex.new)
+        return addressInfo.address
     }
-    
-    public func getGenesisBlock(){
-        
-    }
-    
-    public func getLatestBlockHeight(){
-        
-    }
-    
-    public func getLatestBlockHash(){
-        
-    }
+   
 }

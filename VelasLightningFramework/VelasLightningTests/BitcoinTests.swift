@@ -20,8 +20,25 @@ class BitcoinTests: XCTestCase {
         XCTAssertNotNil(btc)
     }
     
-    func testGetAddress(){
-        print("address: \(btc.address)")
-        XCTAssertNotNil(btc.address)
-    }
+//    func testGetAddress(){
+//        print("address: \(btc.address)")
+//        XCTAssertNotNil(btc.address)
+//    }
+    
+//    func testGetMnemonic(){
+//        print("mnemonic: \(btc.mnemonic)")
+//        XCTAssertFalse(btc.mnemonic.isEmpty)
+//    }
+    
+//    func testBip32RootKey(){
+//        let res = btc.bip32RootKey.asString()
+//        print("bip32RootKey: \(res)")
+//        XCTAssertFalse(res.isEmpty)
+//    }
+//
+//    func testPrivateKey(){
+//        let res = btc.privateKey
+//        print("privateKey: \(res)")
+//        XCTAssertNotNil(res)
+//    }
 }
