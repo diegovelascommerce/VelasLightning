@@ -64,8 +64,15 @@ class VelasTests: XCTestCase {
     }
     
     func testListChannels() throws -> String {
+        try XCTSkipIf(true)
         let res = try velas.listChannels()
         return res
+    }
+    
+    func testGetMnemonic() {
+        let mnemonic = velas.getMnemonic()
+        XCTAssertFalse(mnemonic.isEmpty)
+        print("mnemonic: \(mnemonic)")
     }
 
     

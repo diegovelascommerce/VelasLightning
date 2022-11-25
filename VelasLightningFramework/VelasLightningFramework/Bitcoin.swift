@@ -13,43 +13,56 @@ public class Bitcoin {
     
     private let network: Network
     
-    private var wallet: Wallet
-    
+    public var genesis: String
+        
     public let mnemonic: String
-        
-    public let privKey: [UInt8]
+
+    private let rootKey: DescriptorSecretKey
     
-    public let pubKey: String
+    public let descriptor: String
     
-    public var genesis: String {
-        if(network == Network.bitcoin){
-            return "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"
-        }
-        else {
-            return "000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943"
-        }
-    }
+    private var blockchain: Blockchain
+
+    private var wallet: Wallet
+
+    
         
-    public init(main: Bool = false) throws {
+    public init(network _network: Network = Network.testnet, mnemonic _mnemonic: String? = nil) throws {
         print("***** Start BDK setup *****")
         
-        network = main ? Network.bitcoin : Network.testnet
+        self.network = _network
+        if(self.network == Network.bitcoin){
+            self.genesis = "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"
+        }
+        else {
+            self.genesis = "000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943"
+        }
         
-        mnemonic = try generateMnemonic(wordCount: WordCount.words12)
+        if _mnemonic == nil {
+            self.mnemonic = try generateMnemonic(wordCount: WordCount.words12)
+        }
+        else {
+            self.mnemonic = _mnemonic!
+        }
         
-        let bip32RootKey = try DescriptorSecretKey(network: Network.testnet,
-                                               mnemonic: mnemonic,
+        self.rootKey = try DescriptorSecretKey(network: self.network,
+                                               mnemonic: self.mnemonic,
                                                password: nil)
+
+        let externalPath: DerivationPath = try DerivationPath(path:"m/84h/1h/0h/0")
+
+        self.descriptor = "wpkh(\(rootKey.extend(path:externalPath).asString()))"
         
-        pubKey = bip32RootKey.asPublic().asString()
+        let electrum = ElectrumConfig(url: "ssl://electrum.blockstream.info:60002", socks5: nil, retry: 5, timeout: nil, stopGap: 10)
         
-        privKey = bip32RootKey.secretBytes()
+        let blockchainConfig = BlockchainConfig.electrum(config: electrum)
+
+        self.blockchain = try Blockchain(config: blockchainConfig)
         
-        let desc = "wpkh(\(pubKey)/0/*)"
-                
-        wallet = try Wallet.init(descriptor: desc, changeDescriptor: nil, network: Network.testnet, databaseConfig:DatabaseConfig.memory)
-            
-        
+        wallet = try Wallet.init(descriptor: self.descriptor,
+                                 changeDescriptor: nil,
+                                 network: self.network,
+                                 databaseConfig:DatabaseConfig.memory)
         
         print("***** End BDK setup *****")
     }
@@ -58,6 +71,19 @@ public class Bitcoin {
     public func getNewAddress() throws -> String {
         let addressInfo = try wallet.getAddress(addressIndex: AddressIndex.new)
         return addressInfo.address
+    }
+    
+    public func sync() throws {
+        try wallet.sync(blockchain: self.blockchain, progress: nil)
+    }
+    
+    public func getHeight() throws -> UInt32 {
+        return try self.blockchain.getHeight()
+    }
+    
+    public func getBlockHash() throws -> String {
+        let height = try self.getHeight()
+        return try self.blockchain.getBlockHash(height: height)
     }
    
 }

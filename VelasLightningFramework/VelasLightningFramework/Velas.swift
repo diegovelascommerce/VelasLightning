@@ -12,6 +12,10 @@ public class Velas {
         ln = try Lightning()
     }
     
+    public func getMnemonic() -> String {
+        return btc.mnemonic
+    }
+    
     public func getNodeInformation() throws -> (nodeID:String, address:String, port:String) {
         let nodeID = try getNodeId()
         let address = getPublicIPAddress()
