@@ -14,8 +14,8 @@ class MyPersister: Persist {
         let idBytes: [UInt8] = channel_id.write()
         let monitorBytes: [UInt8] = data.write()
         
-        print("LDK/persist_new_channel idBytes: \(bytesToHex(bytes: idBytes))")
-        print("LDK/persist_new_channel monitorBytes: \(bytesToHex(bytes: monitorBytes))")
+        print("Velas/Lightning/MyPersister/persist_new_channel idBytes: \(bytesToHex(bytes: idBytes))")
+        print("Velas/Lightning/MyPersister/persist_new_channel monitorBytes: \(bytesToHex(bytes: monitorBytes))")
         
         return LDKChannelMonitorUpdateStatus_Completed
     }

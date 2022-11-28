@@ -13,15 +13,30 @@ let TEST_BOLT11 = "lntb10u1p34nzegpp5740edx88s2dq605hrmadncqjutwgp2qmp0tue3lx3x7
 class VelasTests: XCTestCase {
     
     private var velas:Velas!
+    
+    let TestMnemonic: String = "arrive remember certain all consider apology celery melt uphold blame call blame"
 
     override func setUpWithError() throws {
-        velas = try Velas()
+        print(self.name)
+        switch self.name {
+        case "-[VelasTests testInitializationWithMnemonic]":
+            velas = try Velas(mnemonic: self.TestMnemonic)
+        default:
+            velas = try Velas()
+        }
     }
 
 
     /// test to see if velas initialized
     func testVelas() throws {
         XCTAssertNotNil(velas)
+    }
+    
+    func testInitializationWithMnemonic() throws {
+        XCTAssertNotNil(velas)
+        let mnemonic = velas.getMnemonic()
+        XCTAssertFalse(mnemonic.isEmpty)
+        XCTAssertTrue(mnemonic == self.TestMnemonic)
     }
     
     
@@ -32,6 +47,7 @@ class VelasTests: XCTestCase {
     }
     
     func testRequestChannel() throws {
+        try XCTSkipIf(true)
 //        try velas.requestOpeningChannel() {(nodeID,address,port) in
 //            XCTAssertFalse(nodeID.isEmpty)
 //            XCTAssertFalse(address.isEmpty)

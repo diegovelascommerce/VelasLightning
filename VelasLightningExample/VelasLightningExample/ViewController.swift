@@ -27,10 +27,7 @@ class ViewController: UIViewController {
         catch {
             print("there was a problem getting the node id \(error)")
         }
-//
-//        peerlistLable.text = "Hello peerlist"
-//        peerlistLable.sizeToFit()
-//        peerlistLable.center.x = self.view.center.x
+
     }
     
     @IBAction func connectClick(_ sender: Any) {

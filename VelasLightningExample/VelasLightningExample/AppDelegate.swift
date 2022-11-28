@@ -8,7 +8,6 @@
 import UIKit
 import VelasLightningFramework
 
-
 var velas: Velas!
 
 @main
@@ -20,7 +19,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
         
         do {
-            velas = try Velas();
+            velas = try Velas(mnemonic: "arrive remember certain all consider apology celery melt uphold blame call blame");
 //            let _ = try velas.getNodeId()
 //            let _ = try velas.bindNode()
 //            let _ = velas.getIPAddresses()

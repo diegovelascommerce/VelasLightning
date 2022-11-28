@@ -12,9 +12,7 @@ import BitcoinDevKit
 public class Bitcoin {
     
     private let network: Network
-    
-    public var genesis: String
-        
+            
     public let mnemonic: String
 
     private let rootKey: DescriptorSecretKey
@@ -31,12 +29,10 @@ public class Bitcoin {
         print("***** Start BDK setup *****")
         
         self.network = _network
-        if(self.network == Network.bitcoin){
-            self.genesis = "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"
-        }
-        else {
-            self.genesis = "000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943"
-        }
+        
+        
+        
+        //let genesisBlock: BestBlock = BestBlock.from_genesis(sel.network)
         
         if _mnemonic == nil {
             self.mnemonic = try generateMnemonic(wordCount: WordCount.words12)
@@ -77,6 +73,10 @@ public class Bitcoin {
         try wallet.sync(blockchain: self.blockchain, progress: nil)
     }
     
+    public func getPrivKey() -> [UInt8] {
+        return self.rootKey.secretBytes()
+    }
+    
     public func getHeight() throws -> UInt32 {
         return try self.blockchain.getHeight()
     }
@@ -84,6 +84,15 @@ public class Bitcoin {
     public func getBlockHash() throws -> String {
         let height = try self.getHeight()
         return try self.blockchain.getBlockHash(height: height)
+    }
+    
+    public func getGenesisHash() -> String {
+        if(self.network == Network.bitcoin){
+            return "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"
+        }
+        else {
+            return "000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943"
+        }
     }
    
 }

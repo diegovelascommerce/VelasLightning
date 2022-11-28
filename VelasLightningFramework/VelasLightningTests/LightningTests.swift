@@ -13,7 +13,12 @@ class LightningTests: XCTestCase {
     private var ln:Lightning!
 
     override func setUpWithError() throws {
-        ln = try Lightning()
+        let btc = try Bitcoin()
+        try btc.sync()
+        ln = try Lightning(privKey: btc.getPrivKey(),
+                           blockHeight: btc.getHeight(),
+                           blockHash: btc.getBlockHash(),
+                           genesisHash: btc.getGenesisHash())
     }
 
     func testStartLightning() throws {
@@ -113,6 +118,7 @@ class LightningTests: XCTestCase {
             Thread.sleep(forTimeInterval: 1)
             
             let peers = try ln.listPeers()
+            print("peers: \(peers)")
             XCTAssertFalse(peers.isEmpty)
             XCTAssertTrue(peers.count > 5)
         }

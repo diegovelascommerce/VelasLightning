@@ -18,7 +18,7 @@ public class Lightning {
     let network: LDKNetwork = LDKNetwork_Testnet
     
     /// Setup the LDK
-    public init() throws {
+    public init(privKey:[UInt8], blockHeight: UInt32, blockHash: String, genesisHash: String) throws {
         NSLog("----- Start LDK setup -----")
                 
         // Step 1. initialize the FeeEstimator
@@ -51,13 +51,13 @@ public class Lightning {
         ///
         /// What it is used for:
         ///     providing keys for signing Lightning transactions
-        var keyData = Data(count: 32)
-        keyData.withUnsafeMutableBytes {
-            // returns 0 on success
-            let didCopySucceed = SecRandomCopyBytes(kSecRandomDefault, 32, $0.baseAddress!)
-            assert(didCopySucceed == 0)
-        }
-        let seed = [UInt8](keyData)
+//        var keyData = Data(count: 32)
+//        keyData.withUnsafeMutableBytes {
+//            // returns 0 on success
+//            let didCopySucceed = SecRandomCopyBytes(kSecRandomDefault, 32, $0.baseAddress!)
+//            assert(didCopySucceed == 0)
+//        }
+        let seed = privKey
         let timestamp_seconds = UInt64(NSDate().timeIntervalSince1970)
         let timestamp_nanos = UInt32.init(truncating: NSNumber(value: timestamp_seconds * 1000 * 1000))
         keys_manager = KeysManager(seed: seed, starting_time_secs: timestamp_seconds, starting_time_nanos: timestamp_nanos)
@@ -80,7 +80,9 @@ public class Lightning {
         ///
         ///     A network graph instance needs to be provided upon initialization,
         ///     which in turn requires the genesis block hash.
-        let networkGraph = NetworkGraph(genesis_hash: [UInt8](Data(base64Encoded: "AAAAAAAZ1micCFrhZYMek0/3Y65GoqbBcrPxtgqM4m8=")!), logger: logger)
+        //let genesis = BestBlock.from_genesis(LDKNetwork_Testnet)
+        
+        let networkGraph = NetworkGraph(genesis_hash: [UInt8](Data(base64Encoded: genesisHash)!), logger: logger)
         
         /// Step 9. Read ChannelMonitors from disk
         ///
@@ -108,9 +110,20 @@ public class Lightning {
         ///     Second, we also need to initialize a default user config,
         ///
         ///     Finally, we can proceed by instantiating the ChannelManager using ChannelManagerConstructor.
-        let latestBlockHash = [UInt8](Data(base64Encoded: "AAAAAAAAAAAABe5Xh25D12zkQuLAJQbBeLoF1tEQqR8=")!)
-        let latestBlockHeight = UInt32(700123)
+        let latestBlockHash = [UInt8](Data(base64Encoded: blockHash)!)
+        let latestBlockHeight = blockHeight
+        
         let userConfig = UserConfig()
+        
+        let handshakeConfig = ChannelHandshakeConfig()
+        handshakeConfig.set_announced_channel(val: false)
+        
+        let handshakeLimits = ChannelHandshakeLimits()
+        handshakeLimits.set_force_announced_channel_preference(val: false)
+        
+        userConfig.set_channel_handshake_config(val: handshakeConfig)
+        userConfig.set_channel_handshake_limits(val: handshakeLimits)
+        
         channel_manager_constructor = ChannelManagerConstructor(
             network: network,
             config: userConfig,

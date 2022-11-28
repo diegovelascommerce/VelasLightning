@@ -1,4 +1,5 @@
 import Foundation
+import BitcoinDevKit
 
 /// Main Class that projects will use to interact with Bitcoin and Lightning
 public class Velas {
@@ -7,9 +8,13 @@ public class Velas {
     private var ln:Lightning!
     
     /// Initialize Bitcoin and Lightning
-    public init() throws {
-        btc = try Bitcoin()
-        ln = try Lightning()
+    public init(network: Network = Network.testnet, mnemonic: String? = nil) throws {
+        btc = try Bitcoin(network: network, mnemonic: mnemonic)
+        try btc.sync()
+        ln = try Lightning(privKey: btc.getPrivKey(),
+                           blockHeight: btc.getHeight(),
+                           blockHash: btc.getBlockHash(),
+                           genesisHash: btc.getGenesisHash())
     }
     
     public func getMnemonic() -> String {
