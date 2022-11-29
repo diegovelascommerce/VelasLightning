@@ -56,5 +56,41 @@ class ViewController: UIViewController {
 
     }
     
+    @IBAction func listChannels(_ sender: Any) {
+        do {
+            let channels = try velas.listChannels()
+            NSLog("channels: \(channels)")
+        }
+        catch {
+            NSLog("problem with listing channels: \(error)")
+        }
+    }
+    
+    @IBAction func createBolt11(_ sender: Any) {
+        do {
+            let bolt11 = try velas.createInvoice(amtMsat: 2000, description: "this s a test from velas lighting")
+            NSLog("bolt11: \(bolt11)")
+        }
+        catch {
+            NSLog("problem creating bolt11 invoice: \(error)")
+        }
+    }
+    
+    @IBAction func closeChannelCooperatively(_ sender: Any) {
+        do {
+            try velas.closeChannelsCooperatively()
+        } catch {
+            NSLog("problem clossing channels cooperatively: \(error)")
+        }
+    }
+    
+    @IBAction func closeChannelForcefully(_ sender: Any) {
+        do {
+            try velas.closeChannelsForcefully()
+        } catch {
+            NSLog("problem clossing channels forcefuly: \(error)")
+        }
+    }
+    
 }
 

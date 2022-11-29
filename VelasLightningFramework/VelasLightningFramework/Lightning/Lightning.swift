@@ -12,8 +12,7 @@ public class Lightning {
     var peer_handler: TCPPeerHandler?
     
     let port = UInt16(9735)
-    let channelId = "testChannelID"
-    let counterpartyNodeId = "testNodeID"
+    
     let currency: LDKCurrency = LDKCurrency_BitcoinTestnet
     let network: LDKNetwork = LDKNetwork_Testnet
     
@@ -297,6 +296,8 @@ public class Lightning {
         jsonArray += "]"
         return jsonArray
     }
+    
+    
 
     func channel2ChannelObject(it: ChannelDetails) -> String {
         let short_channel_id = it.get_short_channel_id().getValue() ?? 0
@@ -336,6 +337,23 @@ public class Lightning {
         return channelObject
     }
     
+    func closeChannelsCooperatively() throws {
+        guard let channel_manager = channel_manager else {
+            let error = NSError(domain: "closeChannels",
+                                code: 1,
+                                userInfo: [NSLocalizedDescriptionKey: "Channel Manager not initialized"])
+            throw error
+        }
+
+        let channels = channel_manager.list_channels().isEmpty ? [] : channel_manager.list_channels()
+       
+        
+        _ = try channels.map { (channel: ChannelDetails) in
+            try closeChannelCooperatively(nodeId: channel.get_counterparty().get_node_id(),
+                                      channelId: channel.get_channel_id())
+        }
+    }
+    
     /// Close channel in the nice way.
     ///
     /// both parties aggree to close the channel
@@ -345,8 +363,8 @@ public class Lightning {
     ///
     /// return:
     ///     true if close correctly
-    func closeChannelCooperatively() throws -> Bool {
-        guard let close_result = channel_manager?.close_channel(channel_id: hexStringToByteArray(channelId), counterparty_node_id: hexStringToByteArray(counterpartyNodeId)), close_result.isOk() else {
+    func closeChannelCooperatively(nodeId: [UInt8], channelId: [UInt8]) throws -> Bool {
+        guard let close_result = channel_manager?.close_channel(channel_id: channelId, counterparty_node_id: nodeId), close_result.isOk() else {
             let error = NSError(domain: "closeChannelCooperatively",
                                 code: 1,
                                 userInfo: [NSLocalizedDescriptionKey: "closeChannelCooperatively Failed"])
@@ -354,6 +372,23 @@ public class Lightning {
         }
         
         return true
+    }
+    
+    func closeChannelsForcefully() throws {
+        guard let channel_manager = channel_manager else {
+            let error = NSError(domain: "closeChannels",
+                                code: 1,
+                                userInfo: [NSLocalizedDescriptionKey: "Channel Manager not initialized"])
+            throw error
+        }
+
+        let channels = channel_manager.list_channels().isEmpty ? [] : channel_manager.list_channels()
+       
+        
+        _ = try channels.map { (channel: ChannelDetails) in
+            try closeChannelForcefully(nodeId: channel.get_counterparty().get_node_id(),
+                                      channelId: channel.get_channel_id())
+        }
     }
     
     /// Close channel the bad way.
@@ -365,8 +400,8 @@ public class Lightning {
     ///
     /// return:
     ///     true is channel was closed
-    func closeChannelForce() throws -> Bool {
-        guard let close_result = channel_manager?.force_close_broadcasting_latest_txn(channel_id: hexStringToByteArray(channelId), counterparty_node_id: hexStringToByteArray(counterpartyNodeId)) else {
+    func closeChannelForcefully(nodeId: [UInt8], channelId: [UInt8]) throws -> Bool {
+        guard let close_result = channel_manager?.force_close_broadcasting_latest_txn(channel_id: channelId, counterparty_node_id: nodeId) else {
             let error = NSError(domain: "closeChannelForce",
                                 code: 1,
                                 userInfo: [NSLocalizedDescriptionKey: "closeChannelForce Failed"])

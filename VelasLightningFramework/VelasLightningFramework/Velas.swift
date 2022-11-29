@@ -32,9 +32,9 @@ public class Velas {
     ///
     /// throws:
     ///     NSError
-    public func closeChannel() throws -> Bool {
-        return try ln.closeChannelCooperatively()
-    }
+//    public func closeChannel() throws -> Bool {
+//        return try ln.closeChannelCooperatively()
+//    }
     
     /// Create a bolt11 invoice
     ///
@@ -119,5 +119,13 @@ public class Velas {
         }
         
         return (local, pub)
+    }
+    
+    public func closeChannelsCooperatively() throws {
+        try ln.closeChannelsCooperatively()
+    }
+    
+    public func closeChannelsForcefully() throws {
+        try ln.closeChannelsForcefully()
     }
 }

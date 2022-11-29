@@ -79,10 +79,9 @@ class VelasTests: XCTestCase {
         XCTAssertTrue(res)
     }
     
-    func testListChannels() throws -> String {
-        try XCTSkipIf(true)
+    func testListChannels() throws {
         let res = try velas.listChannels()
-        return res
+        XCTAssertFalse(res.isEmpty)
     }
     
     func testGetMnemonic() {
@@ -90,7 +89,12 @@ class VelasTests: XCTestCase {
         XCTAssertFalse(mnemonic.isEmpty)
         print("mnemonic: \(mnemonic)")
     }
-
     
-
+    func testCloseChannelsCooperatively() throws {
+        XCTAssertNoThrow(try velas.closeChannelsCooperatively())
+    }
+    
+    func testCloseChannelsForcefully() throws {
+        XCTAssertNoThrow(try velas.closeChannelsForcefully())
+    }
 }

@@ -128,10 +128,17 @@ class LightningTests: XCTestCase {
     }
     
     func testListChannels() throws {
-        try XCTSkipIf(true)
         let res = try ln.listChannels()
         XCTAssertFalse(res.isEmpty)
-        XCTAssertTrue(res.count > 5)
+        print("channels: \(res)")
+    }
+    
+    func testCloseChannelsCooperatively() throws {
+        XCTAssertNoThrow(try ln.closeChannelsCooperatively())
+    }
+    
+    func testCloseChannelsForcefully() throws {
+        XCTAssertNoThrow(try ln.closeChannelsForcefully())
     }
 
 }
