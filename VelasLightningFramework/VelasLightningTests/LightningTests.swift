@@ -11,9 +11,21 @@ import XCTest
 class LightningTests: XCTestCase {
 
     private var ln:Lightning!
+    
+    let TestMnemonic: String = "arrive remember certain all consider apology celery melt uphold blame call blame"
+    let TestNodeId: String = "03aff3289b9e0ad31ef511bee1e37cfcf4324ab67a4a5646d6b1cc12ad58f5517b"
 
     override func setUpWithError() throws {
-        let btc = try Bitcoin()
+        var btc:Bitcoin
+        
+        print(self.name)
+        switch self.name {
+        case "-[LightningTests testGetConsistenteNodeId]":
+            btc = try Bitcoin(mnemonic:self.TestMnemonic)
+        default:
+            btc = try Bitcoin()
+        }
+        
         try btc.sync()
         ln = try Lightning(privKey: btc.getPrivKey(),
                            blockHeight: btc.getHeight(),
@@ -29,6 +41,13 @@ class LightningTests: XCTestCase {
         let res = try ln.getNodeId()
         XCTAssertFalse(res.isEmpty)
         print("testGetNodeId: \(res)")
+    }
+    
+    func testGetConsistenteNodeId() throws {
+        let nodeId = try ln.getNodeId()
+        XCTAssertFalse(nodeId.isEmpty)
+        XCTAssertEqual(nodeId, self.TestNodeId)
+        print("testGetConsistenteNodeId: \(nodeId)")
     }
     
     func testCreateInvoice() throws {
