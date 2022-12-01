@@ -22,6 +22,8 @@
 		81481A6729087B2300DA3224 /* VelasLightningFramework.h in Headers */ = {isa = PBXBuildFile; fileRef = 81481A6629087B2300DA3224 /* VelasLightningFramework.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		81D31EE12909ABA500A621A0 /* Velas.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81D31EE02909ABA500A621A0 /* Velas.swift */; };
 		81D31EE32909ACE900A621A0 /* VelasTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81D31EE22909ACE900A621A0 /* VelasTests.swift */; };
+		81E52DCC29392EBC00607DEC /* FileMgr.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81E52DCB29392EBC00607DEC /* FileMgr.swift */; };
+		81E52DCF2939314200607DEC /* FileMgrTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81E52DCE2939314200607DEC /* FileMgrTests.swift */; };
 		81FC2CC0291ACF36001EE52E /* MyChannelManagerPersister.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81FC2CBF291ACF36001EE52E /* MyChannelManagerPersister.swift */; };
 /* End PBXBuildFile section */
 
@@ -71,6 +73,8 @@
 		81481A8D29087B5200DA3224 /* VelasLightningExample.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = VelasLightningExample.xcodeproj; path = ../VelasLightningExample/VelasLightningExample.xcodeproj; sourceTree = "<group>"; };
 		81D31EE02909ABA500A621A0 /* Velas.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Velas.swift; sourceTree = "<group>"; };
 		81D31EE22909ACE900A621A0 /* VelasTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VelasTests.swift; sourceTree = "<group>"; };
+		81E52DCB29392EBC00607DEC /* FileMgr.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileMgr.swift; sourceTree = "<group>"; };
+		81E52DCE2939314200607DEC /* FileMgrTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileMgrTests.swift; sourceTree = "<group>"; };
 		81FC2CBF291ACF36001EE52E /* MyChannelManagerPersister.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyChannelManagerPersister.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -101,6 +105,7 @@
 				8121891C2908832200354733 /* BitcoinTests.swift */,
 				8121891E2908844000354733 /* LightningTests.swift */,
 				81D31EE22909ACE900A621A0 /* VelasTests.swift */,
+				81E52DCE2939314200607DEC /* FileMgrTests.swift */,
 			);
 			path = VelasLightningTests;
 			sourceTree = "<group>";
@@ -146,6 +151,7 @@
 				8121891829087FD400354733 /* Bitcoin.swift */,
 				812D3857290C3CCE005EA7E9 /* Lightning */,
 				81D31EE02909ABA500A621A0 /* Velas.swift */,
+				81E52DCB29392EBC00607DEC /* FileMgr.swift */,
 			);
 			path = VelasLightningFramework;
 			sourceTree = "<group>";
@@ -302,6 +308,7 @@
 			files = (
 				8121891F2908844000354733 /* LightningTests.swift in Sources */,
 				8121891D2908832200354733 /* BitcoinTests.swift in Sources */,
+				81E52DCF2939314200607DEC /* FileMgrTests.swift in Sources */,
 				81D31EE32909ACE900A621A0 /* VelasTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -312,6 +319,7 @@
 			files = (
 				81D31EE12909ABA500A621A0 /* Velas.swift in Sources */,
 				812D385C290C3ED8005EA7E9 /* MyFeeEstimator.swift in Sources */,
+				81E52DCC29392EBC00607DEC /* FileMgr.swift in Sources */,
 				812D3860290C441A005EA7E9 /* MyBroadcasterInterface.swift in Sources */,
 				81FC2CC0291ACF36001EE52E /* MyChannelManagerPersister.swift in Sources */,
 				812D385E290C40C3005EA7E9 /* MyLogger.swift in Sources */,
