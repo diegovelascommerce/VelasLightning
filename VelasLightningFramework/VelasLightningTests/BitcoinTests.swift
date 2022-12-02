@@ -66,7 +66,7 @@ class BitcoinTests: XCTestCase {
     
     func testGetHeight() throws {
         try btc.sync()
-        let height = try btc.getHeight()
+        let height = try btc.getBlockHeight()
         print("height: \(height)")
         XCTAssert(height > 0)
     }
@@ -79,11 +79,13 @@ class BitcoinTests: XCTestCase {
     }
     
     func testMainnetGenesis() throws {
-        XCTAssertTrue(btc.getGenesisHash() == "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f")
+        try btc.sync()
+        XCTAssertTrue(try btc.getGenesisHash() == "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f")
     }
     
     func testTestnetGenesis() throws {
-        XCTAssertTrue(btc.getGenesisHash() == "000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943")
+        try btc.sync()
+        XCTAssertTrue(try btc.getGenesisHash() == "000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943")
     }
     
 }

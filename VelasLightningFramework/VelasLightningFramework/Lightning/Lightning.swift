@@ -3,6 +3,7 @@ import LightningDevKit
 /// This is the main class for handling interactions with the Lightning Network
 public class Lightning {
     
+    
     var logger: MyLogger!
     var keys_manager: KeysManager?
     var channel_manager_constructor: ChannelManagerConstructor?
@@ -17,7 +18,8 @@ public class Lightning {
     let network: LDKNetwork = LDKNetwork_Testnet
     
     /// Setup the LDK
-    public init(privKey:[UInt8], blockHeight: UInt32, blockHash: String, genesisHash: String) throws {
+    public init(btc:Bitcoin) throws {
+        
         NSLog("----- Start LDK setup -----")
                 
         // Step 1. initialize the FeeEstimator
@@ -27,7 +29,7 @@ public class Lightning {
         logger = MyLogger()
         
         // Step 3. Initialize the BroadcasterInterface
-        let broadcaster = MyBroadcasterInterface()
+        let broadcaster = MyBroadcasterInterface(btc:btc)
         
         // Step 4. Initialize Persist
         let persister = MyPersister()
@@ -50,13 +52,7 @@ public class Lightning {
         ///
         /// What it is used for:
         ///     providing keys for signing Lightning transactions
-//        var keyData = Data(count: 32)
-//        keyData.withUnsafeMutableBytes {
-//            // returns 0 on success
-//            let didCopySucceed = SecRandomCopyBytes(kSecRandomDefault, 32, $0.baseAddress!)
-//            assert(didCopySucceed == 0)
-//        }
-        let seed = privKey
+        let seed = btc.getPrivKey()
         let timestamp_seconds = UInt64(NSDate().timeIntervalSince1970)
         let timestamp_nanos = UInt32.init(truncating: NSNumber(value: timestamp_seconds * 1000 * 1000))
         keys_manager = KeysManager(seed: seed, starting_time_secs: timestamp_seconds, starting_time_nanos: timestamp_nanos)
@@ -81,7 +77,7 @@ public class Lightning {
         ///     which in turn requires the genesis block hash.
         //let genesis = BestBlock.from_genesis(LDKNetwork_Testnet)
         
-        let networkGraph = NetworkGraph(genesis_hash: [UInt8](Data(base64Encoded: genesisHash)!), logger: logger)
+        let networkGraph = NetworkGraph(genesis_hash: [UInt8](Data(base64Encoded: try btc.getGenesisHash())!), logger: logger)
         
         /// Step 9. Read ChannelMonitors from disk
         ///
@@ -91,6 +87,27 @@ public class Lightning {
         ///
         /// what it's used for:
         ///     managing channel state
+        
+        var serializedChannelManager:[UInt8] = [UInt8]()
+        if FileMgr.fileExists(path: "channel_manager") {
+            let channelManagerData = try FileMgr.readData(path: "channel_manager")
+            serializedChannelManager = [UInt8](channelManagerData)
+        }
+        
+        var serializedChannelMonitors:[[UInt8]] = [[UInt8]]()
+        let urls = try FileMgr.contentsOfDirectory(atPath:"channels")
+        for url in urls {
+            let channelData = try FileMgr.readData(url: url)
+            let channelBytes = [UInt8](channelData)
+            serializedChannelMonitors.append(channelBytes)
+        }
+        
+        var serializedNetGraph:[UInt8] = [UInt8]()
+        if FileMgr.fileExists(path: "network_graph") {
+            let netGraphData = try FileMgr.readData(path: "network_graph")
+            serializedNetGraph = [UInt8](netGraphData)
+        }
+        
         
         /// Step 10.  Initialize the ChannelManager
         ///
@@ -109,8 +126,9 @@ public class Lightning {
         ///     Second, we also need to initialize a default user config,
         ///
         ///     Finally, we can proceed by instantiating the ChannelManager using ChannelManagerConstructor.
-        let latestBlockHash = [UInt8](Data(base64Encoded: blockHash)!)
-        let latestBlockHeight = blockHeight
+        
+        let latestBlockHash = [UInt8](Data(base64Encoded: try btc.getBlockHash())!)
+        let latestBlockHeight = try btc.getBlockHeight()
         
         let userConfig = UserConfig()
         
@@ -123,18 +141,35 @@ public class Lightning {
         userConfig.set_channel_handshake_config(val: handshakeConfig)
         userConfig.set_channel_handshake_limits(val: handshakeLimits)
         
-        channel_manager_constructor = ChannelManagerConstructor(
-            network: network,
-            config: userConfig,
-            current_blockchain_tip_hash: latestBlockHash,
-            current_blockchain_tip_height: latestBlockHeight,
-            keys_interface: keysInterface,
-            fee_estimator: feeEstimator,
-            chain_monitor: chainMonitor,
-            net_graph: networkGraph, // see `NetworkGraph`
-            tx_broadcaster: broadcaster,
-            logger: logger
-        )
+        if serializedChannelMonitors.count == 0 {
+            channel_manager_constructor = ChannelManagerConstructor(
+                network: network,
+                config: userConfig,
+                current_blockchain_tip_hash: latestBlockHash,
+                current_blockchain_tip_height: latestBlockHeight,
+                keys_interface: keysInterface,
+                fee_estimator: feeEstimator,
+                chain_monitor: chainMonitor,
+                net_graph: networkGraph, // see `NetworkGraph`
+                tx_broadcaster: broadcaster,
+                logger: logger
+            )
+        }
+        else {
+            channel_manager_constructor = try ChannelManagerConstructor(
+                channel_manager_serialized: serializedChannelManager,
+                channel_monitors_serialized: serializedChannelMonitors,
+                keys_interface: keysInterface,
+                fee_estimator: feeEstimator,
+                chain_monitor: chainMonitor,
+                filter: filter,
+                net_graph_serialized: serializedNetGraph, 
+                tx_broadcaster: broadcaster,
+                logger: logger
+            )
+
+        }
+        
         channel_manager = channel_manager_constructor?.channelManager
         
         peer_manager = channel_manager_constructor?.peerManager

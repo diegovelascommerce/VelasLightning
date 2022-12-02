@@ -19,6 +19,8 @@ public class Bitcoin {
     
     public let descriptor: String
     
+    public let changeDescriptor: String
+    
     private var blockchain: Blockchain
 
     private var wallet: Wallet
@@ -29,10 +31,6 @@ public class Bitcoin {
         print("***** Start BDK setup *****")
         
         self.network = _network
-        
-        
-        
-        //let genesisBlock: BestBlock = BestBlock.from_genesis(sel.network)
         
         if _mnemonic == nil {
             self.mnemonic = try generateMnemonic(wordCount: WordCount.words12)
@@ -46,18 +44,23 @@ public class Bitcoin {
                                                password: nil)
 
         let externalPath: DerivationPath = try DerivationPath(path:"m/84h/1h/0h/0")
-
         self.descriptor = "wpkh(\(rootKey.extend(path:externalPath).asString()))"
         
-        let electrum = ElectrumConfig(url: "ssl://electrum.blockstream.info:60002", socks5: nil, retry: 5, timeout: nil, stopGap: 10)
+        let changeExternalPath: DerivationPath = try DerivationPath(path:"m/84h/1h/0h/1")
+        self.changeDescriptor = "wpkh(\(rootKey.extend(path:changeExternalPath).asString()))"
+        
+        let electrumUrl = self.network == Network.testnet ?
+            "ssl://electrum.blockstream.info:60002" :
+            "ssl://electrum.blockstream.info:50002"
+        let electrum = ElectrumConfig(url: electrumUrl, socks5: nil, retry: 5, timeout: nil, stopGap: 10)
         
         let blockchainConfig = BlockchainConfig.electrum(config: electrum)
 
         self.blockchain = try Blockchain(config: blockchainConfig)
         
-        wallet = try Wallet.init(descriptor: self.descriptor,
-                                 changeDescriptor: nil,
-                                 network: self.network,
+        wallet = try Wallet.init(descriptor: descriptor,
+                                 changeDescriptor: changeDescriptor,
+                                 network: network,
                                  databaseConfig:DatabaseConfig.memory)
         
         print("***** End BDK setup *****")
@@ -73,26 +76,46 @@ public class Bitcoin {
         try wallet.sync(blockchain: self.blockchain, progress: nil)
     }
     
+    public func createTransaction(recipient: String, amt:UInt64) throws -> PartiallySignedBitcoinTransaction {
+        let scriptPubKey = try Address(address: recipient).scriptPubkey()
+        let res = try TxBuilder()
+                    .addRecipient(script: scriptPubKey, amount: amt)
+                    .feeRate(satPerVbyte: 256)
+                    .finish(wallet: wallet)
+        NSLog("Velas/Bitcoin/createTransaction: \(res.transactionDetails)")
+        return res.psbt
+    }
+    
+    public func signTransaction(psbt: PartiallySignedBitcoinTransaction) throws {
+        _ = try wallet.sign(psbt: psbt)
+    }
+    
+    public func broadcast(tx: String) throws {
+        let psbt = try PartiallySignedBitcoinTransaction(psbtBase64: tx)
+        //_ = try wallet.sign(psbt: psbt)
+        try self.blockchain.broadcast(psbt: psbt)
+    }
+    
+    public func broadcast(psbt: PartiallySignedBitcoinTransaction) throws {
+        try self.blockchain.broadcast(psbt: psbt)
+    }
+    
     public func getPrivKey() -> [UInt8] {
         return self.rootKey.secretBytes()
     }
     
-    public func getHeight() throws -> UInt32 {
+    public func getBlockHeight() throws -> UInt32 {
         return try self.blockchain.getHeight()
     }
     
     public func getBlockHash() throws -> String {
-        let height = try self.getHeight()
+        let height = try self.getBlockHeight()
         return try self.blockchain.getBlockHash(height: height)
     }
     
-    public func getGenesisHash() -> String {
-        if(self.network == Network.bitcoin){
-            return "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"
-        }
-        else {
-            return "000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943"
-        }
+    public func getGenesisHash() throws -> String {
+        let genesisBlock = try self.blockchain.getBlockHash(height: 0)
+        return genesisBlock
     }
    
 }

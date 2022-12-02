@@ -14,8 +14,17 @@ class MyPersister: Persist {
         let idBytes: [UInt8] = channel_id.write()
         let monitorBytes: [UInt8] = data.write()
         
-        NSLog("Velas/Lightning/MyPersister/persist_new_channel idBytes: \(bytesToHex(bytes: idBytes))")
-        NSLog("Velas/Lightning/MyPersister/persist_new_channel monitorBytes: \(bytesToHex(bytes: monitorBytes))")
+        NSLog("Velas/Lightning/MyPersister/persist_new_channel: wrote to file channels/\(bytesToHex(bytes: idBytes))")
+
+        do {
+            try FileMgr.createDirectory(path: "channels")
+            try FileMgr.writeData(data: Data(monitorBytes), path: "channels/\(bytesToHex(bytes: idBytes))")
+        }
+        catch {
+            NSLog("Velas/Lightning/MyPersister/persist_new_channel: problem saving channels/\(bytesToHex(bytes: idBytes))")
+
+        }
+        
         
         return LDKChannelMonitorUpdateStatus_Completed
     }
@@ -24,8 +33,15 @@ class MyPersister: Persist {
         let idBytes: [UInt8] = channel_id.write()
         let monitorBytes: [UInt8] = data.write()
         
-        NSLog("Velas/Lightning/update_persisted_channel idBytes: \(bytesToHex(bytes: idBytes))")
-        NSLog("Velas/Lightning/update_persisted_channel monitorBytes: \(bytesToHex(bytes: monitorBytes))")
+        NSLog("Velas/Lightning/MyPersister/update_persisted_channel: update file channels/\(bytesToHex(bytes: idBytes))")
+
+        do {
+            try FileMgr.createDirectory(path: "channels")
+            try FileMgr.writeData(data: Data(monitorBytes), path: "channels/\(bytesToHex(bytes: idBytes))")
+        }
+        catch {
+            NSLog("Velas/Lightning/MyPersister/update_persisted_channel: problem saving channels/\(bytesToHex(bytes: idBytes))")
+        }
         
         return LDKChannelMonitorUpdateStatus_Completed
     }

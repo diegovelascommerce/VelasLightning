@@ -11,10 +11,7 @@ public class Velas {
     public init(network: Network = Network.testnet, mnemonic: String? = nil) throws {
         btc = try Bitcoin(network: network, mnemonic: mnemonic)
         try btc.sync()
-        ln = try Lightning(privKey: btc.getPrivKey(),
-                           blockHeight: btc.getHeight(),
-                           blockHash: btc.getBlockHash(),
-                           genesisHash: btc.getGenesisHash())
+        ln = try Lightning(btc:btc)
     }
     
     public func getMnemonic() -> String {

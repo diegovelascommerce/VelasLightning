@@ -27,10 +27,7 @@ class LightningTests: XCTestCase {
         }
         
         try btc.sync()
-        ln = try Lightning(privKey: btc.getPrivKey(),
-                           blockHeight: btc.getHeight(),
-                           blockHash: btc.getBlockHash(),
-                           genesisHash: btc.getGenesisHash())
+        ln = try Lightning(btc: btc)
     }
 
     func testStartLightning() throws {

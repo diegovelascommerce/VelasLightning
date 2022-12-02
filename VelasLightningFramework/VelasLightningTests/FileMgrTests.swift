@@ -28,6 +28,16 @@ class FileMgrTests: XCTestCase {
         XCTAssertNoThrow(try FileMgr.writeData(data: Data("Hello World".utf8), path: "hello_world.data"))
     }
     
+    func testFileExists() throws {
+        XCTAssertNoThrow(try FileMgr.writeData(data: Data("Hello World".utf8), path: "hello_world.data"))
+        let url = FileMgr.getDocumentsDirectory().appendingPathComponent("hello_world.data")
+        XCTAssert(FileMgr.fileExists(url: url))
+        XCTAssert(FileMgr.fileExists(path: "hello_world.data"))
+        let url2 = FileMgr.getDocumentsDirectory().appendingPathComponent("hello_world.dataaaaaa")
+        XCTAssertFalse(FileMgr.fileExists(url: url2))
+        XCTAssertFalse(FileMgr.fileExists(path: "hello_world.dataaaaaa"))
+    }
+    
     func testReadString() throws {
         XCTAssertNoThrow(try FileMgr.writeString(string: "Hello World", path: "hello_world.txt"))
         
@@ -76,6 +86,40 @@ class FileMgrTests: XCTestCase {
         do {
             let files = try FileMgr.contentsOfDirectory(atPath:"velas")
             XCTAssert(files.count == 3)
+        } catch {
+            print(error)
+            throw error
+        }
+    }
+    
+    func testCreateDirectoryAndAddFilesToItData() throws {
+        XCTAssertNoThrow(try FileMgr.createDirectory(path: "velas"))
+        XCTAssertNoThrow(try FileMgr.writeData(data: Data("foobar 1".utf8), path: "velas/foobar1.data"))
+        XCTAssertNoThrow(try FileMgr.writeData(data: Data("foobar 2".utf8), path: "velas/foobar2.data"))
+        XCTAssertNoThrow(try FileMgr.writeData(data: Data("foobar 3".utf8), path: "velas/foobar3.data"))
+        do {
+            let urls = try FileMgr.contentsOfDirectory(atPath:"velas")
+            XCTAssert(urls.count == 3)
+            for url in urls {
+                let data = try FileMgr.readData(url: url)
+                let str = String(decoding: data, as: UTF8.self)
+                switch(url.lastPathComponent){
+                case "foobar1.data":
+                    XCTAssert(str == "foobar 1")
+                    break
+                case "foobar2.data":
+                    XCTAssert(str == "foobar 2")
+                    break
+                case "foobar3.data":
+                    XCTAssert(str == "foobar 3")
+                    break
+                default:
+                    print("there is a problem")
+                    XCTAssert(false)
+                    break
+                }
+                print(str)
+            }
         } catch {
             print(error)
             throw error

@@ -58,11 +58,33 @@ class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
     }
 
     override func persist_manager(channel_manager: ChannelManager) -> Result_NoneErrorZ {
-        return Result_NoneErrorZ()
+        let channel_manager_bytes = channel_manager.write()
+        do {
+            try FileMgr.writeData(data: Data(channel_manager_bytes), path: "channel_manager")
+        }
+        catch {
+            NSLog("Velas/Lightning/MyChannelManagerPersister: there was a problem persisting the channel \(error)")
+        }
+        //return Result_NoneErrorZ()
+        return Result_NoneErrorZ.ok()
     }
     
-    override func persist_scorer(scorer: Bindings.WriteableScore) -> Bindings.Result_NoneErrorZ {
-        Result_NoneErrorZ()
+    override func persist_graph(network_graph: NetworkGraph) -> Result_NoneErrorZ {
+        print("Velas/Lightning/MyChannelManagerPersister/persist_network_graph: persist the network graph");
+       
+        do {
+            let network_graph_bytes = network_graph.write()
+            try FileMgr.writeData(data: Data(network_graph_bytes), path: "network_graph")
+            print("Velas/Lightning/MyChannelManagerPersister/persist_network_graph: Write Success");
+            return Result_NoneErrorZ.ok()
+        }
+        catch {
+            print(error)
+            print("Velas/Lightning/MyChannelManagerPersister/persist_network_graph: persist_network_graph: Write Error");
+            return Result_NoneErrorZ.ok()
+        }
     }
+    
+    
 }
 

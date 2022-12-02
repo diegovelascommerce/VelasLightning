@@ -42,6 +42,21 @@ class FileMgr {
         return try Data(contentsOf: url)
     }
     
+    static func readData(url:URL) throws -> Data {
+        return try Data(contentsOf: url)
+    }
+    
+    static func fileExists(url:URL) -> Bool {
+        let res = FileManager.default.fileExists(atPath: url.path)
+        return res
+    }
+    
+    static func fileExists(path:String) -> Bool {
+        let url = getDocumentsDirectory().appendingPathComponent(path)
+        let res = fileExists(url: url)
+        return res
+    }
+    
     static func createDirectory(path:String) throws {
         let url = getDocumentsDirectory().appendingPathComponent(path)
         try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
