@@ -13,9 +13,10 @@ class MyBroadcasterInterface: BroadcasterInterface {
     override func broadcast_transaction(tx: [UInt8]) {
         // insert code to broadcast transaction
         let txBase64 = Data(tx).base64EncodedString()
-        print("LDK/broadcast_transaction: \(txBase64)")
+        
         do {
             try btc.broadcast(tx: txBase64)
+            print("Velas/Lightning/MyBroadcasterInterface/broadcast_transaction: \(txBase64)")
         }
         catch {
             NSLog("Velas/Lightning/MyBroadcasterInterface/broadcast_transaction: \(error)")

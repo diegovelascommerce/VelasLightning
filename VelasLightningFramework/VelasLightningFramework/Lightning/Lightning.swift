@@ -1,4 +1,6 @@
 import LightningDevKit
+import BitcoinDevKit
+
 
 /// This is the main class for handling interactions with the Lightning Network
 public class Lightning {
@@ -14,13 +16,23 @@ public class Lightning {
     
     let port = UInt16(9735)
     
-    let currency: LDKCurrency = LDKCurrency_BitcoinTestnet
-    let network: LDKNetwork = LDKNetwork_Testnet
+    let currency: LDKCurrency
+    let network: LDKNetwork
     
     /// Setup the LDK
     public init(btc:Bitcoin) throws {
         
-        NSLog("----- Start LDK setup -----")
+        print("----- Start LDK setup -----")
+        
+        if btc.network == Network.testnet {
+            self.network = LDKNetwork_Testnet
+            self.currency = LDKCurrency_BitcoinTestnet
+        }
+        else {
+            self.network = LDKNetwork_Bitcoin
+            self.currency = LDKCurrency_Bitcoin
+        }
+        
                 
         // Step 1. initialize the FeeEstimator
         let feeEstimator = MyFeeEstimator()
@@ -88,22 +100,29 @@ public class Lightning {
         /// what it's used for:
         ///     managing channel state
         
+        // channel_manager
         var serializedChannelManager:[UInt8] = [UInt8]()
         if FileMgr.fileExists(path: "channel_manager") {
             let channelManagerData = try FileMgr.readData(path: "channel_manager")
             serializedChannelManager = [UInt8](channelManagerData)
         }
         
+        // channel_monitors
         var serializedChannelMonitors:[[UInt8]] = [[UInt8]]()
-        let urls = try FileMgr.contentsOfDirectory(atPath:"channels")
-        for url in urls {
-            let channelData = try FileMgr.readData(url: url)
-            let channelBytes = [UInt8](channelData)
-            serializedChannelMonitors.append(channelBytes)
+        if FileMgr.fileExists(path: "channels") {
+            let urls = try FileMgr.contentsOfDirectory(atPath:"channels")
+            for url in urls {
+                let channelData = try FileMgr.readData(url: url)
+                let channelBytes = [UInt8](channelData)
+                serializedChannelMonitors.append(channelBytes)
+            }
         }
         
-        var serializedNetGraph:[UInt8] = [UInt8]()
+        
+        // net_graph
+        var serializedNetGraph:[UInt8]? = nil
         if FileMgr.fileExists(path: "network_graph") {
+            serializedNetGraph = [UInt8]()
             let netGraphData = try FileMgr.readData(path: "network_graph")
             serializedNetGraph = [UInt8](netGraphData)
         }
@@ -141,6 +160,7 @@ public class Lightning {
         userConfig.set_channel_handshake_config(val: handshakeConfig)
         userConfig.set_channel_handshake_limits(val: handshakeLimits)
         
+        // if there were no channels backup
         if serializedChannelMonitors.count == 0 {
             channel_manager_constructor = ChannelManagerConstructor(
                 network: network,
@@ -155,6 +175,7 @@ public class Lightning {
                 logger: logger
             )
         }
+        // else load the channels backup, channel manager, and net_graph
         else {
             channel_manager_constructor = try ChannelManagerConstructor(
                 channel_manager_serialized: serializedChannelManager,
@@ -180,7 +201,7 @@ public class Lightning {
         
         channel_manager_constructor?.chain_sync_completed(persister: channel_manager_persister, scorer: nil)
         
-        NSLog("---- End LDK setup -----")
+        print("---- End LDK setup -----")
     }
     
     /// Get return the node id of our node.
@@ -193,7 +214,6 @@ public class Lightning {
     func getNodeId() throws -> String {
         if let nodeId = channel_manager?.get_our_node_id() {
             let res = bytesToHex(bytes: nodeId)
-            NSLog("Velas/Lightning/getNodeId: \(res)")
             return res
         } else {
             let error = NSError(domain: "getNodeId",
@@ -227,9 +247,9 @@ public class Lightning {
                                 userInfo: [NSLocalizedDescriptionKey: "failed to bind \(address):\(port)"])
             throw error
         }
-        NSLog("Velas/Lightning/bindNode: connected")
-        NSLog("Velas/Lightning/bindNode address: \(address)")
-        NSLog("Velas/Lightning/bindNode port: \(port)")
+        print("Velas/Lightning/bindNode: connected")
+        print("Velas/Lightning/bindNode address: \(address)")
+        print("Velas/Lightning/bindNode port: \(port)")
         return res
     }
     
@@ -308,7 +328,6 @@ public class Lightning {
     }
     
     /// Get list of channels that were established with partner node.
-    /// 
     func listChannels() throws -> String {
         guard let channel_manager = channel_manager else {
             let error = NSError(domain: "listChannels",
@@ -333,7 +352,7 @@ public class Lightning {
     }
     
     
-
+    /// Convert ChannelDetails to a string
     func channel2ChannelObject(it: ChannelDetails) -> String {
         let short_channel_id = it.get_short_channel_id().getValue() ?? 0
         let confirmations_required = it.get_confirmations_required().getValue() ?? 0;
@@ -372,6 +391,7 @@ public class Lightning {
         return channelObject
     }
     
+    /// Close all channels in the nice way, cooperatively.
     func closeChannelsCooperatively() throws {
         guard let channel_manager = channel_manager else {
             let error = NSError(domain: "closeChannels",
@@ -389,7 +409,7 @@ public class Lightning {
         }
     }
     
-    /// Close channel in the nice way.
+    /// Close a channel in the nice way, cooperatively.
     ///
     /// both parties aggree to close the channel
     ///
@@ -409,6 +429,7 @@ public class Lightning {
         return true
     }
     
+    /// Close all channels the ugly way, forcefully.
     func closeChannelsForcefully() throws {
         guard let channel_manager = channel_manager else {
             let error = NSError(domain: "closeChannels",
@@ -426,7 +447,7 @@ public class Lightning {
         }
     }
     
-    /// Close channel the bad way.
+    /// Close a channel the bad way, forcefully.
     ///
     /// force to close the channel due to maybe the other peer being unresponsive
     ///

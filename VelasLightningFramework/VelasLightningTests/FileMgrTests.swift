@@ -36,6 +36,10 @@ class FileMgrTests: XCTestCase {
         let url2 = FileMgr.getDocumentsDirectory().appendingPathComponent("hello_world.dataaaaaa")
         XCTAssertFalse(FileMgr.fileExists(url: url2))
         XCTAssertFalse(FileMgr.fileExists(path: "hello_world.dataaaaaa"))
+        
+        XCTAssertNoThrow(try FileMgr.createDirectory(path: "velas"))
+        XCTAssert(FileMgr.fileExists(path: "velas"))
+        
     }
     
     func testReadString() throws {

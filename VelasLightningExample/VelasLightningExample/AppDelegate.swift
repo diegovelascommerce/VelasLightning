@@ -22,7 +22,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             velas = try Velas(mnemonic: "arrive remember certain all consider apology celery melt uphold blame call blame");
 
             
-        } catch {}
+        } catch {
+            NSLog("\(error)")
+            return false
+        }
         
         return true
     }

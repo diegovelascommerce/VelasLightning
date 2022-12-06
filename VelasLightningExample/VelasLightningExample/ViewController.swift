@@ -25,19 +25,22 @@ class ViewController: UIViewController {
 
         }
         catch {
-            print("there was a problem getting the node id \(error)")
+            NSLog("there was a problem getting the node id \(error)")
         }
 
     }
     
     @IBAction func connectClick(_ sender: Any) {
-        NSLog("connect to a peer")
-        let nodeId = "03e347d089c071c27680e26299223e80a740cf3e3fc4b4237fa219bb67121a670b"
-        let address = "45.33.22.210"
+        print("connect to a peer")
+//        let nodeId = "03e347d089c071c27680e26299223e80a740cf3e3fc4b4237fa219bb67121a670b"
+        let nodeId = "029cba2eb9edf18352e90f1a5f71e367af80d6e3ab7a5aa6122309fcbcd4375735"
+//        let address = "45.33.22.210"
+//        let address = "24.50.226.8"
+        let address = "192.168.0.10"
         let port = NSNumber(9735)
         do {
             let res = try velas.connectToPeer(nodeId: nodeId, address: address, port: port)
-            NSLog("connect: \(res)")
+            print("connect: \(res)")
         }
         catch {
             NSLog("there was a problem: \(error)")
@@ -45,10 +48,10 @@ class ViewController: UIViewController {
     }
     
     @IBAction func showPeerList(_ sender: Any) {
-        NSLog("show peer list")
+        print("show peer list")
         do {
             let res = try velas.listPeers()
-            NSLog("peers: \(res)")
+            print("peers: \(res)")
         }
         catch {
             NSLog("problem with showPeerList \(error)")
@@ -59,7 +62,7 @@ class ViewController: UIViewController {
     @IBAction func listChannels(_ sender: Any) {
         do {
             let channels = try velas.listChannels()
-            NSLog("channels: \(channels)")
+            print("channels: \(channels)")
         }
         catch {
             NSLog("problem with listing channels: \(error)")
@@ -68,8 +71,8 @@ class ViewController: UIViewController {
     
     @IBAction func createBolt11(_ sender: Any) {
         do {
-            let bolt11 = try velas.createInvoice(amtMsat: 2000, description: "this s a test from velas lighting")
-            NSLog("bolt11: \(bolt11)")
+            let bolt11 = try velas.createInvoice(amtMsat: 200000, description: "this s a test from velas lighting")
+            print("bolt11: \(bolt11)")
         }
         catch {
             NSLog("problem creating bolt11 invoice: \(error)")

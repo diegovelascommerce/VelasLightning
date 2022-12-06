@@ -11,18 +11,18 @@ import LightningDevKit
 class MyPersister: Persist {
     
     override func persist_new_channel(channel_id: OutPoint, data: ChannelMonitor, update_id: MonitorUpdateId) -> LDKChannelMonitorUpdateStatus {
+        
         let idBytes: [UInt8] = channel_id.write()
         let monitorBytes: [UInt8] = data.write()
         
-        NSLog("Velas/Lightning/MyPersister/persist_new_channel: wrote to file channels/\(bytesToHex(bytes: idBytes))")
-
         do {
             try FileMgr.createDirectory(path: "channels")
             try FileMgr.writeData(data: Data(monitorBytes), path: "channels/\(bytesToHex(bytes: idBytes))")
+            print("Velas/Lightning/MyPersister/persist_new_channel: successfully backup channel to channels/\(bytesToHex(bytes: idBytes))")
         }
         catch {
             NSLog("Velas/Lightning/MyPersister/persist_new_channel: problem saving channels/\(bytesToHex(bytes: idBytes))")
-
+            
         }
         
         
@@ -30,17 +30,17 @@ class MyPersister: Persist {
     }
 
     override func update_persisted_channel(channel_id: OutPoint, update: ChannelMonitorUpdate, data: ChannelMonitor, update_id: MonitorUpdateId) -> LDKChannelMonitorUpdateStatus {
+        
         let idBytes: [UInt8] = channel_id.write()
         let monitorBytes: [UInt8] = data.write()
         
-        NSLog("Velas/Lightning/MyPersister/update_persisted_channel: update file channels/\(bytesToHex(bytes: idBytes))")
-
         do {
             try FileMgr.createDirectory(path: "channels")
             try FileMgr.writeData(data: Data(monitorBytes), path: "channels/\(bytesToHex(bytes: idBytes))")
+            NSLog("Velas/Lightning/MyPersister/update_persisted_channel: update channel at channels/\(bytesToHex(bytes: idBytes))")
         }
         catch {
-            NSLog("Velas/Lightning/MyPersister/update_persisted_channel: problem saving channels/\(bytesToHex(bytes: idBytes))")
+            NSLog("Velas/Lightning/MyPersister/update_persisted_channel: problem updating channels/\(bytesToHex(bytes: idBytes))")
         }
         
         return LDKChannelMonitorUpdateStatus_Completed

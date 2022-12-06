@@ -12,6 +12,9 @@ import LightningDevKit
 class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
 
     func handle_event(event: Event) {
+        
+        NSLog("Velas/Lightning/MyChannelManagerPersister: \(event)")
+        
         if let _ = event.getValueAsSpendableOutputs() {
             print("ReactNativeLDK: trying to spend output")
            
@@ -58,29 +61,31 @@ class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
     }
 
     override func persist_manager(channel_manager: ChannelManager) -> Result_NoneErrorZ {
+        
         let channel_manager_bytes = channel_manager.write()
+        
         do {
             try FileMgr.writeData(data: Data(channel_manager_bytes), path: "channel_manager")
+            print("Velas/Lightning/MyChannelManagerPersister/persist_manager: Success")
         }
         catch {
             NSLog("Velas/Lightning/MyChannelManagerPersister: there was a problem persisting the channel \(error)")
         }
+        
         //return Result_NoneErrorZ()
         return Result_NoneErrorZ.ok()
     }
     
     override func persist_graph(network_graph: NetworkGraph) -> Result_NoneErrorZ {
-        print("Velas/Lightning/MyChannelManagerPersister/persist_network_graph: persist the network graph");
        
         do {
             let network_graph_bytes = network_graph.write()
             try FileMgr.writeData(data: Data(network_graph_bytes), path: "network_graph")
-            print("Velas/Lightning/MyChannelManagerPersister/persist_network_graph: Write Success");
+            print("Velas/Lightning/MyChannelManagerPersister/persist_network_graph: Success");
             return Result_NoneErrorZ.ok()
         }
         catch {
-            print(error)
-            print("Velas/Lightning/MyChannelManagerPersister/persist_network_graph: persist_network_graph: Write Error");
+            NSLog("Velas/Lightning/MyChannelManagerPersister/persist_network_graph: persist_network_graph: Error \(error)");
             return Result_NoneErrorZ.ok()
         }
     }

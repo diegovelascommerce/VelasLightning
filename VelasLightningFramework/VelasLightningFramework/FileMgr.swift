@@ -1,9 +1,3 @@
-//
-//  FileMgr.swift
-//  VelasLightningFramework
-//
-//  Created by Diego vila on 12/1/22.
-//
 
 import Foundation
 
@@ -13,60 +7,78 @@ extension URL {
     }
 }
 
-
+/// This is incharge of managing file for iOS
 class FileMgr {
+    
+    /// get the current document directory for the app
     static func getDocumentsDirectory() -> URL {
         let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
         return paths[0]
     }
     
+    /// write a string to a file
     static func writeString(string:String, path:String) throws {
         let url = getDocumentsDirectory().appendingPathComponent(path)
         try string.write(to: url, atomically: true, encoding: .utf8)
     }
     
+    /// write raw data to a file
     static func writeData(data:Data, path:String) throws {
         let url = getDocumentsDirectory().appendingPathComponent(path)
         try data.write(to: url)
     }
     
+    /// read string from a file, using a relative path
     static func readString(path:String) throws -> String {
         let url = getDocumentsDirectory().appendingPathComponent(path)
         
         return try String(contentsOf: url)
     }
     
+    /// read raw data from a file, using a relative path
     static func readData(path:String) throws -> Data {
         let url = getDocumentsDirectory().appendingPathComponent(path)
         
         return try Data(contentsOf: url)
     }
     
+    /// read raw data from a url
     static func readData(url:URL) throws -> Data {
         return try Data(contentsOf: url)
     }
     
+    /// check if file exists using a url
     static func fileExists(url:URL) -> Bool {
         let res = FileManager.default.fileExists(atPath: url.path)
         return res
     }
     
+    /// check if file exists using a relative path
     static func fileExists(path:String) -> Bool {
         let url = getDocumentsDirectory().appendingPathComponent(path)
         let res = fileExists(url: url)
         return res
     }
     
+    /// find file
+    static func findFile(atPath:String?, regex:String) throws -> Bool {
+        let url = try contentsOfDirectory(atPath: atPath, regex: regex)
+        return url.count > 0
+    }
+    
+    /// create a directory
     static func createDirectory(path:String) throws {
         let url = getDocumentsDirectory().appendingPathComponent(path)
         try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
     }
     
+    /// remove an item
     static func removeItem(path:String) throws  {
         let url = getDocumentsDirectory().appendingPathComponent(path)
         try FileManager.default.removeItem(at: url)
     }
     
+    /// show content inside directory, and can filter results using regex
     static func contentsOfDirectory(atPath:String? = nil, regex:String? = nil) throws -> [URL] {
         
         let url:URL
@@ -102,6 +114,7 @@ class FileMgr {
         return content
     }
     
+    /// remove everything in document directory for app
     static func removeAll() throws {
         let urls = try FileMgr.contentsOfDirectory()
         
@@ -117,8 +130,5 @@ class FileMgr {
 
     }
     
-    static func findFile(atPath:String?, regex:String) throws -> Bool {
-        let url = try contentsOfDirectory(atPath: atPath, regex: regex)
-        return url.count > 0
-    }
+    
 }
