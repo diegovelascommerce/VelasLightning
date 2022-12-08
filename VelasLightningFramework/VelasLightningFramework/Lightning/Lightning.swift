@@ -152,6 +152,7 @@ public class Lightning {
         let userConfig = UserConfig()
         
         let handshakeConfig = ChannelHandshakeConfig()
+        handshakeConfig.set_minimum_depth(val: 1)
         handshakeConfig.set_announced_channel(val: false)
         
         let handshakeLimits = ChannelHandshakeLimits()
@@ -159,6 +160,7 @@ public class Lightning {
         
         userConfig.set_channel_handshake_config(val: handshakeConfig)
         userConfig.set_channel_handshake_limits(val: handshakeLimits)
+        userConfig.set_accept_inbound_channels(val: true)
         
         // if there were no channels backup
         if serializedChannelMonitors.count == 0 {
@@ -366,6 +368,7 @@ public class Lightning {
         channelObject += "\"outbound_capacity_msat\":" + String(it.get_outbound_capacity_msat()) + ","
         channelObject += "\"short_channel_id\":" + "\"" + String(short_channel_id) + "\","
         channelObject += "\"is_usable\":" + (it.get_is_usable() ? "true" : "false") + ","
+        channelObject += "\"is_channel_ready\":" + (it.get_is_channel_ready() ? "true" : "false") + ","
         channelObject += "\"is_outbound\":" + (it.get_is_outbound() ? "true" : "false") + ","
         channelObject += "\"is_public\":" + (it.get_is_public() ? "true" : "false") + ","
         channelObject += "\"remote_node_id\":" + "\"" + bytesToHex(bytes: it.get_counterparty().get_node_id()) + "\"," // @deprecated fixme

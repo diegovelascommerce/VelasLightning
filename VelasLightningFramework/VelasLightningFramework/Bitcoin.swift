@@ -122,5 +122,5 @@ public class Bitcoin {
         let genesisBlock = try self.blockchain.getBlockHash(height: 0)
         return genesisBlock
     }
-   
+    
 }
