@@ -19,12 +19,22 @@ class RequestTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
 
-    func testExample() throws {
+    func testGet() {
         let data = Request.get(url: "https://blockstream.info/testnet/api/blocks/tip/hash")
         XCTAssertNotNil(data)
         let str = String(decoding: data!, as: UTF8.self)
         XCTAssertFalse(str.isEmpty)
         print(str)
+    }
+    
+    func testGetAsync() {
+        Task {
+            let data = try await Request.getAsync(url: "https://blockstream.info/testnet/api/blocks/tip/hash")
+            XCTAssertNotNil(data)
+            let str = String(decoding: data!, as: UTF8.self)
+            XCTAssertFalse(str.isEmpty)
+            print(str)
+        }
     }
 
 }
