@@ -20,7 +20,11 @@ public class Lightning {
     let network: LDKNetwork
     
     /// Setup the LDK
-    public init(btc:Bitcoin) throws {
+    public init(btc:Bitcoin,
+                getChannels: Optional<() -> [Data]> = nil,
+                backUpChannel: Optional<(Data) -> ()> = nil,
+                getChannelManager: Optional<() -> Data> = nil,
+                backUpChannelManager: Optional<(Data) -> ()> = nil) throws {
         
         print("----- Start LDK setup -----")
         
@@ -44,7 +48,7 @@ public class Lightning {
         let broadcaster = MyBroadcasterInterface(btc:btc)
         
         // Step 4. Initialize Persist
-        let persister = MyPersister()
+        let persister = MyPersister(backUpChannel: backUpChannel)
         
         // Step 5. Initialize the Transaction Filter
         let filter = MyFilter()
@@ -102,14 +106,23 @@ public class Lightning {
         
         // channel_manager
         var serializedChannelManager:[UInt8] = [UInt8]()
-        if FileMgr.fileExists(path: "channel_manager") {
+        if let getChannelManager = getChannelManager {
+            let channelManagerData = getChannelManager()
+            serializedChannelManager = [UInt8](channelManagerData)
+        } else if FileMgr.fileExists(path: "channel_manager") {
             let channelManagerData = try FileMgr.readData(path: "channel_manager")
             serializedChannelManager = [UInt8](channelManagerData)
         }
         
         // channel_monitors
         var serializedChannelMonitors:[[UInt8]] = [[UInt8]]()
-        if FileMgr.fileExists(path: "channels") {
+        if let getChannels = getChannels {
+            let channels = getChannels()
+            for channel in channels {
+                let channelBytes = [UInt8](channel)
+                serializedChannelMonitors.append(channelBytes)
+            }
+        } else if FileMgr.fileExists(path: "channels") {
             let urls = try FileMgr.contentsOfDirectory(atPath:"channels")
             for url in urls {
                 let channelData = try FileMgr.readData(url: url)

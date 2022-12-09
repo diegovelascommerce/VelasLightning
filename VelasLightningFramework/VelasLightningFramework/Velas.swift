@@ -8,10 +8,17 @@ public class Velas {
     private var ln:Lightning!
     
     /// Initialize Bitcoin and Lightning
-    public init(network: Network = Network.testnet, mnemonic: String? = nil) throws {
+    public init(network: Network = Network.testnet,
+                mnemonic: String? = nil,
+                getChannels: Optional<() -> [Data]> = nil,
+                backUpChannel: Optional<(Data) -> ()> = nil,
+                getChannelManager: Optional<() -> Data> = nil,
+                backUpChannelManager: Optional<(Data) -> ()> = nil) throws {
         btc = try Bitcoin(network: network, mnemonic: mnemonic)
         try btc.sync()
-        ln = try Lightning(btc:btc)
+        ln = try Lightning(btc:btc,
+                           backUpChannel:backUpChannel,
+                           backUpChannelManager:backUpChannelManager)
     }
     
     public func getMnemonic() -> String {

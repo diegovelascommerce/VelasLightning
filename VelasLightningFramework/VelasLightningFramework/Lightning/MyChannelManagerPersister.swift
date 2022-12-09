@@ -10,6 +10,13 @@ import LightningDevKit
 
 
 class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
+    
+    var backUpChannelManager: Optional<(Data) -> ()>
+    
+    public init(backUpChannelManager: Optional<(Data) -> ()> = nil) {
+        self.backUpChannelManager = backUpChannelManager
+        super.init()
+    }
 
     func handle_event(event: Event) {
         
@@ -65,8 +72,13 @@ class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
         let channel_manager_bytes = channel_manager.write()
         
         do {
-            try FileMgr.writeData(data: Data(channel_manager_bytes), path: "channel_manager")
+            let data = Data(channel_manager_bytes)
+            try FileMgr.writeData(data: data, path: "channel_manager")
             print("Velas/Lightning/MyChannelManagerPersister/persist_manager: Success")
+            if let backUpChannelManager = backUpChannelManager {
+                backUpChannelManager(data)
+                print("Velas/Lightning/MyChannelManagerPersister/persist_manager: successfully backup channel_manager to server")
+            }
         }
         catch {
             NSLog("Velas/Lightning/MyChannelManagerPersister: there was a problem persisting the channel \(error)")
