@@ -123,4 +123,18 @@ public class Bitcoin {
         return genesisBlock
     }
     
+    /// Get status of transaction
+    public func getTx(txId:String) -> Transaction? {
+        let res = Esplora.getTxStatus(txid:txId,
+                                      network: self.network)
+        return res
+    }
+    
+    /// Get status of transaction
+    public func getTxMerkleProof(txId:String) -> MerkleProof? {
+        let res = Esplora.getTxMerkleProof(txid:txId,
+                                      network: self.network)
+        return res
+    }
+    
 }

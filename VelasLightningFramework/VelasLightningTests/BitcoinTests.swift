@@ -20,7 +20,9 @@ class BitcoinTests: XCTestCase {
     override func setUpWithError() throws {
         print(self.name)
         switch self.name {
-        case "-[BitcoinTests testMainnetGenesis]":
+        case "-[BitcoinTests testMainnetGenesis]",
+            "-[BitcoinTests testGetTxMainnet]",
+            "-[BitcoinTests testGetTxMerkleProofMainnet]":
             btc = try Bitcoin(network: Network.bitcoin)
         case "-[BitcoinTests testInitializationWithMnemonic]":
             btc = try Bitcoin(mnemonic:self.TestMnemonic)
@@ -86,6 +88,36 @@ class BitcoinTests: XCTestCase {
     func testTestnetGenesis() throws {
         try btc.sync()
         XCTAssertTrue(try btc.getGenesisHash() == "000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943")
+    }
+    
+    func testGetTxTestnet() {
+        let res = btc.getTx(txId: "39df5d0cd00fbf21fb76fd07aa6b85579f8a224d6feb986c0ba0b2600736c80c")
+        XCTAssertNotNil(res)
+        XCTAssert(res!.confirmed)
+        XCTAssert(res!.block_height == 2410971)
+        XCTAssert(res!.block_hash == "00000000000000315aac0ec1519047edd43c27843bd44a6b0dcdf42cc24dd1db")
+    }
+    
+    func testGetTxMainnet() {
+        let res = btc.getTx(txId: "00cbda881afea89d97c6cccda41057ad9db07b500f65e29d4de4b42513f1a491")
+        XCTAssertNotNil(res)
+        XCTAssert(res!.confirmed)
+        XCTAssert(res!.block_height == 766957)
+        XCTAssert(res!.block_hash == "0000000000000000000291f53fcc3577d34fb488e1656b75e916262d9f873cd0")
+    }
+    
+    func testGetTxMerkleProofTestnet() {
+        let res = btc.getTxMerkleProof(txId: "39df5d0cd00fbf21fb76fd07aa6b85579f8a224d6feb986c0ba0b2600736c80c")
+        XCTAssertNotNil(res)
+        XCTAssert(res!.block_height == 2410971)
+        XCTAssert(res!.pos == 2)
+    }
+    
+    func testGetTxMerkleProofMainnet() {
+        let res = btc.getTxMerkleProof(txId: "00cbda881afea89d97c6cccda41057ad9db07b500f65e29d4de4b42513f1a491")
+        XCTAssertNotNil(res)
+        XCTAssert(res!.block_height == 766957)
+        XCTAssert(res!.pos == 767)
     }
     
 }

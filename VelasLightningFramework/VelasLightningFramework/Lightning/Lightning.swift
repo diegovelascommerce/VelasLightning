@@ -8,6 +8,7 @@ public class Lightning {
     
     var logger: MyLogger!
     var keys_manager: KeysManager?
+    var chain_monitor: ChainMonitor?
     var channel_manager_constructor: ChannelManagerConstructor?
     var channel_manager: LightningDevKit.ChannelManager?
     var channel_manager_persister: MyChannelManagerPersister
@@ -18,6 +19,7 @@ public class Lightning {
     
     let currency: LDKCurrency
     let network: LDKNetwork
+    var btc: Bitcoin
     
     /// Setup the LDK
     public init(btc:Bitcoin,
@@ -27,6 +29,8 @@ public class Lightning {
                 backUpChannelManager: Optional<(Data) -> ()> = nil) throws {
         
         print("----- Start LDK setup -----")
+        
+        self.btc = btc
         
         if btc.network == Network.testnet {
             self.network = LDKNetwork_Testnet
@@ -58,7 +62,7 @@ public class Lightning {
         /// What it is used for:
         ///     monitoring the chain for lightning transactions that are relevant to our node,
         ///     and broadcasting transactions
-        let chainMonitor = ChainMonitor(chain_source: Option_FilterZ(value: filter),
+        chain_monitor = ChainMonitor(chain_source: Option_FilterZ(value: filter),
                                         broadcaster: broadcaster,
                                         logger: logger,
                                         feeest: feeEstimator,
@@ -184,7 +188,7 @@ public class Lightning {
                 current_blockchain_tip_height: latestBlockHeight,
                 keys_interface: keysInterface,
                 fee_estimator: feeEstimator,
-                chain_monitor: chainMonitor,
+                chain_monitor: chain_monitor!,
                 net_graph: networkGraph, // see `NetworkGraph`
                 tx_broadcaster: broadcaster,
                 logger: logger
@@ -197,7 +201,7 @@ public class Lightning {
                 channel_monitors_serialized: serializedChannelMonitors,
                 keys_interface: keysInterface,
                 fee_estimator: feeEstimator,
-                chain_monitor: chainMonitor,
+                chain_monitor: chain_monitor!,
                 filter: filter,
                 net_graph_serialized: serializedNetGraph, 
                 tx_broadcaster: broadcaster,
@@ -214,9 +218,34 @@ public class Lightning {
         
         channel_manager_persister = MyChannelManagerPersister()
         
-        channel_manager_constructor?.chain_sync_completed(persister: channel_manager_persister, scorer: nil)
+//        channel_manager_constructor?.chain_sync_completed(persister: channel_manager_persister, scorer: nil)
         
         print("---- End LDK setup -----")
+    }
+    
+    func sync() {
+        //var res = channel_manager?.asget_relevant_txids()
+        channel_manager_constructor?.chain_sync_completed(persister: channel_manager_persister, scorer: nil)
+    }
+    
+    func syncRelevantTxids() throws {
+        guard let channel_manager = channel_manager, let chain_monitor = chain_monitor else {
+            let error = NSError(domain: "Channel manager", code: 1, userInfo: nil)
+            throw error
+        }
+        
+        let txids1 = channel_manager.as_Confirm().get_relevant_txids()
+        let txids2 = chain_monitor.as_Confirm().get_relevant_txids()
+        let transaction_ids = txids1 + txids2
+        
+        for txidBytes in transaction_ids {
+            let txId = bytesToHex32Reversed(bytes: array_to_tuple32(array: txidBytes))
+            let res = self.btc.getTx(txId: txId)
+            if let res = res, res.confirmed {
+
+            }
+        }
+
     }
     
     /// Get return the node id of our node.
@@ -687,6 +716,49 @@ func getPublicIPAddress() -> String? {
         print("Error: \(error)")
     }
     return publicIP
+}
+
+func bytesToHex32Reversed(bytes: (UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8)) -> String
+{
+    var bytesArray: [UInt8] = []
+    bytesArray.append(bytes.0)
+    bytesArray.append(bytes.1)
+    bytesArray.append(bytes.2)
+    bytesArray.append(bytes.3)
+    bytesArray.append(bytes.4)
+    bytesArray.append(bytes.5)
+    bytesArray.append(bytes.6)
+    bytesArray.append(bytes.7)
+    bytesArray.append(bytes.8)
+    bytesArray.append(bytes.9)
+    bytesArray.append(bytes.10)
+    bytesArray.append(bytes.11)
+    bytesArray.append(bytes.12)
+    bytesArray.append(bytes.13)
+    bytesArray.append(bytes.14)
+    bytesArray.append(bytes.15)
+    bytesArray.append(bytes.16)
+    bytesArray.append(bytes.17)
+    bytesArray.append(bytes.18)
+    bytesArray.append(bytes.19)
+    bytesArray.append(bytes.20)
+    bytesArray.append(bytes.21)
+    bytesArray.append(bytes.22)
+    bytesArray.append(bytes.23)
+    bytesArray.append(bytes.24)
+    bytesArray.append(bytes.25)
+    bytesArray.append(bytes.26)
+    bytesArray.append(bytes.27)
+    bytesArray.append(bytes.28)
+    bytesArray.append(bytes.29)
+    bytesArray.append(bytes.30)
+    bytesArray.append(bytes.31)
+
+    return bytesToHex(bytes: bytesArray.reversed())
+}
+
+private func array_to_tuple32(array: [UInt8]) -> (UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8) {
+                return (array[0], array[1], array[2], array[3], array[4], array[5], array[6], array[7], array[8], array[9], array[10], array[11], array[12], array[13], array[14], array[15], array[16], array[17], array[18], array[19], array[20], array[21], array[22], array[23], array[24], array[25], array[26], array[27], array[28], array[29], array[30], array[31])
 }
 
 

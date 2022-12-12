@@ -97,4 +97,5 @@ class VelasTests: XCTestCase {
     func testCloseChannelsForcefully() throws {
         XCTAssertNoThrow(try velas.closeChannelsForcefully())
     }
+    
 }
