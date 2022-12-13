@@ -56,4 +56,29 @@ public class Esplora {
         
         return res
     }
+    
+    public static func getTxHex(txid:String, network: Network) -> String? {
+        let url = network == Network.testnet ?
+            "https://blockstream.info/testnet/api/tx/\(txid)/hex":
+            "https://blockstream.info/api/tx/\(txid)/hex";
+        
+        let data = Request.get(url: url)
+        
+        let res = String(decoding: data!, as: UTF8.self)
+        
+        return res
+    }
+    
+    // /block/:hash/header
+    public static func getBlockHeader(txid:String, network: Network) -> String? {
+        let url = network == Network.testnet ?
+            "https://blockstream.info/testnet/api/tx/\(txid)/hex":
+            "https://blockstream.info/api/tx/\(txid)/hex";
+        
+        let data = Request.get(url: url)
+        
+        let res = String(decoding: data!, as: UTF8.self)
+        
+        return res
+    }
 }

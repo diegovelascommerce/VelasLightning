@@ -207,46 +207,68 @@ public class Lightning {
                 tx_broadcaster: broadcaster,
                 logger: logger
             )
+        }
+            
+        channel_manager = channel_manager_constructor?.channelManager
 
+        channel_manager_persister = MyChannelManagerPersister()
+        
+        /// Step 12. Sync ChannelManager and ChainMonitor to chain tip
+        
+        let txids1 = channel_manager!.as_Confirm().get_relevant_txids()
+        let txids2 = chain_monitor!.as_Confirm().get_relevant_txids()
+            
+        let txIds = txids1 + txids2
+            
+        for bytes in txIds {
+            let txId = bytesToHex32Reversed(bytes: array_to_tuple32(array: bytes))
+            let tx = self.btc.getTx(txId: txId)
+            if let tx = tx, tx.confirmed {
+                try transactionConfirmed(txId, transaction: tx)
+            }
+            else {
+                try transactionUnconfirmed(txId)
+            }
         }
         
-        channel_manager = channel_manager_constructor?.channelManager
+        channel_manager_constructor?.chain_sync_completed(persister: channel_manager_persister, scorer: nil)
         
         peer_manager = channel_manager_constructor?.peerManager
         
         peer_handler = channel_manager_constructor?.getTCPPeerHandler()
         
-        channel_manager_persister = MyChannelManagerPersister()
-        
-//        channel_manager_constructor?.chain_sync_completed(persister: channel_manager_persister, scorer: nil)
-        
         print("---- End LDK setup -----")
     }
     
-    func sync() {
-        //var res = channel_manager?.asget_relevant_txids()
-        channel_manager_constructor?.chain_sync_completed(persister: channel_manager_persister, scorer: nil)
+
+    
+    
+    
+    func transactionUnconfirmed(_ txidHex: String) throws {
+        guard let channel_manager = channel_manager, let chain_monitor = chain_monitor else {
+            let error = NSError(domain: "Channel manager", code: 1, userInfo: nil)
+            throw error
+        }
+        channel_manager.as_Confirm().transaction_unconfirmed(txid: hexStringToByteArray(txidHex))
+        chain_monitor.as_Confirm().transaction_unconfirmed(txid: hexStringToByteArray(txidHex))
     }
     
-    func syncRelevantTxids() throws {
+    func transactionConfirmed(_ txId: String, transaction: Transaction) throws {
         guard let channel_manager = channel_manager, let chain_monitor = chain_monitor else {
             let error = NSError(domain: "Channel manager", code: 1, userInfo: nil)
             throw error
         }
         
-        let txids1 = channel_manager.as_Confirm().get_relevant_txids()
-        let txids2 = chain_monitor.as_Confirm().get_relevant_txids()
-        let transaction_ids = txids1 + txids2
+        let merkleProof = btc.getTxMerkleProof(txId: txId)
+
+//        let txData = C2Tuple_usizeTransactionZ.new(a: UInt(truncating: txPos), b: hexStringToByteArray(transactionHex))
+//        let txarray = [txData]
+//
+//        channel_manager.as_Confirm().transactions_confirmed(header: hexStringToByteArray(headerHex), txdata: txarray, height: UInt32(truncating: height))
+//        chain_monitor.as_Confirm().transactions_confirmed(header: hexStringToByteArray(headerHex), txdata: txarray, height: UInt32(truncating: height))
         
-        for txidBytes in transaction_ids {
-            let txId = bytesToHex32Reversed(bytes: array_to_tuple32(array: txidBytes))
-            let res = self.btc.getTx(txId: txId)
-            if let res = res, res.confirmed {
-
-            }
-        }
-
     }
+
     
     /// Get return the node id of our node.
     ///
