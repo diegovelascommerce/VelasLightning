@@ -22,6 +22,8 @@ class BitcoinTests: XCTestCase {
         switch self.name {
         case "-[BitcoinTests testMainnetGenesis]",
             "-[BitcoinTests testGetTxMainnet]",
+            "-[BitcoinTests testGetBlockHeaderMainnet]",
+            "-[BitcoinTests testGetTxRawMainnet]",
             "-[BitcoinTests testGetTxMerkleProofMainnet]":
             btc = try Bitcoin(network: Network.bitcoin)
         case "-[BitcoinTests testInitializationWithMnemonic]":
@@ -96,6 +98,44 @@ class BitcoinTests: XCTestCase {
         XCTAssert(res!.confirmed)
         XCTAssert(res!.block_height == 2410971)
         XCTAssert(res!.block_hash == "00000000000000315aac0ec1519047edd43c27843bd44a6b0dcdf42cc24dd1db")
+    }
+    
+    func testGetTxRawTestnet() throws {
+        let res = btc.getTxRaw(txId:"39df5d0cd00fbf21fb76fd07aa6b85579f8a224d6feb986c0ba0b2600736c80c")
+        
+        let testBundle = Bundle(for: type(of: self))
+        let fileURL = testBundle.url(forResource: "tx_raw_testnet", withExtension: "")
+        XCTAssertNotNil(fileURL)
+
+        let rawData: Data = try Data(contentsOf: fileURL!)
+        
+        XCTAssertNotNil(res)
+        XCTAssert(res! == rawData)
+    }
+    
+    func testGetTxRawMainnet() throws {
+        let res = btc.getTxRaw(txId:"00cbda881afea89d97c6cccda41057ad9db07b500f65e29d4de4b42513f1a491")
+        
+        let testBundle = Bundle(for: type(of: self))
+        let fileURL = testBundle.url(forResource: "tx_raw", withExtension: "")
+        XCTAssertNotNil(fileURL)
+
+        let rawData: Data = try Data(contentsOf: fileURL!)
+        
+        XCTAssertNotNil(res)
+        XCTAssert(res! == rawData)
+    }
+    
+    func testGetBlockHeaderTestnet() {
+        let res = btc.getBlockHeader(hash: "00000000000000315aac0ec1519047edd43c27843bd44a6b0dcdf42cc24dd1db")
+        XCTAssertNotNil(res)
+        XCTAssert(res! == "000080200258b3b0796682c70bbf2b2c8ba7fbf17176c2462b1688ccd57e0000000000005254efa5fbb7d94aa9c94c6544e8b1ca516fd5be61f593a1056d97cd28c1f80d1b6797638ac733190e83693f")
+    }
+    
+    func testGetBlockHeaderMainnet() {
+        let res = btc.getBlockHeader(hash: "0000000000000000000291f53fcc3577d34fb488e1656b75e916262d9f873cd0")
+        XCTAssertNotNil(res)
+        XCTAssert(res! == "0040be2fd0d44d9e21aa59c9980815e1e0f8a7c36245ec828da5010000000000000000001ae4056bbb6bc9fcca925020f619b923e4fd3a6dd2c4eebab2952bc826b425ecd9279663303808170c40cab0")
     }
     
     func testGetTxMainnet() {

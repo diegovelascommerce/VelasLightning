@@ -137,4 +137,16 @@ public class Bitcoin {
         return res
     }
     
+    // Get status of transaction
+    public func getBlockHeader(hash:String) -> String? {
+        let res = Esplora.getBlockHeader(hash: hash, network: self.network)
+        return res
+    }
+    
+    // Get status of transaction
+    public func getTxRaw(txId:String) -> Data? {
+        let res = Esplora.getTxRaw(txid: txId, network: self.network)
+        return res
+    }
+    
 }

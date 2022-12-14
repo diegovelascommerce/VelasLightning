@@ -163,8 +163,7 @@ public class Lightning {
         ///
         ///     Finally, we can proceed by instantiating the ChannelManager using ChannelManagerConstructor.
         
-        let latestBlockHash = [UInt8](Data(base64Encoded: try btc.getBlockHash())!)
-        let latestBlockHeight = try btc.getBlockHeight()
+        
         
         let userConfig = UserConfig()
         
@@ -181,6 +180,9 @@ public class Lightning {
         
         // if there were no channels backup
         if serializedChannelMonitors.count == 0 {
+            let latestBlockHash = [UInt8](Data(base64Encoded: try btc.getBlockHash())!)
+            let latestBlockHeight = try btc.getBlockHeight()
+            
             channel_manager_constructor = ChannelManagerConstructor(
                 network: network,
                 config: userConfig,
@@ -224,12 +226,17 @@ public class Lightning {
             let txId = bytesToHex32Reversed(bytes: array_to_tuple32(array: bytes))
             let tx = self.btc.getTx(txId: txId)
             if let tx = tx, tx.confirmed {
-                try transactionConfirmed(txId, transaction: tx)
+                try transactionConfirmed(txId, tx: tx)
             }
             else {
                 try transactionUnconfirmed(txId)
             }
         }
+        
+//        byte[] best_header = // <insert code to get your best known header>
+//        int best_height = // <insert code to get your best known block height>
+//        channel_manager.update_best_block(best_header, best_height);
+//        chain_monitor.update_best_block(best_header, best_height);
         
         channel_manager_constructor?.chain_sync_completed(persister: channel_manager_persister, scorer: nil)
         
@@ -253,21 +260,47 @@ public class Lightning {
         chain_monitor.as_Confirm().transaction_unconfirmed(txid: hexStringToByteArray(txidHex))
     }
     
-    func transactionConfirmed(_ txId: String, transaction: Transaction) throws {
+    func transactionConfirmed(_ txId: String, tx: Transaction) throws {
         guard let channel_manager = channel_manager, let chain_monitor = chain_monitor else {
             let error = NSError(domain: "Channel manager", code: 1, userInfo: nil)
             throw error
         }
         
+        let height = tx.block_height
+        let txRaw = btc.getTxRaw(txId: txId)
+        let headerHex = btc.getBlockHeader(hash: tx.block_hash)
         let merkleProof = btc.getTxMerkleProof(txId: txId)
+        let txPos = merkleProof!.pos
 
-//        let txData = C2Tuple_usizeTransactionZ.new(a: UInt(truncating: txPos), b: hexStringToByteArray(transactionHex))
-//        let txarray = [txData]
-//
-//        channel_manager.as_Confirm().transactions_confirmed(header: hexStringToByteArray(headerHex), txdata: txarray, height: UInt32(truncating: height))
-//        chain_monitor.as_Confirm().transactions_confirmed(header: hexStringToByteArray(headerHex), txdata: txarray, height: UInt32(truncating: height))
+        let txTuple = C2Tuple_usizeTransactionZ.new(a: UInt(truncating: txPos as NSNumber), b: [UInt8](txRaw!))
+        let txArray = [txTuple]
+
+        channel_manager.as_Confirm().transactions_confirmed(header: hexStringToByteArray(headerHex!), txdata: txArray, height: UInt32(truncating: height as NSNumber))
+        
+        chain_monitor.as_Confirm().transactions_confirmed(header: hexStringToByteArray(headerHex!), txdata: txArray, height: UInt32(truncating: height as NSNumber))
         
     }
+    
+//    func updateBestBlock() {
+//        guard let channelManager = channel_manager else {
+//            let error = NSError(domain: "Channel manager", code: 1, userInfo: nil)
+//            return reject("updateBestBlock", "updateBestBlock: channelManager guard failed",  error)
+//        }
+//
+//        if headerHex.count == 0 {
+//            let error = NSError(domain: "Channel manager", code: 1, userInfo: nil)
+//            return reject("updateBestBlock", "updateBestBlock: headerHex is empty",  error)
+//        }
+//
+//        channelManager.as_Confirm().best_block_updated(header: hexStringToByteArray(headerHex), height: UInt32(truncating: height))
+//
+//        guard let chainMonitor = chain_monitor else {
+//            let error = NSError(domain: "updateBestBlock", code: 1, userInfo: nil)
+//            return reject("updateBestBlock", "updateBestBlock: chainMonitor guard failed",  error)
+//        }
+//        chainMonitor.as_Confirm().best_block_updated(header: hexStringToByteArray(headerHex), height: UInt32(truncating: height))
+//        
+//    }
 
     
     /// Get return the node id of our node.

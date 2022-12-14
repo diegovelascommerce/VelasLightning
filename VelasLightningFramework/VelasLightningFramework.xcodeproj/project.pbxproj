@@ -21,6 +21,9 @@
 		813649C9291BEE8100C344B6 /* LightningDevKit in Frameworks */ = {isa = PBXBuildFile; productRef = 813649C8291BEE8100C344B6 /* LightningDevKit */; settings = {ATTRIBUTES = (Required, ); }; };
 		81481A6729087B2300DA3224 /* VelasLightningFramework.h in Headers */ = {isa = PBXBuildFile; fileRef = 81481A6629087B2300DA3224 /* VelasLightningFramework.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8148B24F2947A23300F9FC2A /* EsploraTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8148B24E2947A23300F9FC2A /* EsploraTests.swift */; };
+		8173C0BF294A410500BCF01F /* tx_raw in Resources */ = {isa = PBXBuildFile; fileRef = 8173C0BD294A410500BCF01F /* tx_raw */; };
+		8173C0C1294A457500BCF01F /* tx_raw_testnet in Resources */ = {isa = PBXBuildFile; fileRef = 8173C0C0294A457500BCF01F /* tx_raw_testnet */; };
+		8173C0C3294A7CE100BCF01F /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8173C0C2294A7CE100BCF01F /* Utils.swift */; };
 		81B6F4C2294263570015F74D /* Esplora.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81B6F4C1294263570015F74D /* Esplora.swift */; };
 		81B6F4C5294268EC0015F74D /* Request.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81B6F4C4294268EC0015F74D /* Request.swift */; };
 		81B6F4C7294274320015F74D /* RequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81B6F4C6294274320015F74D /* RequestTests.swift */; };
@@ -76,6 +79,9 @@
 		81481A6629087B2300DA3224 /* VelasLightningFramework.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VelasLightningFramework.h; sourceTree = "<group>"; };
 		81481A8D29087B5200DA3224 /* VelasLightningExample.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = VelasLightningExample.xcodeproj; path = ../VelasLightningExample/VelasLightningExample.xcodeproj; sourceTree = "<group>"; };
 		8148B24E2947A23300F9FC2A /* EsploraTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EsploraTests.swift; sourceTree = "<group>"; };
+		8173C0BD294A410500BCF01F /* tx_raw */ = {isa = PBXFileReference; lastKnownFileType = file; path = tx_raw; sourceTree = "<group>"; };
+		8173C0C0294A457500BCF01F /* tx_raw_testnet */ = {isa = PBXFileReference; lastKnownFileType = file; path = tx_raw_testnet; sourceTree = "<group>"; };
+		8173C0C2294A7CE100BCF01F /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		81B6F4C1294263570015F74D /* Esplora.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Esplora.swift; sourceTree = "<group>"; };
 		81B6F4C4294268EC0015F74D /* Request.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Request.swift; sourceTree = "<group>"; };
 		81B6F4C6294274320015F74D /* RequestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestTests.swift; sourceTree = "<group>"; };
@@ -110,6 +116,8 @@
 		8121890E29087D8C00354733 /* VelasLightningTests */ = {
 			isa = PBXGroup;
 			children = (
+				8173C0BD294A410500BCF01F /* tx_raw */,
+				8173C0C0294A457500BCF01F /* tx_raw_testnet */,
 				8121891C2908832200354733 /* BitcoinTests.swift */,
 				8121891E2908844000354733 /* LightningTests.swift */,
 				81D31EE22909ACE900A621A0 /* VelasTests.swift */,
@@ -164,6 +172,7 @@
 				81E52DCB29392EBC00607DEC /* FileMgr.swift */,
 				81B6F4C1294263570015F74D /* Esplora.swift */,
 				81B6F4C4294268EC0015F74D /* Request.swift */,
+				8173C0C2294A7CE100BCF01F /* Utils.swift */,
 			);
 			path = VelasLightningFramework;
 			sourceTree = "<group>";
@@ -301,6 +310,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8173C0BF294A410500BCF01F /* tx_raw in Resources */,
+				8173C0C1294A457500BCF01F /* tx_raw_testnet in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -336,6 +347,7 @@
 				81E52DCC29392EBC00607DEC /* FileMgr.swift in Sources */,
 				812D3860290C441A005EA7E9 /* MyBroadcasterInterface.swift in Sources */,
 				81FC2CC0291ACF36001EE52E /* MyChannelManagerPersister.swift in Sources */,
+				8173C0C3294A7CE100BCF01F /* Utils.swift in Sources */,
 				812D385E290C40C3005EA7E9 /* MyLogger.swift in Sources */,
 				812D3862290C46C8005EA7E9 /* MyPersister.swift in Sources */,
 				81B6F4C2294263570015F74D /* Esplora.swift in Sources */,

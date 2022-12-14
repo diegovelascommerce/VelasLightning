@@ -69,11 +69,46 @@ public class Esplora {
         return res
     }
     
-    // /block/:hash/header
-    public static func getBlockHeader(txid:String, network: Network) -> String? {
+    public static func getTxRaw(txid:String, network: Network) -> Data? {
         let url = network == Network.testnet ?
-            "https://blockstream.info/testnet/api/tx/\(txid)/hex":
-            "https://blockstream.info/api/tx/\(txid)/hex";
+            "https://blockstream.info/testnet/api/tx/\(txid)/raw":
+            "https://blockstream.info/api/tx/\(txid)/raw";
+        
+        let data = Request.get(url: url)
+        
+        return data
+    }
+    
+    public static func getBlockHeader(hash:String, network: Network) -> String? {
+        let url = network == Network.testnet ?
+            "https://blockstream.info/testnet/api/block/\(hash)/header":
+            "https://blockstream.info/api/block/\(hash)/header";
+        
+        let data = Request.get(url: url)
+        
+        let res = String(decoding: data!, as: UTF8.self)
+        
+        return res
+    }
+    
+    public static func getTipHeight(network: Network) -> Int32? {
+        let url = network == Network.testnet ?
+            "https://blockstream.info/testnet/api/blocks/tip/height":
+            "https://blockstream.info/api/blocks/tip/height";
+        
+        let data = Request.get(url: url)
+        
+        let text = String(decoding: data!, as: UTF8.self)
+        
+        let res = Int32(text)
+        
+        return res
+    }
+    
+    public static func getTipHash(network: Network) -> String? {
+        let url = network == Network.testnet ?
+            "https://blockstream.info/testnet/api/blocks/tip/hash":
+            "https://blockstream.info/api/blocks/tip/hash";
         
         let data = Request.get(url: url)
         
