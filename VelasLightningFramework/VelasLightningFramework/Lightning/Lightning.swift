@@ -7,6 +7,7 @@ public class Lightning {
     
     
     var logger: MyLogger!
+    var filter: MyFilter?
     var keys_manager: KeysManager?
     var chain_monitor: ChainMonitor?
     var channel_manager_constructor: ChannelManagerConstructor?
@@ -20,6 +21,8 @@ public class Lightning {
     let currency: LDKCurrency
     let network: LDKNetwork
     var btc: Bitcoin
+    
+    var timer: Timer?
     
     /// Setup the LDK
     public init(btc:Bitcoin,
@@ -55,7 +58,7 @@ public class Lightning {
         let persister = MyPersister(backUpChannel: backUpChannel)
         
         // Step 5. Initialize the Transaction Filter
-        let filter = MyFilter()
+        filter = MyFilter()
         
         /// Step 6. Initialize the ChainMonitor
         ///
@@ -217,26 +220,7 @@ public class Lightning {
         
         /// Step 12. Sync ChannelManager and ChainMonitor to chain tip
         
-        let txids1 = channel_manager!.as_Confirm().get_relevant_txids()
-        let txids2 = chain_monitor!.as_Confirm().get_relevant_txids()
-            
-        let txIds = txids1 + txids2
-            
-        for bytes in txIds {
-            let txId = bytesToHex32Reversed(bytes: array_to_tuple32(array: bytes))
-            let tx = self.btc.getTx(txId: txId)
-            if let tx = tx, tx.confirmed {
-                try transactionConfirmed(txId, tx: tx)
-            }
-            else {
-                try transactionUnconfirmed(txId)
-            }
-        }
-        
-//        byte[] best_header = // <insert code to get your best known header>
-//        int best_height = // <insert code to get your best known block height>
-//        channel_manager.update_best_block(best_header, best_height);
-//        chain_monitor.update_best_block(best_header, best_height);
+        try self.sync()
         
         channel_manager_constructor?.chain_sync_completed(persister: channel_manager_persister, scorer: nil)
         
@@ -244,20 +228,54 @@ public class Lightning {
         
         peer_handler = channel_manager_constructor?.getTCPPeerHandler()
         
+        filter?.startSyncTimer = self.startSyncTimer
+        startSyncTimer()
+        
         print("---- End LDK setup -----")
     }
     
+    func startSyncTimer() {
+        
+        self.timer?.invalidate()
+        self.timer = Timer.scheduledTimer(timeInterval: 120.0, target: self, selector: #selector(sync), userInfo: nil, repeats: true)
+    }
+    
+    @objc
+    func sync() throws {
+        let txids1 = channel_manager!.as_Confirm().get_relevant_txids()
+        let txids2 = chain_monitor!.as_Confirm().get_relevant_txids()
+        let txids3 = filter!.txIds
+            
+//        let txIds = txids1 + txids2 + txids3
+        let txIds = txids1 + txids2 + txids3
+        
+        let transactionSet = Set(txIds)
 
-    
-    
+        if transactionSet.count > 0 {
+            for bytes in transactionSet {
+                let txId = Utils.bytesToHex32Reversed(bytes: Utils.array_to_tuple32(array: bytes))
+                let tx = self.btc.getTx(txId: txId)
+                if let tx = tx, tx.confirmed {
+                    try transactionConfirmed(txId, tx: tx)
+                }
+                else {
+                    try transactionUnconfirmed(txId)
+                }
+            }
+            try updateBestBlock()
+        }
+        else {
+            self.timer?.invalidate()
+        }
+    }
     
     func transactionUnconfirmed(_ txidHex: String) throws {
         guard let channel_manager = channel_manager, let chain_monitor = chain_monitor else {
             let error = NSError(domain: "Channel manager", code: 1, userInfo: nil)
             throw error
         }
-        channel_manager.as_Confirm().transaction_unconfirmed(txid: hexStringToByteArray(txidHex))
-        chain_monitor.as_Confirm().transaction_unconfirmed(txid: hexStringToByteArray(txidHex))
+        channel_manager.as_Confirm().transaction_unconfirmed(txid: Utils.hexStringToByteArray(txidHex))
+        chain_monitor.as_Confirm().transaction_unconfirmed(txid: Utils.hexStringToByteArray(txidHex))
     }
     
     func transactionConfirmed(_ txId: String, tx: Transaction) throws {
@@ -275,32 +293,28 @@ public class Lightning {
         let txTuple = C2Tuple_usizeTransactionZ.new(a: UInt(truncating: txPos as NSNumber), b: [UInt8](txRaw!))
         let txArray = [txTuple]
 
-        channel_manager.as_Confirm().transactions_confirmed(header: hexStringToByteArray(headerHex!), txdata: txArray, height: UInt32(truncating: height as NSNumber))
+        channel_manager.as_Confirm().transactions_confirmed(header: Utils.hexStringToByteArray(headerHex!), txdata: txArray, height: UInt32(truncating: height as NSNumber))
         
-        chain_monitor.as_Confirm().transactions_confirmed(header: hexStringToByteArray(headerHex!), txdata: txArray, height: UInt32(truncating: height as NSNumber))
+        chain_monitor.as_Confirm().transactions_confirmed(header: Utils.hexStringToByteArray(headerHex!), txdata: txArray, height: UInt32(truncating: height as NSNumber))
         
     }
     
-//    func updateBestBlock() {
-//        guard let channelManager = channel_manager else {
-//            let error = NSError(domain: "Channel manager", code: 1, userInfo: nil)
-//            return reject("updateBestBlock", "updateBestBlock: channelManager guard failed",  error)
-//        }
-//
-//        if headerHex.count == 0 {
-//            let error = NSError(domain: "Channel manager", code: 1, userInfo: nil)
-//            return reject("updateBestBlock", "updateBestBlock: headerHex is empty",  error)
-//        }
-//
-//        channelManager.as_Confirm().best_block_updated(header: hexStringToByteArray(headerHex), height: UInt32(truncating: height))
-//
-//        guard let chainMonitor = chain_monitor else {
-//            let error = NSError(domain: "updateBestBlock", code: 1, userInfo: nil)
-//            return reject("updateBestBlock", "updateBestBlock: chainMonitor guard failed",  error)
-//        }
-//        chainMonitor.as_Confirm().best_block_updated(header: hexStringToByteArray(headerHex), height: UInt32(truncating: height))
-//        
-//    }
+    func updateBestBlock() throws {
+        guard let channel_manager = channel_manager, let chain_monitor = chain_monitor else {
+            let error = NSError(domain: "Channel manager", code: 1, userInfo: nil)
+            throw error
+        }
+        
+        let best_height = btc.getTipHeight()
+        let best_hash = btc.getTipHash()
+        let best_header = btc.getBlockHeader(hash: best_hash!)
+
+
+        channel_manager.as_Confirm().best_block_updated(header: Utils.hexStringToByteArray(best_header!), height: UInt32(truncating: best_height! as NSNumber))
+
+        chain_monitor.as_Confirm().best_block_updated(header: Utils.hexStringToByteArray(best_header!), height: UInt32(truncating: best_height! as NSNumber))
+        
+    }
 
     
     /// Get return the node id of our node.
@@ -312,7 +326,7 @@ public class Lightning {
     ///     the nodeId of our lightning node
     func getNodeId() throws -> String {
         if let nodeId = channel_manager?.get_our_node_id() {
-            let res = bytesToHex(bytes: nodeId)
+            let res = Utils.bytesToHex(bytes: nodeId)
             return res
         } else {
             let error = NSError(domain: "getNodeId",
@@ -384,7 +398,7 @@ public class Lightning {
         
         let res = peer_handler.connect(address: address,
                                        port: UInt16(truncating: port),
-                                       theirNodeId: hexStringToByteArray(nodeId))
+                                       theirNodeId: Utils.hexStringToByteArray(nodeId))
         
         if (!res) {
             let error = NSError(domain: "connectPeer",
@@ -419,7 +433,7 @@ public class Lightning {
         for it in peer_node_ids {
             if (!first) { json += "," }
             first = false
-            json += "\"" + bytesToHex(bytes: it) + "\""
+            json += "\"" + Utils.bytesToHex(bytes: it) + "\""
         }
         json += "]"
         
@@ -459,7 +473,7 @@ public class Lightning {
         let unspendable_punishment_reserve = it.get_unspendable_punishment_reserve().getValue() ?? 0;
 
         var channelObject = "{"
-        channelObject += "\"channel_id\":" + "\"" + bytesToHex(bytes: it.get_channel_id()) + "\","
+        channelObject += "\"channel_id\":" + "\"" + Utils.bytesToHex(bytes: it.get_channel_id()) + "\","
         channelObject += "\"channel_value_satoshis\":" + String(it.get_channel_value_satoshis()) + ","
         channelObject += "\"inbound_capacity_msat\":" + String(it.get_inbound_capacity_msat()) + ","
         channelObject += "\"outbound_capacity_msat\":" + String(it.get_outbound_capacity_msat()) + ","
@@ -468,11 +482,11 @@ public class Lightning {
         channelObject += "\"is_channel_ready\":" + (it.get_is_channel_ready() ? "true" : "false") + ","
         channelObject += "\"is_outbound\":" + (it.get_is_outbound() ? "true" : "false") + ","
         channelObject += "\"is_public\":" + (it.get_is_public() ? "true" : "false") + ","
-        channelObject += "\"remote_node_id\":" + "\"" + bytesToHex(bytes: it.get_counterparty().get_node_id()) + "\"," // @deprecated fixme
+        channelObject += "\"remote_node_id\":" + "\"" + Utils.bytesToHex(bytes: it.get_counterparty().get_node_id()) + "\"," // @deprecated fixme
 
         // fixme:
         if let funding_txo = it.get_funding_txo() {
-            channelObject += "\"funding_txo_txid\":" + "\"" + bytesToHex(bytes: funding_txo.get_txid()) + "\","
+            channelObject += "\"funding_txo_txid\":" + "\"" + Utils.bytesToHex(bytes: funding_txo.get_txid()) + "\","
             channelObject += "\"funding_txo_index\":" + String(funding_txo.get_index()) + ","
         }else{
             channelObject += "\"funding_txo_txid\": null,"
@@ -480,12 +494,12 @@ public class Lightning {
         }
 
         channelObject += "\"counterparty_unspendable_punishment_reserve\":" + String(it.get_counterparty().get_unspendable_punishment_reserve()) + ","
-        channelObject += "\"counterparty_node_id\":" + "\"" + bytesToHex(bytes: it.get_counterparty().get_node_id()) + "\","
+        channelObject += "\"counterparty_node_id\":" + "\"" + Utils.bytesToHex(bytes: it.get_counterparty().get_node_id()) + "\","
         channelObject += "\"unspendable_punishment_reserve\":" + String(unspendable_punishment_reserve) + ","
         channelObject += "\"confirmations_required\":" + String(confirmations_required) + ","
         channelObject += "\"force_close_spend_delay\":" + String(force_close_spend_delay) + ","
         channelObject += "\"user_id\":" + String(it.get_user_channel_id()) + ","
-        channelObject += "\"counterparty_node_id\":" + bytesToHex(bytes: it.get_counterparty().get_node_id())
+        channelObject += "\"counterparty_node_id\":" + Utils.bytesToHex(bytes: it.get_counterparty().get_node_id())
         channelObject += "}"
 
         return channelObject
@@ -667,154 +681,12 @@ public class Lightning {
 
 }
 
-/// convert bytes array to Hex String
-///
-/// params:
-///     bytes:  bytes to convert
-///
-/// return:
-///     hex string of byte array
-func bytesToHex(bytes: [UInt8]) -> String
-{
-    var hexString: String = ""
-    var count = bytes.count
-    for byte in bytes
-    {
-        hexString.append(String(format:"%02X", byte))
-        count = count - 1
-    }
-    return hexString.lowercased()
-}
 
 
-/// Convert string of hex to a byte array.
-///
-/// params:
-///     string:  string of hex to convert
-///
-/// return:
-///     array of bytes that was converted from hexstring
-private func hexStringToByteArray(_ hexString: String) -> [UInt8] {
-    let length = hexString.count
-    if length & 1 != 0 {
-        return []
-    }
-    var bytes = [UInt8]()
-    bytes.reserveCapacity(length/2)
-    var index = hexString.startIndex
-    for _ in 0..<length/2 {
-        let nextIndex = hexString.index(index, offsetBy: 2)
-        if let b = UInt8(hexString[index..<nextIndex], radix: 16) {
-            bytes.append(b)
-        } else {
-            return []
-        }
-        index = nextIndex
-    }
-    return bytes
-}
 
 
-/// Get the Local IP address of current machine
-///
-/// from https://gist.github.com/SergLam/9a90ffda7c57740beb18fb28da125b8a
-///
-/// return:
-///     the local ip address of this node
-func getLocalIPAdress() -> String? {
-        
-    var address: String?
-    var ifaddr: UnsafeMutablePointer<ifaddrs>?
-    
-    if getifaddrs(&ifaddr) == 0 {
-        
-        var ptr = ifaddr
-        while ptr != nil {
-            defer { ptr = ptr?.pointee.ifa_next } // memory has been renamed to pointee in swift 3 so changed memory to pointee
-            
-            guard let interface = ptr?.pointee else {
-                return nil
-            }
-            let addrFamily = interface.ifa_addr.pointee.sa_family
-            if addrFamily == UInt8(AF_INET) || addrFamily == UInt8(AF_INET6) {
-                
-                guard let ifa_name = interface.ifa_name else {
-                    return nil
-                }
-                let name: String = String(cString: ifa_name)
-                
-                if name == "en0" {  // String.fromCString() is deprecated in Swift 3. So use the following code inorder to get the exact IP Address.
-                    var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
-                    getnameinfo(interface.ifa_addr, socklen_t((interface.ifa_addr.pointee.sa_len)), &hostname, socklen_t(hostname.count), nil, socklen_t(0), NI_NUMERICHOST)
-                    address = String(cString: hostname)
-                }
-                
-            }
-        }
-        freeifaddrs(ifaddr)
-    }
-    
-    return address
-}
 
-/// Get the public IP address of device
-///
-/// return:
-///     the public IP of this node
-func getPublicIPAddress() -> String? {
-    var publicIP: String?
-    do {
-        try publicIP = String(contentsOf: URL(string: "https://www.bluewindsolution.com/tools/getpublicip.php")!, encoding: String.Encoding.utf8)
-        publicIP = publicIP?.trimmingCharacters(in: CharacterSet.whitespaces)
-    }
-    catch {
-        print("Error: \(error)")
-    }
-    return publicIP
-}
 
-func bytesToHex32Reversed(bytes: (UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8)) -> String
-{
-    var bytesArray: [UInt8] = []
-    bytesArray.append(bytes.0)
-    bytesArray.append(bytes.1)
-    bytesArray.append(bytes.2)
-    bytesArray.append(bytes.3)
-    bytesArray.append(bytes.4)
-    bytesArray.append(bytes.5)
-    bytesArray.append(bytes.6)
-    bytesArray.append(bytes.7)
-    bytesArray.append(bytes.8)
-    bytesArray.append(bytes.9)
-    bytesArray.append(bytes.10)
-    bytesArray.append(bytes.11)
-    bytesArray.append(bytes.12)
-    bytesArray.append(bytes.13)
-    bytesArray.append(bytes.14)
-    bytesArray.append(bytes.15)
-    bytesArray.append(bytes.16)
-    bytesArray.append(bytes.17)
-    bytesArray.append(bytes.18)
-    bytesArray.append(bytes.19)
-    bytesArray.append(bytes.20)
-    bytesArray.append(bytes.21)
-    bytesArray.append(bytes.22)
-    bytesArray.append(bytes.23)
-    bytesArray.append(bytes.24)
-    bytesArray.append(bytes.25)
-    bytesArray.append(bytes.26)
-    bytesArray.append(bytes.27)
-    bytesArray.append(bytes.28)
-    bytesArray.append(bytes.29)
-    bytesArray.append(bytes.30)
-    bytesArray.append(bytes.31)
-
-    return bytesToHex(bytes: bytesArray.reversed())
-}
-
-private func array_to_tuple32(array: [UInt8]) -> (UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8,UInt8) {
-                return (array[0], array[1], array[2], array[3], array[4], array[5], array[6], array[7], array[8], array[9], array[10], array[11], array[12], array[13], array[14], array[15], array[16], array[17], array[18], array[19], array[20], array[21], array[22], array[23], array[24], array[25], array[26], array[27], array[28], array[29], array[30], array[31])
-}
 
 
 

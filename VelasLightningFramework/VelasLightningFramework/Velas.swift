@@ -27,7 +27,7 @@ public class Velas {
     
     public func getNodeInformation() throws -> (nodeID:String, address:String, port:String) {
         let nodeID = try getNodeId()
-        let address = getPublicIPAddress()
+        let address = Utils.getPublicIPAddress()
         let port = String(ln.port)
         return (nodeID,address!,port)
     }
@@ -115,8 +115,8 @@ public class Velas {
     /// return:
     ///     return the local and public IP of this node
     public func getIPAddresses() -> (String?, String?) {
-        let local = getLocalIPAdress()
-        let pub = getPublicIPAddress()
+        let local = Utils.getLocalIPAdress()
+        let pub = Utils.getPublicIPAddress()
         if let local = local, let pub = pub {
             print("local IP Address: \(local)")
             print("public IP Address: \(pub)")

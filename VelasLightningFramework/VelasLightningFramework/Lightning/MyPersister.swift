@@ -25,15 +25,15 @@ class MyPersister: Persist {
         do {
             let data = Data(monitorBytes)
             try FileMgr.createDirectory(path: "channels")
-            try FileMgr.writeData(data: data, path: "channels/\(bytesToHex(bytes: idBytes))")
-            print("Velas/Lightning/MyPersister/persist_new_channel: successfully backup channel to channels/\(bytesToHex(bytes: idBytes))")
+            try FileMgr.writeData(data: data, path: "channels/\(Utils.bytesToHex(bytes: idBytes))")
+            print("Velas/Lightning/MyPersister/persist_new_channel: successfully backup channel to channels/\(Utils.bytesToHex(bytes: idBytes))")
             if let backUpChannel = backUpChannel {
                 backUpChannel(data)
                 print("Velas/Lightning/MyPersister/persist_new_channel: successfully backup channel server")
             }
         }
         catch {
-            NSLog("Velas/Lightning/MyPersister/persist_new_channel: problem saving channels/\(bytesToHex(bytes: idBytes))")
+            NSLog("Velas/Lightning/MyPersister/persist_new_channel: problem saving channels/\(Utils.bytesToHex(bytes: idBytes))")
             
         }
         
@@ -49,15 +49,15 @@ class MyPersister: Persist {
         do {
             let data = Data(monitorBytes)
             try FileMgr.createDirectory(path: "channels")
-            try FileMgr.writeData(data: data, path: "channels/\(bytesToHex(bytes: idBytes))")
-            print("Velas/Lightning/MyPersister/update_persisted_channel: update channel at channels/\(bytesToHex(bytes: idBytes))")
+            try FileMgr.writeData(data: data, path: "channels/\(Utils.bytesToHex(bytes: idBytes))")
+            print("Velas/Lightning/MyPersister/update_persisted_channel: update channel at channels/\(Utils.bytesToHex(bytes: idBytes))")
             if let backUpChannel = backUpChannel {
                 backUpChannel(data)
                 print("Velas/Lightning/MyPersister/persist_new_channel: successfully backup channel server")
             }
         }
         catch {
-            NSLog("Velas/Lightning/MyPersister/update_persisted_channel: problem updating channels/\(bytesToHex(bytes: idBytes))")
+            NSLog("Velas/Lightning/MyPersister/update_persisted_channel: problem updating channels/\(Utils.bytesToHex(bytes: idBytes))")
         }
         
         return LDKChannelMonitorUpdateStatus_Completed

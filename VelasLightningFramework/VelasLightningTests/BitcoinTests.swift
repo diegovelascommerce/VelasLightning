@@ -24,6 +24,8 @@ class BitcoinTests: XCTestCase {
             "-[BitcoinTests testGetTxMainnet]",
             "-[BitcoinTests testGetBlockHeaderMainnet]",
             "-[BitcoinTests testGetTxRawMainnet]",
+            "-[BitcoinTests testGetTipHeightMainnet]",
+            "-[BitcoinTests testGetTipHashMainnet]",
             "-[BitcoinTests testGetTxMerkleProofMainnet]":
             btc = try Bitcoin(network: Network.bitcoin)
         case "-[BitcoinTests testInitializationWithMnemonic]":
@@ -158,6 +160,34 @@ class BitcoinTests: XCTestCase {
         XCTAssertNotNil(res)
         XCTAssert(res!.block_height == 766957)
         XCTAssert(res!.pos == 767)
+    }
+    
+    func testGetTipHeightTestnet() throws {
+        let res = btc.getTipHeight()
+        XCTAssertNotNil(res)
+        XCTAssert(res! > 0)
+        print(res!)
+    }
+    
+    func testGetTipHeightMainnet() throws {
+        let res = btc.getTipHeight()
+        XCTAssertNotNil(res)
+        XCTAssert(res! > 0)
+        print(res!)
+    }
+    
+    func testGetTipHashTestnet() throws {
+        let res = btc.getTipHash()
+        XCTAssertNotNil(res)
+        XCTAssertFalse(res!.isEmpty)
+        print(res!)
+    }
+    
+    func testGetTipHashMainnet() throws {
+        let res = btc.getTipHash()
+        XCTAssertNotNil(res)
+        XCTAssertFalse(res!.isEmpty)
+        print(res!)
     }
     
 }

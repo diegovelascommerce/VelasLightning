@@ -149,4 +149,16 @@ public class Bitcoin {
         return res
     }
     
+    // Get tip height
+    public func getTipHeight() -> Int32? {
+        let res = Esplora.getTipHeight(network: self.network)
+        return res
+    }
+    
+    // Get tip hash
+    public func getTipHash() -> String? {
+        let res = Esplora.getTipHash(network: self.network)
+        return res
+    }
+    
 }
