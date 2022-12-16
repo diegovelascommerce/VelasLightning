@@ -19,9 +19,7 @@ class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
     }
 
     func handle_event(event: Event) {
-        
-        NSLog("Velas/Lightning/MyChannelManagerPersister: \(event)")
-        
+                
         if let _ = event.getValueAsSpendableOutputs() {
             print("ReactNativeLDK: trying to spend output")
            
@@ -39,7 +37,7 @@ class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
 
         if let _ = event.getValueAsPendingHTLCsForwardable() {
             print("ReactNativeLDK: forward HTLC")
-           
+            //channel_manager?.process_pending_htlc_forwards()
         }
 
         if let _ = event.getValueAsPaymentReceived() {
@@ -74,10 +72,10 @@ class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
         do {
             let data = Data(channel_manager_bytes)
             try FileMgr.writeData(data: data, path: "channel_manager")
-            print("Velas/Lightning/MyChannelManagerPersister/persist_manager: Success")
+            print("persist_manager: Success")
             if let backUpChannelManager = backUpChannelManager {
                 backUpChannelManager(data)
-                print("Velas/Lightning/MyChannelManagerPersister/persist_manager: successfully backup channel_manager to server")
+                print("persist_manager: successfully backup channel_manager to server \n")
             }
         }
         catch {
@@ -93,11 +91,11 @@ class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
         do {
             let network_graph_bytes = network_graph.write()
             try FileMgr.writeData(data: Data(network_graph_bytes), path: "network_graph")
-            print("Velas/Lightning/MyChannelManagerPersister/persist_network_graph: Success");
+            print("persist_network_graph: Success\n");
             return Result_NoneErrorZ.ok()
         }
         catch {
-            NSLog("Velas/Lightning/MyChannelManagerPersister/persist_network_graph: persist_network_graph: Error \(error)");
+            NSLog("persist_network_graph: persist_network_graph: Error \(error)");
             return Result_NoneErrorZ.ok()
         }
     }

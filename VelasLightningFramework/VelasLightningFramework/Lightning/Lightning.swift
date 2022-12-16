@@ -228,7 +228,8 @@ public class Lightning {
         
         peer_handler = channel_manager_constructor?.getTCPPeerHandler()
         
-        filter?.startSyncTimer = self.startSyncTimer
+//        filter?.lightning = self
+        
         startSyncTimer()
         
         print("---- End LDK setup -----")
@@ -244,50 +245,50 @@ public class Lightning {
     func sync() throws {
         let txids1 = channel_manager!.as_Confirm().get_relevant_txids()
         let txids2 = chain_monitor!.as_Confirm().get_relevant_txids()
-        let txids3 = filter!.txIds
+//        let txids3 = filter!.txIds
             
 //        let txIds = txids1 + txids2 + txids3
-        let txIds = txids1 + txids2 + txids3
+        let txIds = txids1 + txids2
         
         let transactionSet = Set(txIds)
 
         if transactionSet.count > 0 {
-            for bytes in transactionSet {
-                let txId = Utils.bytesToHex32Reversed(bytes: Utils.array_to_tuple32(array: bytes))
-                let tx = self.btc.getTx(txId: txId)
+            for txIdBytes in transactionSet {
+                let txIdHex = Utils.bytesToHex32Reversed(bytes: Utils.array_to_tuple32(array: txIdBytes))
+                let tx = self.btc.getTx(txId: txIdHex)
                 if let tx = tx, tx.confirmed {
-                    try transactionConfirmed(txId, tx: tx)
+                    try transactionConfirmed(txIdHex:txIdHex, txObj: tx)
                 }
                 else {
-                    try transactionUnconfirmed(txId)
+                    try transactionUnconfirmed(txIdHex:txIdHex)
                 }
             }
             try updateBestBlock()
         }
-        else {
-            self.timer?.invalidate()
-        }
+//        else {
+//            self.timer?.invalidate()
+//        }
     }
     
-    func transactionUnconfirmed(_ txidHex: String) throws {
+    func transactionUnconfirmed(txIdHex: String) throws {
         guard let channel_manager = channel_manager, let chain_monitor = chain_monitor else {
             let error = NSError(domain: "Channel manager", code: 1, userInfo: nil)
             throw error
         }
-        channel_manager.as_Confirm().transaction_unconfirmed(txid: Utils.hexStringToByteArray(txidHex))
-        chain_monitor.as_Confirm().transaction_unconfirmed(txid: Utils.hexStringToByteArray(txidHex))
+        channel_manager.as_Confirm().transaction_unconfirmed(txid: Utils.hexStringToByteArray(txIdHex))
+        chain_monitor.as_Confirm().transaction_unconfirmed(txid: Utils.hexStringToByteArray(txIdHex))
     }
     
-    func transactionConfirmed(_ txId: String, tx: Transaction) throws {
+    func transactionConfirmed(txIdHex: String, txObj: Transaction) throws {
         guard let channel_manager = channel_manager, let chain_monitor = chain_monitor else {
             let error = NSError(domain: "Channel manager", code: 1, userInfo: nil)
             throw error
         }
         
-        let height = tx.block_height
-        let txRaw = btc.getTxRaw(txId: txId)
-        let headerHex = btc.getBlockHeader(hash: tx.block_hash)
-        let merkleProof = btc.getTxMerkleProof(txId: txId)
+        let height = txObj.block_height
+        let txRaw = btc.getTxRaw(txId: txIdHex)
+        let headerHex = btc.getBlockHeader(hash: txObj.block_hash)
+        let merkleProof = btc.getTxMerkleProof(txId: txIdHex)
         let txPos = merkleProof!.pos
 
         let txTuple = C2Tuple_usizeTransactionZ.new(a: UInt(truncating: txPos as NSNumber), b: [UInt8](txRaw!))

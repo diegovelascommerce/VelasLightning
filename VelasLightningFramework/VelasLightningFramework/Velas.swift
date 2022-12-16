@@ -117,10 +117,6 @@ public class Velas {
     public func getIPAddresses() -> (String?, String?) {
         let local = Utils.getLocalIPAdress()
         let pub = Utils.getPublicIPAddress()
-        if let local = local, let pub = pub {
-            print("local IP Address: \(local)")
-            print("public IP Address: \(pub)")
-        }
         
         return (local, pub)
     }

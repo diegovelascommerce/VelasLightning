@@ -26,6 +26,8 @@ public class Esplora {
             "https://blockstream.info/testnet/api/tx/\(txid)/status":
             "https://blockstream.info/api/tx/\(txid)/status";
         
+        print("getTxStatus: \(url)\n")
+        
         let data = Request.get(url: url)
         var res:Transaction?
         do {

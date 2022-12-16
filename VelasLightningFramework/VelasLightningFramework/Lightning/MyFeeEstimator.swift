@@ -24,7 +24,6 @@ class MyFeeEstimator: FeeEstimator {
 //            print("LDK/FeeEstimator: \(UInt32(feerate_medium))")
 //            return UInt32(feerate_medium)
 //        }
-        print("Velas/LDK/FeeEstimator: \(UInt32(feerate_slow))")
         return UInt32(feerate_slow)
     }
     

@@ -71,7 +71,7 @@ class ViewController: UIViewController {
     
     @IBAction func createBolt11(_ sender: Any) {
         do {
-            let bolt11 = try velas.createInvoice(amtMsat: 200000, description: "this s a test from velas lighting")
+            let bolt11 = try velas.createInvoice(amtMsat: 500000, description: "this s a test from velas lighting")
             print("bolt11: \(bolt11)")
         }
         catch {
