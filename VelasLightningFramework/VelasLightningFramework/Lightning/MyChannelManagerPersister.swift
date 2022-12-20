@@ -13,6 +13,8 @@ class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
     
     var backUpChannelManager: Optional<(Data) -> ()>
     
+    var lightning: Lightning? = nil
+    
     public init(backUpChannelManager: Optional<(Data) -> ()> = nil) {
         self.backUpChannelManager = backUpChannelManager
         super.init()
@@ -36,12 +38,14 @@ class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
         }
 
         if let _ = event.getValueAsPendingHTLCsForwardable() {
-            print("ReactNativeLDK: forward HTLC")
-            //channel_manager?.process_pending_htlc_forwards()
+            print("handle_event: forward HTLC")
+            lightning?.channel_manager?.process_pending_htlc_forwards()
         }
 
-        if let _ = event.getValueAsPaymentReceived() {
-            print("ReactNativeLDK: payment received")
+        if let paymentReceivedEvent = event.getValueAsPaymentReceived() {
+            print("handle_event: payment received")
+            let paymentPreimage = paymentReceivedEvent.getPurpose().getValueAsInvoicePayment()?.getPayment_preimage()
+            let _ = lightning?.channel_manager?.claim_funds(payment_preimage: paymentPreimage!)
         }
 
         //

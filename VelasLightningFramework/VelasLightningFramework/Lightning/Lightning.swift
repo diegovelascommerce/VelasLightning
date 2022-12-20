@@ -230,7 +230,10 @@ public class Lightning {
         
 //        filter?.lightning = self
         
+        channel_manager_persister.lightning = self
+        
         startSyncTimer()
+        
         
         print("---- End LDK setup -----")
     }

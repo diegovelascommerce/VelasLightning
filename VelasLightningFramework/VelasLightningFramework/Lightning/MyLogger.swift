@@ -7,8 +7,8 @@ class MyLogger: Logger {
     override func log(record: Record) {
         let block = [
             ("lib.rs", 520, false),
-//            ("peer_handler.rs", 979, false),
-//            ("peer_handler.rs", 1282, true),
+            ("peer_handler.rs", 979, false),
+            ("peer_handler.rs", 1282, false),
 //            ("channelmanager.rs", 6915, true),
 //            ("channelmanager.rs", 5697, true),
 //            ("channelmanager.rs", 5716, true),

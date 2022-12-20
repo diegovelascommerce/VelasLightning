@@ -53,13 +53,13 @@ class LightningTests: XCTestCase {
     }
     
     func testGetLocalIPAddress() {
-        let res = getLocalIPAdress()
+        let res = Utils.getLocalIPAdress()
         XCTAssertNotNil(res)
         print("testGetLocalIPAddress: \(res!)")
     }
     
     func testGetPublicIPAddress() {
-        let res = getPublicIPAddress()
+        let res = Utils.getPublicIPAddress()
         XCTAssertNotNil(res)
         print("LightningTests/testGetPublicIPAddress: \(res!)")
     }
@@ -73,7 +73,7 @@ class LightningTests: XCTestCase {
     
     func testBindNode_WithLocalIpAddress() throws {
         try XCTSkipIf(true)
-        let address = getLocalIPAdress()
+        let address = Utils.getLocalIPAdress()
         let port = UInt16(9735)
         if let address = address {
             let res = try ln.bindNode(address, port)
@@ -83,7 +83,7 @@ class LightningTests: XCTestCase {
     
     func testBindNode_WithPublicIpAddress() throws {
         try XCTSkipIf(true)
-        let address = getPublicIPAddress()
+        let address = Utils.getPublicIPAddress()
         let port = UInt16(9735)
         if let address = address {
             XCTAssertThrowsError(try ln.bindNode(address,port)) { error in

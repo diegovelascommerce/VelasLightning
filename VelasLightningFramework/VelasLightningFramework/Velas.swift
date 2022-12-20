@@ -129,3 +129,7 @@ public class Velas {
         try ln.closeChannelsForcefully()
     }
 }
+
+public enum VelasError: Error {
+    case txFailed(msg:String)
+}

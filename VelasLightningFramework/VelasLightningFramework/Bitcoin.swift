@@ -90,10 +90,9 @@ public class Bitcoin {
     }
     
     /// Broadcast transacton that was passed as a base64 string
-    public func broadcast(tx: String) throws {
-        let psbt = try PartiallySignedBitcoinTransaction(psbtBase64: tx)
-        //_ = try wallet.sign(psbt: psbt)
-        try self.blockchain.broadcast(psbt: psbt)
+    public func broadcast(txHex: String) throws -> String? {
+        let res = try Esplora.postTx(txHex: txHex, network: self.network)
+        return res
     }
     
     /// Broadcast psbt.

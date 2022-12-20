@@ -81,6 +81,19 @@ public class Esplora {
         return data
     }
     
+    /// post transaction
+    public static func postTx(txHex:String, network: Network) throws -> String? {
+        let url = network == Network.testnet ?
+            "https://blockstream.info/testnet/api/tx":
+            "https://blockstream.info/api/tx";
+                
+        let res = try Request.post(url:url, body:txHex)
+        
+        let txId = String(decoding: res!, as: UTF8.self)
+        
+        return txId
+    }
+    
     public static func getBlockHeader(hash:String, network: Network) -> String? {
         let url = network == Network.testnet ?
             "https://blockstream.info/testnet/api/block/\(hash)/header":
