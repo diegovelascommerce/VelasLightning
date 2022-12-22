@@ -64,8 +64,8 @@ public class Velas {
     ///
     /// return:
     ///     true if payment went through
-    public func payInvoice(bolt11: String, amtMsat: Int) throws -> Bool {
-        let res = try ln.payInvoice(bolt11:bolt11, amtMSat:amtMsat)
+    public func payInvoice(bolt11: String) throws -> Bool {
+        let res = try ln.payInvoice(bolt11:bolt11)
         return res
     }
     

@@ -8,6 +8,7 @@ public class Lightning {
     
     var logger: MyLogger!
     var filter: MyFilter?
+    var networkGraph: NetworkGraph?
     var keys_manager: KeysManager?
     var chain_monitor: ChainMonitor?
     var channel_manager_constructor: ChannelManagerConstructor?
@@ -100,7 +101,29 @@ public class Lightning {
         ///     which in turn requires the genesis block hash.
         //let genesis = BestBlock.from_genesis(LDKNetwork_Testnet)
         
-        let networkGraph = NetworkGraph(genesis_hash: [UInt8](Data(base64Encoded: try btc.getGenesisHash())!), logger: logger)
+        
+        
+        // net_graph
+        //var serializedNetGraph:[UInt8]? = nil
+        if FileMgr.fileExists(path: "network_graph") {
+//            serializedNetGraph = [UInt8]()
+            let file = try FileMgr.readData(path: "network_graph")
+            let readResult = NetworkGraph.read(ser: [UInt8](file), arg: logger)
+            
+            if readResult.isOk() {
+                networkGraph = readResult.getValue()
+                print("ReactNativeLDK: loaded network graph ok")
+            } else {
+                print("ReactNativeLDK: network graph failed to load, creating from scratch")
+                print(String(describing: readResult.getError()))
+                networkGraph = NetworkGraph(genesis_hash: Utils.hexStringToByteArray(try btc.getGenesisHash()).reversed(), logger: logger)
+//                networkGraph = NetworkGraph(genesis_hash: hexStringToByteArray("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f").reversed(), logger: logger)
+            }
+//            serializedNetGraph = [UInt8](netGraphData)
+        } else {
+            //networkGraph = NetworkGraph(genesis_hash: [UInt8](Data(base64Encoded: try btc.getGenesisHash())!), logger: logger)
+            networkGraph = NetworkGraph(genesis_hash: Utils.hexStringToByteArray(try btc.getGenesisHash()).reversed(), logger: logger)
+        }
         
         /// Step 9. Read ChannelMonitors from disk
         ///
@@ -139,13 +162,13 @@ public class Lightning {
         }
         
         
-        // net_graph
-        var serializedNetGraph:[UInt8]? = nil
-        if FileMgr.fileExists(path: "network_graph") {
-            serializedNetGraph = [UInt8]()
-            let netGraphData = try FileMgr.readData(path: "network_graph")
-            serializedNetGraph = [UInt8](netGraphData)
-        }
+//        // net_graph
+//        var serializedNetGraph:[UInt8]? = nil
+//        if FileMgr.fileExists(path: "network_graph") {
+//            serializedNetGraph = [UInt8]()
+//            let netGraphData = try FileMgr.readData(path: "network_graph")
+//            serializedNetGraph = [UInt8](netGraphData)
+//        }
         
         
         /// Step 10.  Initialize the ChannelManager
@@ -182,10 +205,23 @@ public class Lightning {
         userConfig.set_accept_inbound_channels(val: true)
         
         // if there were no channels backup
-        if serializedChannelMonitors.count == 0 {
+        if let net_graph_serialized = networkGraph?.write(), !serializedChannelManager.isEmpty {
+            channel_manager_constructor = try ChannelManagerConstructor(
+                channel_manager_serialized: serializedChannelManager,
+                channel_monitors_serialized: serializedChannelMonitors,
+                keys_interface: keysInterface,
+                fee_estimator: feeEstimator,
+                chain_monitor: chain_monitor!,
+                filter: filter,
+                net_graph_serialized: net_graph_serialized,
+                tx_broadcaster: broadcaster,
+                logger: logger
+            )
+        }
+        else {
             let latestBlockHash = [UInt8](Data(base64Encoded: try btc.getBlockHash())!)
             let latestBlockHeight = try btc.getBlockHeight()
-            
+
             channel_manager_constructor = ChannelManagerConstructor(
                 network: network,
                 config: userConfig,
@@ -199,20 +235,37 @@ public class Lightning {
                 logger: logger
             )
         }
-        // else load the channels backup, channel manager, and net_graph
-        else {
-            channel_manager_constructor = try ChannelManagerConstructor(
-                channel_manager_serialized: serializedChannelManager,
-                channel_monitors_serialized: serializedChannelMonitors,
-                keys_interface: keysInterface,
-                fee_estimator: feeEstimator,
-                chain_monitor: chain_monitor!,
-                filter: filter,
-                net_graph_serialized: serializedNetGraph, 
-                tx_broadcaster: broadcaster,
-                logger: logger
-            )
-        }
+//        if serializedChannelManager.isEmpty {
+//            let latestBlockHash = [UInt8](Data(base64Encoded: try btc.getBlockHash())!)
+//            let latestBlockHeight = try btc.getBlockHeight()
+//
+//            channel_manager_constructor = ChannelManagerConstructor(
+//                network: network,
+//                config: userConfig,
+//                current_blockchain_tip_hash: latestBlockHash,
+//                current_blockchain_tip_height: latestBlockHeight,
+//                keys_interface: keysInterface,
+//                fee_estimator: feeEstimator,
+//                chain_monitor: chain_monitor!,
+//                net_graph: networkGraph, // see `NetworkGraph`
+//                tx_broadcaster: broadcaster,
+//                logger: logger
+//            )
+//        }
+//        // else load the channels backup, channel manager, and net_graph
+//        else {
+//            channel_manager_constructor = try ChannelManagerConstructor(
+//                channel_manager_serialized: serializedChannelManager,
+//                channel_monitors_serialized: serializedChannelMonitors,
+//                keys_interface: keysInterface,
+//                fee_estimator: feeEstimator,
+//                chain_monitor: chain_monitor!,
+//                filter: filter,
+//                net_graph_serialized: serializedNetGraph,
+//                tx_broadcaster: broadcaster,
+//                logger: logger
+//            )
+//        }
             
         channel_manager = channel_manager_constructor?.channelManager
 
@@ -543,6 +596,7 @@ public class Lightning {
                                 userInfo: [NSLocalizedDescriptionKey: "closeChannelCooperatively Failed"])
             throw error
         }
+        try removeChannelBackup(channelId: Utils.bytesToHex(bytes: channelId))
         
         return true
     }
@@ -582,12 +636,30 @@ public class Lightning {
             throw error
         }
         if (close_result.isOk()) {
+            try removeChannelBackup(channelId: Utils.bytesToHex(bytes: channelId))
             return true
         } else {
             let error = NSError(domain: "closeChannelForce",
                                 code: 1,
                                 userInfo: [NSLocalizedDescriptionKey: "closeChannelForce Failed"])
             throw error
+        }
+    }
+    
+    func removeChannelBackup(channelId:String) throws {
+        print("try to delete channel: \(channelId)")
+        do {
+            let urls = try FileMgr.contentsOfDirectory(atPath:"channels")
+            for url in urls {
+                print(url)
+                if url.lastPathComponent.contains(channelId) {
+                    print("delete url:\(url)")
+                    try FileMgr.removeItem(url: url)
+                }
+            }
+        }
+        catch {
+            print("remove channel backup: \(error)")
         }
     }
     
@@ -641,7 +713,7 @@ public class Lightning {
     ///
     /// return:
     ///     true is payment when through
-    func payInvoice(bolt11: String, amtMSat: Int) throws -> Bool {
+    func payInvoice(bolt11: String) throws -> Bool {
 
         guard let payer = channel_manager_constructor?.payer else {
             let error = NSError(domain: "payInvoice", code: 1, userInfo: nil)
@@ -664,23 +736,12 @@ public class Lightning {
                 print(String(describing: sendRes.getError()))
             }
         } else {
-            if amtMSat == 0 {
-                let error = NSError(domain: "payInvoice", code: 1, userInfo: nil)
-                throw error
-            }
-            let unsignedAmount = UInt64(truncating: NSNumber(value: amtMSat))
-            let amountInMillisatoshis = unsignedAmount * 1000
-            let sendRes = payer.pay_zero_value_invoice(invoice: parsedInvoiceValue, amount_msats: amountInMillisatoshis)
-            if sendRes.isOk()  {
-                return true
-            } else {
-                print("pay_zero_value_invoice error")
-                print(String(describing: sendRes.getError()))
-            }
+            
+            let error = NSError(domain: "payInvoice", code: 1, userInfo: nil)
+            throw error
         }
-
-        let error = NSError(domain: "payInvoice", code: 1, userInfo: nil)
-        throw error
+        
+        return true
     }
 
 }

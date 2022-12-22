@@ -22,13 +22,39 @@ class ViewController: UIViewController {
         do {
             let nodeId = try velas.getNodeId()
             nodeIdTextView.text = nodeId
-
         }
         catch {
             NSLog("there was a problem getting the node id \(error)")
         }
-
     }
+    
+    @IBAction func payInvoiceClick(_ sender: Any) {
+        
+        let alert = UIAlertController(title: "bolt11", message: "Please enter bolt11", preferredStyle: .alert)
+        
+        alert.addTextField { (textField) in
+            textField.placeholder = "enter bolt11"
+        }
+
+        alert.addAction(UIAlertAction(title: "Submit", style: .default, handler: { [weak alert] (_) in
+            guard let textField = alert?.textFields?[0], let bolt11 = textField.text else { return }
+            
+            // pay invoice
+            print("bolt11: \(bolt11)")
+            
+            do {
+                let res = try velas.payInvoice(bolt11: bolt11)
+                print("payment went through: \(res)")
+            }
+            catch {
+                print("problem paying invoice: \(error)")
+            }
+        }))
+
+        self.present(alert, animated: true, completion: nil)
+    }
+    
+    
     
     @IBAction func connectClick(_ sender: Any) {
         print("connect to a peer")

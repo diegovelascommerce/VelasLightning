@@ -27,14 +27,16 @@ class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
            
         }
 
-        if let _ = event.getValueAsPaymentSent() {
-            print("ReactNativeLDK: payment sent")
-            
+        if let paymentSentEvent = event.getValueAsPaymentSent() {
+            print("handle_event: Payment Sent \(paymentSentEvent)")
+        }
+        
+        if let paymentFailedEvent = event.getValueAsPaymentFailed() {
+            print("handle_event: Payment Sent \(paymentFailedEvent)")
         }
 
-        if let _ = event.getValueAsPaymentPathFailed() {
-            print("ReactNativeLDK: payment path failed")
-            
+        if let paymentPathFailedEvent = event.getValueAsPaymentPathFailed() {
+            print("handle_event: Payment Path Failed \(paymentPathFailedEvent)")
         }
 
         if let _ = event.getValueAsPendingHTLCsForwardable() {
@@ -47,8 +49,6 @@ class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
             let paymentPreimage = paymentReceivedEvent.getPurpose().getValueAsInvoicePayment()?.getPayment_preimage()
             let _ = lightning?.channel_manager?.claim_funds(payment_preimage: paymentPreimage!)
         }
-
-        //
 
         if let _ = event.getValueAsFundingGenerationReady() {
             print("ReactNativeLDK: funding generation ready")

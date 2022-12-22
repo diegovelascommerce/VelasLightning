@@ -78,6 +78,11 @@ class FileMgr {
         try FileManager.default.removeItem(at: url)
     }
     
+    /// remove an item
+    static func removeItem(url:URL) throws  {
+        try FileManager.default.removeItem(at: url)
+    }
+    
     /// show content inside directory, and can filter results using regex
     static func contentsOfDirectory(atPath:String? = nil, regex:String? = nil) throws -> [URL] {
         

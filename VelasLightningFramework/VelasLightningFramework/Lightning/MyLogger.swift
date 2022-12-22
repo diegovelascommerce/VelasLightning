@@ -9,6 +9,7 @@ class MyLogger: Logger {
             ("lib.rs", 520, false),
             ("peer_handler.rs", 979, false),
             ("peer_handler.rs", 1282, false),
+            ("peer_handler.rs", 1280, false),
 //            ("channelmanager.rs", 6915, true),
 //            ("channelmanager.rs", 5697, true),
 //            ("channelmanager.rs", 5716, true),
