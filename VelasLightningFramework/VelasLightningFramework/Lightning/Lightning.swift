@@ -15,6 +15,7 @@ public class Lightning {
     var channel_manager_persister: MyChannelManagerPersister
     var peer_manager: LightningDevKit.PeerManager?
     var peer_handler: TCPPeerHandler?
+    var networkGraph: NetworkGraph?
     
     let port = UInt16(9735)
     
@@ -100,7 +101,8 @@ public class Lightning {
         ///     which in turn requires the genesis block hash.
         //let genesis = BestBlock.from_genesis(LDKNetwork_Testnet)
         
-        let networkGraph = NetworkGraph(genesis_hash: [UInt8](Data(base64Encoded: try btc.getGenesisHash())!), logger: logger)
+//        let networkGraph = NetworkGraph(genesis_hash: [UInt8](Data(base64Encoded: try btc.getGenesisHash())!), logger: logger)
+//        var networkGraph = NetworkGraph(genesis_hash: Utils.hexStringToByteArray(try btc.getGenesisHash()).reversed(), logger: logger)
         
         /// Step 9. Read ChannelMonitors from disk
         ///
@@ -140,13 +142,20 @@ public class Lightning {
         
         
         // net_graph
-        var serializedNetGraph:[UInt8]? = nil
         if FileMgr.fileExists(path: "network_graph") {
-            serializedNetGraph = [UInt8]()
-            let netGraphData = try FileMgr.readData(path: "network_graph")
-            serializedNetGraph = [UInt8](netGraphData)
+            let file = try FileMgr.readData(path: "network_graph")
+            let readResult = NetworkGraph.read(ser: [UInt8](file), arg: logger)
+            
+            if readResult.isOk() {
+                networkGraph = readResult.getValue()!
+            } else {
+                print("network graph failed to load, creating from scratch: \(String(describing: readResult.getError()))")
+                networkGraph = NetworkGraph(genesis_hash: Utils.hexStringToByteArray(try btc.getGenesisHash()).reversed(), logger: logger)
+            }
         }
-        
+        else {
+            networkGraph = NetworkGraph(genesis_hash: Utils.hexStringToByteArray(try btc.getGenesisHash()).reversed(), logger: logger)
+        }
         
         /// Step 10.  Initialize the ChannelManager
         ///
@@ -201,6 +210,7 @@ public class Lightning {
         }
         // else load the channels backup, channel manager, and net_graph
         else {
+            let serializedNetGraph = networkGraph?.write()
             channel_manager_constructor = try ChannelManagerConstructor(
                 channel_manager_serialized: serializedChannelManager,
                 channel_monitors_serialized: serializedChannelMonitors,
