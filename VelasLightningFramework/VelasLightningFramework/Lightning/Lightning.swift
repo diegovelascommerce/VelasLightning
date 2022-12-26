@@ -651,7 +651,7 @@ public class Lightning {
     ///
     /// return:
     ///     true is payment when through
-    func payInvoice(bolt11: String, amtMSat: Int) throws -> Bool {
+    func payInvoice(bolt11: String) throws -> Bool {
 
         guard let payer = channel_manager_constructor?.payer else {
             let error = NSError(domain: "payInvoice", code: 1, userInfo: nil)
@@ -672,25 +672,13 @@ public class Lightning {
             } else {
                 print("pay_invoice error")
                 print(String(describing: sendRes.getError()))
-            }
-        } else {
-            if amtMSat == 0 {
-                let error = NSError(domain: "payInvoice", code: 1, userInfo: nil)
-                throw error
-            }
-            let unsignedAmount = UInt64(truncating: NSNumber(value: amtMSat))
-            let amountInMillisatoshis = unsignedAmount * 1000
-            let sendRes = payer.pay_zero_value_invoice(invoice: parsedInvoiceValue, amount_msats: amountInMillisatoshis)
-            if sendRes.isOk()  {
-                return true
-            } else {
-                print("pay_zero_value_invoice error")
-                print(String(describing: sendRes.getError()))
+                return false
             }
         }
-
-        let error = NSError(domain: "payInvoice", code: 1, userInfo: nil)
-        throw error
+        else {
+            return false
+        }
+        
     }
 
 }

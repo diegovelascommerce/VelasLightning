@@ -95,5 +95,33 @@ class ViewController: UIViewController {
         }
     }
     
+    @IBAction func payInvoiceClick(_ sender: Any) {
+            
+        let alert = UIAlertController(title: "bolt11", message: "Please enter bolt11", preferredStyle: .alert)
+        
+        alert.addTextField { (textField) in
+            textField.placeholder = "enter bolt11"
+        }
+
+        alert.addAction(UIAlertAction(title: "Submit", style: .default, handler: { [weak alert] (_) in
+            guard let textField = alert?.textFields?[0], let bolt11 = textField.text else { return }
+            
+            // pay invoice
+            print("bolt11: \(bolt11)")
+            
+            do {
+                let res = try velas.payInvoice(bolt11: bolt11)
+                print("payment went through: \(res)")
+            }
+            catch {
+                print("problem paying invoice: \(error)")
+            }
+        }))
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+
+        self.present(alert, animated: true, completion: nil)
+    }
+    
 }
 
