@@ -1,14 +1,25 @@
-TEST_NODE_ID = "03e347d089c071c27680e26299223e80a740cf3e3fc4b4237fa219bb67121a670b"
+
+from .gRPC import stub as lnd
+
+TEST_NODE_ID = \
+    "03e347d089c071c27680e26299223e80a740cf3e3fc4b4237fa219bb67121a670b"
 TEST_CHANNEL_ID = "2583303668972126208"
 
 
 class Velas:
     """Class that handles interaction between web API and LND gRPC client"""
 
+    def __init__(self):
+        self.stub = lnd.get_stub()
+
+    def getinfo(self):
+        info = lnd.getinfo(self.stub)
+        return info
+
     def getNodeID(self):
         """
         Get node id of LND.
-        
+
         return:
             True
         """
@@ -17,7 +28,7 @@ class Velas:
     def create_channel(self, nodeId, address, port):
         """
         Create a outbout channel with node submitted
-        
+
         return:
             channel id of newly created channel
         """

@@ -23,3 +23,7 @@ htmlcov/
 .coverage
 .coverage.*
 *,cover
+
+admin.macaroon
+tls.cert
+googleapis

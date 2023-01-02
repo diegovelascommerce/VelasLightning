@@ -1,3 +1,4 @@
+import json
 from flask import request
 
 
@@ -9,11 +10,25 @@ def configure_routes(app, velas):
         """Just a basic route for testing purposes."""
         return "Hello VelasLightning"
 
+    @app.route('/getinfo')
+    def get_info():
+        info = velas.getinfo()
+        return {
+            "identity_pubkey": info.identity_pubkey,
+            "alias": info.alias,
+            "num_active_channels": info.num_active_channels,
+            "num_inactive_channels": info.num_inactive_channels,
+            "num_peers": info.num_peers,
+            "block_height": info.block_height,
+            "block_hash": info.block_hash,
+            "best_header_timestamp": info.best_header_timestamp
+        }
+
     @app.route('/get_node_id', methods=['get'])
     def getNodeId():
         """ 
         Return the NodeId of the workit lightning node. 
-        
+
         Workit client app will then use the nodeId to attempt to connect to it.
 
         return:
