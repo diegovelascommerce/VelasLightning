@@ -11,9 +11,23 @@ import XCTest
 class LightningTests: XCTestCase {
 
     private var ln:Lightning!
+    
+    let TestMnemonic: String = "arrive remember certain all consider apology celery melt uphold blame call blame"
+    let TestNodeId: String = "03aff3289b9e0ad31ef511bee1e37cfcf4324ab67a4a5646d6b1cc12ad58f5517b"
 
     override func setUpWithError() throws {
-        ln = try Lightning()
+        var btc:Bitcoin
+        
+        print(self.name)
+        switch self.name {
+        case "-[LightningTests testGetConsistenteNodeId]":
+            btc = try Bitcoin(mnemonic:self.TestMnemonic)
+        default:
+            btc = try Bitcoin()
+        }
+        
+        try btc.sync()
+        ln = try Lightning(btc: btc)
     }
 
     func testStartLightning() throws {
@@ -26,19 +40,26 @@ class LightningTests: XCTestCase {
         print("testGetNodeId: \(res)")
     }
     
+    func testGetConsistenteNodeId() throws {
+        let nodeId = try ln.getNodeId()
+        XCTAssertFalse(nodeId.isEmpty)
+        XCTAssertEqual(nodeId, self.TestNodeId)
+        print("testGetConsistenteNodeId: \(nodeId)")
+    }
+    
     func testCreateInvoice() throws {
         let res = try ln.createInvoice(amtMsat: 200000, description: "testing createInvoice")
         XCTAssertFalse(res.isEmpty)
     }
     
     func testGetLocalIPAddress() {
-        let res = getLocalIPAdress()
+        let res = Utils.getLocalIPAdress()
         XCTAssertNotNil(res)
         print("testGetLocalIPAddress: \(res!)")
     }
     
     func testGetPublicIPAddress() {
-        let res = getPublicIPAddress()
+        let res = Utils.getPublicIPAddress()
         XCTAssertNotNil(res)
         print("LightningTests/testGetPublicIPAddress: \(res!)")
     }
@@ -52,7 +73,7 @@ class LightningTests: XCTestCase {
     
     func testBindNode_WithLocalIpAddress() throws {
         try XCTSkipIf(true)
-        let address = getLocalIPAdress()
+        let address = Utils.getLocalIPAdress()
         let port = UInt16(9735)
         if let address = address {
             let res = try ln.bindNode(address, port)
@@ -62,7 +83,7 @@ class LightningTests: XCTestCase {
     
     func testBindNode_WithPublicIpAddress() throws {
         try XCTSkipIf(true)
-        let address = getPublicIPAddress()
+        let address = Utils.getPublicIPAddress()
         let port = UInt16(9735)
         if let address = address {
             XCTAssertThrowsError(try ln.bindNode(address,port)) { error in
@@ -113,6 +134,7 @@ class LightningTests: XCTestCase {
             Thread.sleep(forTimeInterval: 1)
             
             let peers = try ln.listPeers()
+            print("peers: \(peers)")
             XCTAssertFalse(peers.isEmpty)
             XCTAssertTrue(peers.count > 5)
         }
@@ -122,10 +144,17 @@ class LightningTests: XCTestCase {
     }
     
     func testListChannels() throws {
-        try XCTSkipIf(true)
         let res = try ln.listChannels()
         XCTAssertFalse(res.isEmpty)
-        XCTAssertTrue(res.count > 5)
+        print("channels: \(res)")
+    }
+    
+    func testCloseChannelsCooperatively() throws {
+        XCTAssertNoThrow(try ln.closeChannelsCooperatively())
+    }
+    
+    func testCloseChannelsForcefully() throws {
+        XCTAssertNoThrow(try ln.closeChannelsForcefully())
     }
 
 }

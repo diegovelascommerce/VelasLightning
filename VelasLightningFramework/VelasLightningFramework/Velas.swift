@@ -1,4 +1,5 @@
 import Foundation
+import BitcoinDevKit
 
 /// Main Class that projects will use to interact with Bitcoin and Lightning
 public class Velas {
@@ -7,14 +8,26 @@ public class Velas {
     private var ln:Lightning!
     
     /// Initialize Bitcoin and Lightning
-    public init() throws {
-        btc = try Bitcoin()
-        ln = try Lightning()
+    public init(network: Network = Network.testnet,
+                mnemonic: String? = nil,
+                getChannels: Optional<() -> [Data]> = nil,
+                backUpChannel: Optional<(Data) -> ()> = nil,
+                getChannelManager: Optional<() -> Data> = nil,
+                backUpChannelManager: Optional<(Data) -> ()> = nil) throws {
+        btc = try Bitcoin(network: network, mnemonic: mnemonic)
+        try btc.sync()
+        ln = try Lightning(btc:btc,
+                           backUpChannel:backUpChannel,
+                           backUpChannelManager:backUpChannelManager)
+    }
+    
+    public func getMnemonic() -> String {
+        return btc.mnemonic
     }
     
     public func getNodeInformation() throws -> (nodeID:String, address:String, port:String) {
         let nodeID = try getNodeId()
-        let address = getPublicIPAddress()
+        let address = Utils.getPublicIPAddress()
         let port = String(ln.port)
         return (nodeID,address!,port)
     }
@@ -23,9 +36,9 @@ public class Velas {
     ///
     /// throws:
     ///     NSError
-    public func closeChannel() throws -> Bool {
-        return try ln.closeChannelCooperatively()
-    }
+//    public func closeChannel() throws -> Bool {
+//        return try ln.closeChannelCooperatively()
+//    }
     
     /// Create a bolt11 invoice
     ///
@@ -51,8 +64,8 @@ public class Velas {
     ///
     /// return:
     ///     true if payment went through
-    public func payInvoice(bolt11: String, amtMsat: Int) throws -> Bool {
-        let res = try ln.payInvoice(bolt11:bolt11, amtMSat:amtMsat)
+    public func payInvoice(bolt11: String) throws -> Bool {
+        let res = try ln.payInvoice(bolt11:bolt11)
         return res
     }
     
@@ -102,13 +115,21 @@ public class Velas {
     /// return:
     ///     return the local and public IP of this node
     public func getIPAddresses() -> (String?, String?) {
-        let local = getLocalIPAdress()
-        let pub = getPublicIPAddress()
-        if let local = local, let pub = pub {
-            print("local IP Address: \(local)")
-            print("public IP Address: \(pub)")
-        }
+        let local = Utils.getLocalIPAdress()
+        let pub = Utils.getPublicIPAddress()
         
         return (local, pub)
     }
+    
+    public func closeChannelsCooperatively() throws {
+        try ln.closeChannelsCooperatively()
+    }
+    
+    public func closeChannelsForcefully() throws {
+        try ln.closeChannelsForcefully()
+    }
+}
+
+public enum VelasError: Error {
+    case txFailed(msg:String)
 }

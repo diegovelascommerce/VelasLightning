@@ -8,7 +8,6 @@
 import UIKit
 import VelasLightningFramework
 
-
 var velas: Velas!
 
 @main
@@ -20,12 +19,30 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
         
         do {
-            velas = try Velas();
-//            let _ = try velas.getNodeId()
-//            let _ = try velas.bindNode()
-//            let _ = velas.getIPAddresses()
+            velas = try Velas(mnemonic: "arrive remember certain all consider apology celery melt uphold blame call blame")
+//            velas = try Velas(mnemonic: "arrive remember certain all consider apology celery melt uphold blame call blame",
+//                              getChannels: {
+//                                let data = Request.get(url:"https://www.workit/channel_backup")
+//                                return [data!]
+//                              },
+//                              backUpChannel: { data in
+//                                _ = Request.post(url: "https://www.workit.com/channel_backup", data:data )
+//                                print("please backup channel to workit server: \(data)")
+//                              },
+//                              getChannelManager: {
+//                                let data = Request.get(url:"https://www.workit/hannel_manager_backup")
+//                                return data!
+//                              },
+//                              backUpChannelManager: { data in
+//                                _ = Request.post(url: "https://www.workit.com/channel_manager_backup", data:data )
+//                                print("please backup channel manager to workit server: \(data)")
+//                              });
+
             
-        } catch {}
+        } catch {
+            NSLog("\(error)")
+            return false
+        }
         
         return true
     }

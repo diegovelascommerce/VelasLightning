@@ -22,25 +22,51 @@ class ViewController: UIViewController {
         do {
             let nodeId = try velas.getNodeId()
             nodeIdTextView.text = nodeId
-
         }
         catch {
-            print("there was a problem getting the node id \(error)")
+            NSLog("there was a problem getting the node id \(error)")
         }
-//
-//        peerlistLable.text = "Hello peerlist"
-//        peerlistLable.sizeToFit()
-//        peerlistLable.center.x = self.view.center.x
     }
     
+    @IBAction func payInvoiceClick(_ sender: Any) {
+        
+        let alert = UIAlertController(title: "bolt11", message: "Please enter bolt11", preferredStyle: .alert)
+        
+        alert.addTextField { (textField) in
+            textField.placeholder = "enter bolt11"
+        }
+
+        alert.addAction(UIAlertAction(title: "Submit", style: .default, handler: { [weak alert] (_) in
+            guard let textField = alert?.textFields?[0], let bolt11 = textField.text else { return }
+            
+            // pay invoice
+            print("bolt11: \(bolt11)")
+            
+            do {
+                let res = try velas.payInvoice(bolt11: bolt11)
+                print("payment went through: \(res)")
+            }
+            catch {
+                print("problem paying invoice: \(error)")
+            }
+        }))
+
+        self.present(alert, animated: true, completion: nil)
+    }
+    
+    
+    
     @IBAction func connectClick(_ sender: Any) {
-        NSLog("connect to a peer")
-        let nodeId = "03e347d089c071c27680e26299223e80a740cf3e3fc4b4237fa219bb67121a670b"
-        let address = "45.33.22.210"
+        print("connect to a peer")
+//        let nodeId = "03e347d089c071c27680e26299223e80a740cf3e3fc4b4237fa219bb67121a670b"
+        let nodeId = "029cba2eb9edf18352e90f1a5f71e367af80d6e3ab7a5aa6122309fcbcd4375735"
+//        let address = "45.33.22.210"
+//        let address = "24.50.226.8"
+        let address = "192.168.0.10"
         let port = NSNumber(9735)
         do {
             let res = try velas.connectToPeer(nodeId: nodeId, address: address, port: port)
-            NSLog("connect: \(res)")
+            print("connect: \(res)")
         }
         catch {
             NSLog("there was a problem: \(error)")
@@ -48,15 +74,51 @@ class ViewController: UIViewController {
     }
     
     @IBAction func showPeerList(_ sender: Any) {
-        NSLog("show peer list")
+        print("show peer list")
         do {
             let res = try velas.listPeers()
-            NSLog("peers: \(res)")
+            print("peers: \(res)")
         }
         catch {
             NSLog("problem with showPeerList \(error)")
         }
 
+    }
+    
+    @IBAction func listChannels(_ sender: Any) {
+        do {
+            let channels = try velas.listChannels()
+            print("channels: \(channels)")
+        }
+        catch {
+            NSLog("problem with listing channels: \(error)")
+        }
+    }
+    
+    @IBAction func createBolt11(_ sender: Any) {
+        do {
+            let bolt11 = try velas.createInvoice(amtMsat: 500000, description: "this s a test from velas lighting")
+            print("bolt11: \(bolt11)")
+        }
+        catch {
+            NSLog("problem creating bolt11 invoice: \(error)")
+        }
+    }
+    
+    @IBAction func closeChannelCooperatively(_ sender: Any) {
+        do {
+            try velas.closeChannelsCooperatively()
+        } catch {
+            NSLog("problem clossing channels cooperatively: \(error)")
+        }
+    }
+    
+    @IBAction func closeChannelForcefully(_ sender: Any) {
+        do {
+            try velas.closeChannelsForcefully()
+        } catch {
+            NSLog("problem clossing channels forcefuly: \(error)")
+        }
     }
     
 }

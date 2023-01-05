@@ -55,22 +55,22 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BOB-FP-pMy">
-                                <rect key="frame" x="103" y="311" width="168" height="45"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="filled" title="Create Invoice"/>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GYg-Bk-c53">
                                 <rect key="frame" x="103" y="377" width="168" height="45"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="filled" title="Pay Invoice"/>
+                                <buttonConfiguration key="configuration" style="filled" title="Create Invoice"/>
+                                <connections>
+                                    <action selector="createBolt11:" destination="BYZ-38-t0r" eventType="touchUpInside" id="bO1-Mt-R7t"/>
+                                </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vnd-3G-OPq">
-                                <rect key="frame" x="103" y="445" width="168" height="45"/>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="o6L-Dn-Jaw">
+                                <rect key="frame" x="103" y="311" width="168" height="45"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="filled" title="Close Channel"/>
+                                <buttonConfiguration key="configuration" style="filled" title="List Channels"/>
+                                <connections>
+                                    <action selector="listChannels:" destination="BYZ-38-t0r" eventType="touchUpInside" id="6kZ-Bs-k2o"/>
+                                </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YmS-qI-sZB">
                                 <rect key="frame" x="103" y="239" width="168" height="53"/>
@@ -79,6 +79,33 @@
                                 <buttonConfiguration key="configuration" style="filled" title="Show Peer List"/>
                                 <connections>
                                     <action selector="showPeerList:" destination="BYZ-38-t0r" eventType="touchUpInside" id="ghC-rP-7ul"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3wP-c4-Gd4">
+                                <rect key="frame" x="82" y="578" width="210" height="45"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="filled" title="Close Channel Forcefully"/>
+                                <connections>
+                                    <action selector="closeChannelForcefully:" destination="BYZ-38-t0r" eventType="touchUpInside" id="GjK-L9-XaX"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vnd-3G-OPq">
+                                <rect key="frame" x="82" y="503" width="210" height="45"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="filled" title="Close Channel Cooperatively"/>
+                                <connections>
+                                    <action selector="closeChannelCooperatively:" destination="BYZ-38-t0r" eventType="touchUpInside" id="fkE-wk-LGE"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pGX-6V-WHX">
+                                <rect key="frame" x="103" y="442" width="168" height="45"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="filled" title="Pay Invoice"/>
+                                <connections>
+                                    <action selector="payInvoiceClick:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Lgh-Ev-7BY"/>
                                 </connections>
                             </button>
                         </subviews>
