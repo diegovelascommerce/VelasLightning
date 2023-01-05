@@ -45,6 +45,41 @@ def getinfo(stub):
     return info
 
 
+def openchannel(stub, nodeId, amt):
+    request = ln.OpenChannelRequest(
+        # sat_per_vbyte= < uint64 > ,
+        # node_pubkey= < bytes > ,
+        node_pubkey_string=nodeId,
+        local_funding_amount=amt,
+        # push_sat= < int64 > ,
+        # target_conf= < int32 > ,
+        # sat_per_byte= < int64 > ,
+        private=True,
+        # min_htlc_msat= < int64 > ,
+        # remote_csv_delay= < uint32 > ,
+        min_confs=1,
+        # spend_unconfirmed= < bool > ,
+        # close_address= < string > ,
+        # funding_shim= < FundingShim > ,
+        # remote_max_value_in_flight_msat= < uint64 > ,
+        # remote_max_htlcs= < uint32 > ,
+        # max_local_csv= < uint32 > ,
+        # commitment_type= < CommitmentType > ,
+        # zero_conf= < bool > ,
+        # scid_alias= < bool > ,
+        # base_fee= < uint64 > ,
+        # fee_rate= < uint64 > ,
+        # use_base_fee= < bool > ,
+        # use_fee_rate= < bool > ,
+        # remote_chan_reserve_sat= < uint64 > ,
+    )
+    print(request)
+    response = stub.OpenChannelSync(request)
+    return response
+    # for response in stub.OpenChannel(request):
+    #     print(response)
+
+
 def get_wallet_balance(stub):
     balance = stub.WalletBalance(ln.WalletBalanceRequest())
     return balance
