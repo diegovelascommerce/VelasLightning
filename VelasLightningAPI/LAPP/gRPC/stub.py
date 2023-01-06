@@ -1,8 +1,11 @@
+import codecs
+import os
+
+import grpc
+
+from . import convertion
 from . import lightning_pb2 as ln
 from . import lightning_pb2_grpc as lnrpc
-import grpc
-import os
-import codecs
 
 # due to updated ECDSA generated tls.cert we need to let grpc know
 # that we need to use that cipher suite otherwise there will be a handshaking
@@ -48,8 +51,8 @@ def getinfo(stub):
 def openchannel(stub, nodeId, amt):
     request = ln.OpenChannelRequest(
         # sat_per_vbyte= < uint64 > ,
-        # node_pubkey= < bytes > ,
-        node_pubkey_string=nodeId,
+        node_pubkey=convertion.hex_to_bytes(nodeId),
+        # node_pubkey_string=nodeId,
         local_funding_amount=amt,
         # push_sat= < int64 > ,
         # target_conf= < int32 > ,
@@ -73,11 +76,8 @@ def openchannel(stub, nodeId, amt):
         # use_fee_rate= < bool > ,
         # remote_chan_reserve_sat= < uint64 > ,
     )
-    print(request)
     response = stub.OpenChannelSync(request)
     return response
-    # for response in stub.OpenChannel(request):
-    #     print(response)
 
 
 def get_wallet_balance(stub):

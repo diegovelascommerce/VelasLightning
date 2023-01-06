@@ -18,8 +18,12 @@ def test_getinfo(stub):
 
 
 def test_openchannel(stub):
-    print(NODE_ID)
     res = lnd.openchannel(
         stub, NODE_ID, 20000)
-    # assert res is not None
-    print(res)
+
+    print(f"funding_txid_str: {res.funding_txid_str}")
+    print(f"funding_txid_bytes: {res.funding_txid_bytes}")
+    print(
+        f"funding_txid_hex: {bytes(bytearray(res.funding_txid_bytes).reverse()).hex()}")
+    print(f"output_index: {res.output_index}")
+    # print(res)
