@@ -1,11 +1,39 @@
-import json
-from flask import request
+import re
+from functools import wraps
+
+from flask import jsonify, request
+
+from velas_jwt import verify_jwt
+
+
+def token_required(f):
+    @wraps(f)
+    def decorator(*args, **kwargs):
+        token = None
+
+        # ensure the jwt-token is passed with the headers
+        if 'Authorization' in request.headers:
+            text = request.headers['Authorization']
+            token = re.search("Bearer (.*)", text).group(1)
+
+        if not token:
+            return jsonify({"message": "A valid token is missing!"}), 401
+
+        try:
+            payload = verify_jwt(token)
+            print(payload)
+        except:  # noqa
+            return jsonify({"message": "Invalid token!"}), 401
+
+        return f(*args, **kwargs)
+    return decorator
 
 
 def configure_routes(app, velas):
     """Configure routes for the app."""
 
     @app.route('/')
+    @token_required
     def index():
         """Just a basic route for testing purposes."""
         return "Hello VelasLightning"

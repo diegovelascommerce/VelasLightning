@@ -80,6 +80,47 @@ def openchannel(stub, nodeId, amt):
     return response
 
 
+def closechannel(stub, txId, vout):
+    btxId = convertion.hex_to_bytes(txId)
+    revbtxid = convertion.reverse_bytes(btxId)
+    channel_point = ln.ChannelPoint(
+        funding_txid_bytes=revbtxid,
+        output_index=vout,
+    )
+    request = ln.CloseChannelRequest(
+        channel_point=channel_point,
+        # force=<bool>,
+        # target_conf=<int32>,
+        # sat_per_byte=<int64>,
+        # delivery_address=<string>,
+        # sat_per_vbyte=<uint64>,
+        # max_fee_per_vbyte=<uint64>,
+    )
+
+    res = list()
+    for response in stub.CloseChannel(request):
+        print(response)
+        res.append(response)
+
+    return res
+
+
+def decodepayreq(stub, pay_req):
+    request = ln.PayReqString(
+        pay_req=pay_req
+    )
+    res = stub.DecodePayReq(request)
+    return res
+
+
+def payinvoice(stub, pay_req):
+    request = ln.SendRequest(
+        payment_request=pay_req
+    )
+    res = stub.SendPaymentSync(request)
+    return res
+
+
 def get_wallet_balance(stub):
     balance = stub.WalletBalance(ln.WalletBalanceRequest())
     return balance

@@ -28,6 +28,21 @@ def bytes_to_str(btext: bytes) -> str:
     return res
 
 
+def bytes_to_hex(btext: bytes) -> str:
+    res = btext.hex()
+    return res
+
+
+def reverse_hex(hextext: str) -> str:
+    return hextext[::-1]
+
+
+def reverse_bytes(btext: bytes) -> bytes:
+    barray = bytearray(btext)
+    barray.reverse()
+    return bytes(barray)
+
+
 def str_to_hex(text: str) -> str:
     btext = text.encode('ascii')
     res = btext.hex()
