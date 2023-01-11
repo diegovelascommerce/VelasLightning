@@ -20,7 +20,7 @@ def token_required(f):
             return jsonify({"message": "A valid token is missing!"}), 401
 
         try:
-            payload = verify_jwt(token)
+            payload = verify_jwt(token, 'secret')
             print(payload)
         except:  # noqa
             return jsonify({"message": "Invalid token!"}), 401
