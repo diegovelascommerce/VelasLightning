@@ -3,6 +3,8 @@ import os
 
 import grpc
 
+from config import config
+
 from . import convertion
 from . import lightning_pb2 as ln
 from . import lightning_pb2_grpc as lnrpc
@@ -16,11 +18,11 @@ cwd = os.path.dirname(__file__)
 print(cwd)
 # get the lnd cert
 cert = open(os.path.expanduser(
-    f'{cwd}/tls.cert'),
+    config['grpc']['tls']),
     'rb').read()
 
 # get the lnd admin.macaroon
-with open(os.path.expanduser(f'{cwd}/admin.macaroon'), 'rb') as f:  # noqa: E501
+with open(os.path.expanduser(config['grpc']['macaroon']), 'rb') as f:  # noqa: E501
     macaroon_bytes = f.read()
     macaroon = codecs.encode(macaroon_bytes, 'hex')
 

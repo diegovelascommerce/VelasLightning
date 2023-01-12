@@ -7,16 +7,18 @@ app.
 
 """
 
-from urllib import response
-from flask import Flask
-import pytest
 import json
+from urllib import response
+
+import pytest
+from flask import Flask
 
 from ..app import configure_routes
 from ..LAPP.velas import Velas
 
 TEST_NODE_ID = "03e347d089c071c27680e26299223e80a740cf3e3fc4b4237fa219bb67121a670b"  # noqa
 TEST_CHANNEL_ID = "2583303668972126208"
+TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ2ZWxhcyIsInN1YiI6IndvcmtpdCJ9.CnksMqUsywjH4W8JgPePodi10pO_xJMrPyq9c19tQmo"
 
 
 @pytest.fixture
@@ -28,9 +30,22 @@ def client():
     return client
 
 
+def test_hello(client):
+    res = client.get('/',
+                     headers=dict(
+                         Authorization=f"Bearer {TOKEN}"
+                     ))
+    print(res.text)
+
+
 def test_getinfo(client):
-    res = client.get("/getinfo")
+    res = client.get("/getinfo",
+                     headers=dict(
+                         Authorization=f"Bearer {TOKEN}"
+                     ))
+
     assert res is not None
+    print(res.text)
     info = json.loads(res.text)
     assert info['identity_pubkey'] == "029cba2eb9edf18352e90f1a5f71e367af80d6e3ab7a5aa6122309fcbcd4375735"  # noqa
 
@@ -40,7 +55,7 @@ def test_create_channel(client):
     Create outbounded channel with workit app.
 
     the workit app will provide the nodeId, address, and port so that we can create
-    an outbounded channel with workit app. 
+    an outbounded channel with workit app.
     """
     data = {
         'nodeId':

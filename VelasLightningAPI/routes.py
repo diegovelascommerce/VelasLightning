@@ -20,8 +20,7 @@ def token_required(f):
             return jsonify({"message": "A valid token is missing!"}), 401
 
         try:
-            payload = verify_jwt(token, 'secret')
-            print(payload)
+            verify_jwt(token)
         except:  # noqa
             return jsonify({"message": "Invalid token!"}), 401
 
@@ -39,6 +38,7 @@ def configure_routes(app, velas):
         return "Hello VelasLightning"
 
     @app.route('/getinfo')
+    @token_required
     def get_info():
         info = velas.getinfo()
         return {

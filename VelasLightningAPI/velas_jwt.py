@@ -1,17 +1,19 @@
 import jwt
 
+from config import config
 
-def create_jwt(payload: dict, secret) -> str:
-    print("create a jwt here")
-    token = jwt.encode(payload, secret, algorithm='HS256')
+
+def create_jwt(payload: dict) -> str:
+    print(f"secret:{config['secret']}")
+    token = jwt.encode(payload, config['secret'], algorithm='HS256')
     return token
 
 
-def verify_jwt(token, secret) -> dict:
-    payload = jwt.decode(token, secret, algorithms=['HS256'])
+def verify_jwt(token) -> dict:
+    payload = jwt.decode(token, config['secret'], algorithms=['HS256'])
     return payload
 
 
 if __name__ == '__main__':
-    token = create_jwt({'iss': 'velas', 'sub': 'workit'}, 'secret')
+    token = create_jwt({'iss': 'velas', 'sub': 'workit'})
     print(token)
