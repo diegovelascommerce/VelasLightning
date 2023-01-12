@@ -42,7 +42,8 @@ combined_creds = grpc.composite_channel_credentials(cert_creds, auth_creds)
 
 
 def get_stub():
-    channel = grpc.secure_channel('192.168.0.10:10009', combined_creds)
+    channel = grpc.secure_channel(
+        f"{config['grpc']['ip']}:{config['grpc']['port']}", combined_creds)
     stub = lnrpc.LightningStub(channel)
     return stub
 

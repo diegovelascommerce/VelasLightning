@@ -27,3 +27,4 @@ htmlcov/
 admin.macaroon
 tls.cert
 googleapis
+*.backup
