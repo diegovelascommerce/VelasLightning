@@ -1,5 +1,3 @@
-from functools import wraps
-
 import jwt
 
 
@@ -15,5 +13,5 @@ def verify_jwt(token, secret) -> dict:
 
 
 if __name__ == '__main__':
-    token = create_jwt({'some': 'payload'}, 'secret')
+    token = create_jwt({'iss': 'velas', 'sub': 'workit'}, 'secret')
     print(token)

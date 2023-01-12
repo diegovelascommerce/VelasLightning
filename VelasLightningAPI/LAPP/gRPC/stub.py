@@ -14,11 +14,11 @@ os.environ["GRPC_SSL_CIPHER_SUITES"] = "HIGH+ECDSA"
 
 # get the lnd cert
 cert = open(os.path.expanduser(
-    '~/source/velas/VelasLightning/VelasLightningAPI/LAPP/gRPC/tls.cert'),
+    './LAPP/gRPC/tls.cert'),
     'rb').read()
 
 # get the lnd admin.macaroon
-with open(os.path.expanduser('~/source/velas/VelasLightning/VelasLightningAPI/LAPP/gRPC/admin.macaroon'), 'rb') as f:  # noqa: E501
+with open(os.path.expanduser('./LAPP/gRPC/admin.macaroon'), 'rb') as f:  # noqa: E501
     macaroon_bytes = f.read()
     macaroon = codecs.encode(macaroon_bytes, 'hex')
 

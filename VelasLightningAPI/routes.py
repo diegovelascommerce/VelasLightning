@@ -54,8 +54,8 @@ def configure_routes(app, velas):
 
     @app.route('/get_node_id', methods=['get'])
     def getNodeId():
-        """ 
-        Return the NodeId of the workit lightning node. 
+        """
+        Return the NodeId of the workit lightning node.
 
         Workit client app will then use the nodeId to attempt to connect to it.
 
