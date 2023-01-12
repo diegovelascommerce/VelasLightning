@@ -9,4 +9,4 @@ if __name__ == "__main__":
     velas = Velas()
     app = Flask(__name__)
     configure_routes(app, velas)
-    app.run(debug=True, ssl_context="adhoc")
+    app.run(host="0.0.0.0", debug=True, ssl_context="adhoc")
