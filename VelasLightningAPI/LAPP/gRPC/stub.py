@@ -12,13 +12,15 @@ from . import lightning_pb2_grpc as lnrpc
 # error when we communicate with the lnd rpc server
 os.environ["GRPC_SSL_CIPHER_SUITES"] = "HIGH+ECDSA"
 
+cwd = os.path.dirname(__file__)
+print(cwd)
 # get the lnd cert
 cert = open(os.path.expanduser(
-    './LAPP/gRPC/tls.cert'),
+    f'{cwd}/tls.cert'),
     'rb').read()
 
 # get the lnd admin.macaroon
-with open(os.path.expanduser('./LAPP/gRPC/admin.macaroon'), 'rb') as f:  # noqa: E501
+with open(os.path.expanduser(f'{cwd}/admin.macaroon'), 'rb') as f:  # noqa: E501
     macaroon_bytes = f.read()
     macaroon = codecs.encode(macaroon_bytes, 'hex')
 
