@@ -4,9 +4,10 @@ from flask import Flask
 from LAPP.velas import Velas
 from routes import configure_routes
 
+app = Flask(__name__)
+velas = Velas()
+configure_routes(app, velas)
+
 if __name__ == "__main__":
     print("...Running VelasLightningAPI")
-    velas = Velas()
-    app = Flask(__name__)
-    configure_routes(app, velas)
-    app.run(host="0.0.0.0", debug=True, ssl_context="adhoc")
+    app.run(host="0.0.0.0")

@@ -1,0 +1,16 @@
+[Unit]
+Description=Workit Flask LAPP
+Requires=lnd.service
+After=lnd.service
+
+[Service]
+Environment=HOME=/home/ubuntu
+ExecStart=/home/ubuntu/VelasLightning/VelasLightningAPI/env/bin/python /home/ubuntu/VelasLightning/VelasLightningAPI/wsgi.py
+Restart=always
+RestartSec=30
+SyslogIdentifier=workit
+User=ubuntu
+Group=ubuntu
+
+[Install]
+WantedBy=multi-user.target
