@@ -39,7 +39,7 @@ def configure_routes(app, velas):
 
     @app.route('/getinfo')
     @token_required
-    def get_info():
+    def getinfo():
         info = velas.getinfo()
         return {
             "identity_pubkey": info.identity_pubkey,
@@ -52,29 +52,21 @@ def configure_routes(app, velas):
             "best_header_timestamp": info.best_header_timestamp
         }
 
-    @app.route('/get_node_id', methods=['get'])
-    def getNodeId():
+    @app.route('/openchannel', methods=['post'])
+    @token_required
+    def openchannel():
         """
-        Return the NodeId of the workit lightning node.
-
-        Workit client app will then use the nodeId to attempt to connect to it.
-
-        return:
-            the nodeId of the backend lightning node
-        """
-        return velas.getNodeID()
-
-    @app.route('/create_channel', methods=['post'])
-    def create_channel():
-        """ 
         Create a channel from nodeId, address and port
         """
         data = request.get_json()
         nodeId = data.get('nodeId')
-        address = data.get('address')
-        port = data.get('port')
-        res = velas.create_channel(nodeId, address, port)
-        return res, 200
+        amt = data.get('amt')
+        res = velas.openchannel(nodeId, amt)
+        print(res)
+        return {
+            "txid": res[0],
+            "vout": res[1]
+        }
 
     @app.route('/submit_bolt11', methods=['POST'])
     def submit_bolt11():

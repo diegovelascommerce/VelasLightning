@@ -1,9 +1,6 @@
 
+from .gRPC import convertion
 from .gRPC import stub as lnd
-
-TEST_NODE_ID = \
-    "03e347d089c071c27680e26299223e80a740cf3e3fc4b4237fa219bb67121a670b"
-TEST_CHANNEL_ID = "2583303668972126208"
 
 
 class Velas:
@@ -16,24 +13,20 @@ class Velas:
         info = lnd.getinfo(self.stub)
         return info
 
-    def getNodeID(self):
-        """
-        Get node id of LND.
-
-        return:
-            True
-        """
-        return TEST_NODE_ID
-
-    def create_channel(self, nodeId, address, port):
+    def openchannel(self, nodeId, amt):
         """
         Create a outbout channel with node submitted
 
         return:
             channel id of newly created channel
         """
-        print("Outbound channel created with {nodeId}@{address}:{port}")
-        return TEST_CHANNEL_ID
+        channelPoint = lnd.openchannel(self.stub, nodeId, amt)
+
+        brev = convertion.reverse_bytes(channelPoint.funding_txid_bytes)
+        txid = convertion.bytes_to_hex(brev)
+        out = channelPoint.output_index
+
+        return (txid, out)
 
     def payBolt11(self, bolt11):
         """Pay bolt11 invoice that is submitted to it."""

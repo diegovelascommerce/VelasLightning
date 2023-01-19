@@ -8,7 +8,6 @@ app.
 """
 
 import json
-from urllib import response
 
 import pytest
 from flask import Flask
@@ -16,8 +15,11 @@ from flask import Flask
 from ..app import configure_routes
 from ..LAPP.velas import Velas
 
-TEST_NODE_ID = "03e347d089c071c27680e26299223e80a740cf3e3fc4b4237fa219bb67121a670b"  # noqa
-TEST_CHANNEL_ID = "2583303668972126208"
+# from urllib import response
+
+
+NODE_ID = "03e347d089c071c27680e26299223e80a740cf3e3fc4b4237fa219bb67121a670b"  # noqa
+
 TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ2ZWxhcyIsInN1YiI6IndvcmtpdCJ9.CnksMqUsywjH4W8JgPePodi10pO_xJMrPyq9c19tQmo"
 
 
@@ -50,7 +52,7 @@ def test_getinfo(client):
     assert info['identity_pubkey'] == "029cba2eb9edf18352e90f1a5f71e367af80d6e3ab7a5aa6122309fcbcd4375735"  # noqa
 
 
-def test_create_channel(client):
+def test_openchannel(client):
     """
     Create outbounded channel with workit app.
 
@@ -58,20 +60,25 @@ def test_create_channel(client):
     an outbounded channel with workit app.
     """
     data = {
-        'nodeId':
-        "02393813695fc7d7bc946ccfa64f65c7d699ac04ccf6b1b5198f1a33c975988e52",
-        'address': "173.70.37.248",
-        'port': 9735
+        'nodeId': NODE_ID,
+        'amt': 20000
     }
-    response = client.post('/create_channel',
+    response = client.post('/openchannel',
                            data=json.dumps(data),
-                           content_type='application/json')
+                           content_type='application/json',
+                           headers=dict(
+                               Authorization=f"Bearer {TOKEN}"
+                           ))
+
+    print(response)
+
     assert response.status_code == 200
-    assert response.text == TEST_CHANNEL_ID
+
+    print(response.text)
 
 
 def test_submit_bolt11(client):
-    """ 
+    """
     this is where workit will submit a bolt11 invoice to be payed automatically.
 
     the workit app will create the invoice but it the workit backend that will forward it
