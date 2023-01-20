@@ -68,6 +68,18 @@ def configure_routes(app, velas):
             "vout": res[1]
         }
 
+    @app.route('/closechannel', methods=['post'])
+    @token_required
+    def closechannel():
+        data = request.get_json()
+        txid = data.get('txid')
+        vout = data.get('vout')
+        res = velas.closeChannel(txid, vout)
+
+        return {
+            "txid": res,
+        }
+
     @app.route('/submit_bolt11', methods=['POST'])
     def submit_bolt11():
         """Passes bolt11 to LAPP."""

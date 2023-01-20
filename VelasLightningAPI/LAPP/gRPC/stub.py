@@ -102,12 +102,12 @@ def closechannel(stub, txId, vout):
         # max_fee_per_vbyte=<uint64>,
     )
 
-    res = list()
     for response in stub.CloseChannel(request):
-        print(response)
-        res.append(response)
-
-    return res
+        if hasattr(response, 'close_pending'):
+            pendingUpdate = response.close_pending
+            revtxid = convertion.reverse_bytes(pendingUpdate.txid)
+            txid = convertion.bytes_to_hex(revtxid)
+            return txid
 
 
 def decodepayreq(stub, pay_req):

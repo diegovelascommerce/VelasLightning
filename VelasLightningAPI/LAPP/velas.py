@@ -28,12 +28,8 @@ class Velas:
 
         return (txid, out)
 
-    def payBolt11(self, bolt11):
-        """Pay bolt11 invoice that is submitted to it."""
-        print("pay bolt11: {bolt11}")
-        return True
-
-    def closeChannel(channelID):
+    def closeChannel(self, txid, vout):
         """Close specified channel."""
-        print("channel: {channelID} was closed")
-        return True
+        res = lnd.closechannel(self.stub, txid, vout)
+
+        return res

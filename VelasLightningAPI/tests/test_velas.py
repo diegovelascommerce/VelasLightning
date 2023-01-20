@@ -21,3 +21,10 @@ def test_openchannel(velas):
     channelPoint = velas.openchannel(NODE_ID, 20000)
     assert channelPoint is not None
     print(channelPoint)
+
+
+def test_closechannel(velas):
+    txid = velas.closeChannel(
+        "bff3097bdcab8c8cb47f98e1bf144c9ea9b8e7c0de9616aa242aaf0845f6280f", 1)
+    assert txid is not None
+    print(txid)

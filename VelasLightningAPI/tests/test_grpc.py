@@ -37,7 +37,7 @@ def test_openchannel(stub):
 
 
 def test_closechannel(stub):
-    txId = "6ff5c9d3f555fb9792801667bc5c0b98ab433a8237555dbe32561d5522d28889"
+    txId = "4cf41a1af733808dd01a3391338e7079132db6b5da38bd52d24c8624e43c8f39"
     vout = 1
     res = lnd.closechannel(stub, txId, vout)
     print(res)
