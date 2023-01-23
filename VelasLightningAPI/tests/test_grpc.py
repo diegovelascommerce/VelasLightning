@@ -45,6 +45,12 @@ def test_closechannel(stub):
     # asster res is None
 
 
+def test_listchannels(stub):
+    peer = "03e347d089c071c27680e26299223e80a740cf3e3fc4b4237fa219bb67121a670b"
+    res = lnd.listchannels(stub, peer)
+    print(res)
+
+
 def test_decodepayreq(stub):
     bolt11 = "lntb2u1p3ms7ulpp5kcy46uadkkzn2ec3q84sjkhtpw4rvm0atfyy204mefzyhj20cfcqdp9wpkx2ctnv5s8qcteyp6x7grkv4kxzum5v4ehgcqzpgxqyz5vqsp5sn0209yqdfku0anll6gvjc3xve9gf0jcq2j285az6xky7jc8vyrs9qyyssqmfl3y4r08mua52yt83cd2qyq67qcvll28p2jg8ffkeygnnaqk92juym0ctka9y49hf2jmjkkdupkr5f74aujja8yxpkaump55605szqq45cfjs"
     res = lnd.decodepayreq(stub, pay_req=bolt11)

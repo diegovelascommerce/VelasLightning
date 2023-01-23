@@ -80,11 +80,30 @@ def configure_routes(app, velas):
             "txid": res,
         }
 
-    @app.route('/submit_bolt11', methods=['POST'])
-    def submit_bolt11():
-        """Passes bolt11 to LAPP."""
-        print("submitBolt11")
+    @app.route('/listchannels', methods=['post'])
+    def listchannels():
         data = request.get_json()
-        bolt11 = data.get('bolt11')
-        velas.payBolt11(bolt11)
-        return "Ok", 200
+        peer = data.get('peer')
+        res = velas.listchannels(peer)
+
+        channels = []
+        for chan in res.channels:
+            channels.append({
+                "remote_pubkey": chan.remote_pubkey,
+                "channel_point": chan.channel_point,
+                "capacity": chan.capacity,
+                "local_balance": chan.local_balance
+            })
+
+        return {
+            "channels": channels,
+        }
+
+    # @app.route('/submit_bolt11', methods=['POST'])
+    # def submit_bolt11():
+    #     """Passes bolt11 to LAPP."""
+    #     print("submitBolt11")
+    #     data = request.get_json()
+    #     bolt11 = data.get('bolt11')
+    #     velas.payBolt11(bolt11)
+    #     return "Ok", 200

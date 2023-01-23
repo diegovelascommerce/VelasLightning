@@ -2,7 +2,7 @@ import base64
 
 
 def str_to_bytes(text: str) -> bytes:
-    res = text.encode('ascii')
+    res = bytes(text, 'utf-8')
     return res
 
 

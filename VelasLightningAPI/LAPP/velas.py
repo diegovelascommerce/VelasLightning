@@ -33,3 +33,7 @@ class Velas:
         res = lnd.closechannel(self.stub, txid, vout)
 
         return res
+
+    def listchannels(self, peer):
+        res = lnd.listchannels(self.stub, peer)
+        return res

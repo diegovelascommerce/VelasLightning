@@ -110,6 +110,19 @@ def closechannel(stub, txId, vout):
             return txid
 
 
+def listchannels(stub, peer):
+    bpeer = convertion.hex_to_bytes(peer)
+    request = ln.ListChannelsRequest(
+        active_only=True,
+        # inactive_only=<bool>,
+        # public_only=<bool>,
+        # private_only=<bool>,
+        peer=bpeer,
+    )
+    response = stub.ListChannels(request)
+    return response
+
+
 def decodepayreq(stub, pay_req):
     request = ln.PayReqString(
         pay_req=pay_req

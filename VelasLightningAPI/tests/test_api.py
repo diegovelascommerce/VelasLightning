@@ -96,6 +96,24 @@ def test_closechannel(client):
     print(response.text)
 
 
+def test_listchannels(client):
+    data = {
+        'peer': NODE_ID,
+    }
+    response = client.post('/listchannels',
+                           data=json.dumps(data),
+                           content_type='application/json',
+                           headers=dict(
+                               Authorization=f"Bearer {TOKEN}"
+                           ))
+
+    print(response)
+
+    assert response.status_code == 200
+
+    print(response.text)
+
+
 def test_submit_bolt11(client):
     """
     this is where workit will submit a bolt11 invoice to be payed automatically.
