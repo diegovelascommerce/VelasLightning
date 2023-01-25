@@ -59,6 +59,8 @@ $ curl -X GET -k -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
 
 Opens a channel between the main LND node and another user node. The user node pub key and the channel amount, in Satoshis, must be specified.
 
+// **TO-DO** - add option for opening a private channel - this is the type of channel we should be opening between the main node and user nodes.
+
 **Notes:**
 
 1. This only works when both nodes are online.
@@ -98,6 +100,8 @@ $ curl -X POST -k -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
 This shows the channel balances which can be used to calculate a users balance.
 
 The local balance are the funds on the main node side. The remote balance is the users funds.
+
+// **TO-DO** - add remote balance and channel reserve to the response
 
 Without any arguments, this call returns the channel balances across the entire node. Therefore, to get a user balance, the node id in question must be passed in the body as the "peer".
 
@@ -164,4 +168,3 @@ $ curl -X POST -k -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
   "vout": 0
 }'
 ```
-diego was here
