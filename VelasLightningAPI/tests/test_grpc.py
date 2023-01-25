@@ -39,7 +39,8 @@ def test_openchannel(stub):
 def test_closechannel(stub):
     txId = "4cf41a1af733808dd01a3391338e7079132db6b5da38bd52d24c8624e43c8f39"
     vout = 1
-    res = lnd.closechannel(stub, txId, vout)
+    force = False
+    res = lnd.closechannel(stub, txId, vout, force)
     print(res)
     assert res is not None
     # asster res is None

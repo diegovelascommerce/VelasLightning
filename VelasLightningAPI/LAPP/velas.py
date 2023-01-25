@@ -28,9 +28,9 @@ class Velas:
 
         return (txid, out)
 
-    def closeChannel(self, txid, vout):
+    def closeChannel(self, txid, vout, force):
         """Close specified channel."""
-        res = lnd.closechannel(self.stub, txid, vout)
+        res = lnd.closechannel(self.stub, txid, vout, force)
 
         return res
 

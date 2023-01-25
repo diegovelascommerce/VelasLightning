@@ -11,20 +11,20 @@ SECRET = 'secret'
 
 
 def test_create_jwt():
-    token = velas_jwt.create_jwt(TEST_PAYLOAD, SECRET)
+    token = velas_jwt.create_jwt(TEST_PAYLOAD)
     assert token is not None
     assert token == TEST_TOKEN
 
-    token = velas_jwt.create_jwt({'iss': 'velas', 'sub': 'workit'}, SECRET)
+    token = velas_jwt.create_jwt({'iss': 'velas', 'sub': 'workit'})
     assert token == TOKEN_WORKIT
 
 
 def test_verify_jwt():
-    payload = velas_jwt.verify_jwt(TEST_TOKEN, SECRET)
+    payload = velas_jwt.verify_jwt(TEST_TOKEN)
     assert payload == {'some': 'payload'}
 
-    payload = velas_jwt.verify_jwt(TOKEN_WORKIT, SECRET)
+    payload = velas_jwt.verify_jwt(TOKEN_WORKIT)
     assert payload == {'iss': 'velas', 'sub': 'workit'}
 
     with pytest.raises(jwt.exceptions.InvalidSignatureError):
-        payload = velas_jwt.verify_jwt(TOKEN_PHONY, SECRET)
+        payload = velas_jwt.verify_jwt(TOKEN_PHONY)

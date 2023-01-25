@@ -85,7 +85,7 @@ def openchannel(stub, nodeId: str, amt: int):
     return response
 
 
-def closechannel(stub, txId, vout):
+def closechannel(stub, txId, vout, force):
     btxId = convertion.hex_to_bytes(txId)
     revbtxid = convertion.reverse_bytes(btxId)
     channel_point = ln.ChannelPoint(
@@ -94,7 +94,7 @@ def closechannel(stub, txId, vout):
     )
     request = ln.CloseChannelRequest(
         channel_point=channel_point,
-        # force=<bool>,
+        force=force,
         # target_conf=<int32>,
         # sat_per_byte=<int64>,
         # delivery_address=<string>,

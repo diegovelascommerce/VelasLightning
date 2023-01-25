@@ -80,8 +80,10 @@ def test_openchannel(client):
 def test_closechannel(client):
     data = {
         'txid': "22575680d830ff738205fa1cbee9f2a4a50a4171c61a920b0748b3c55adee995",  # noqa
-        'vout': 1
+        'vout': 1,
+        'force': False
     }
+    print(data)
     response = client.post('/closechannel',
                            data=json.dumps(data),
                            content_type='application/json',
@@ -90,6 +92,7 @@ def test_closechannel(client):
                            ))
 
     print(response)
+    print(response.text)
 
     assert response.status_code == 200
 

@@ -1,7 +1,7 @@
 import re
 from functools import wraps
 
-from flask import jsonify, request
+from flask import json, jsonify, request
 
 from velas_jwt import verify_jwt
 
@@ -62,7 +62,7 @@ def configure_routes(app, velas):
         nodeId = data.get('nodeId')
         amt = data.get('amt')
         res = velas.openchannel(nodeId, amt)
-        print(res)
+
         return {
             "txid": res[0],
             "vout": res[1]
@@ -74,13 +74,17 @@ def configure_routes(app, velas):
         data = request.get_json()
         txid = data.get('txid')
         vout = data.get('vout')
-        res = velas.closeChannel(txid, vout)
+        force = data.get('force')
+
+        print(data)
+        res = velas.closeChannel(txid, vout, force)
 
         return {
             "txid": res,
         }
 
     @app.route('/listchannels', methods=['post'])
+    @token_required
     def listchannels():
         data = request.get_json()
         peer = data.get('peer')
@@ -98,6 +102,10 @@ def configure_routes(app, velas):
         return {
             "channels": channels,
         }
+
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        return {'message': repr(e)}, 500
 
     # @app.route('/submit_bolt11', methods=['POST'])
     # def submit_bolt11():
