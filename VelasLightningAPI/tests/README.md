@@ -8,7 +8,7 @@ Important note: this interface currently only communicates with a testnet LND no
 
 - **HelloLightning** - Communication test
 - **GetInfo** - Returns basic information about the LND node
-- **OpenChannel** - Options a channel between the LND node and another node
+- **OpenChannel** - Opens a channel between the LND node and another node
 - **CloseChannel** - Closes a channel given the channel point
 - **ListChannels** - returns channel balances, optional to pass in a pub key to be given info about only that remote node balance
 - **SubmitBolt11** - Submit a bolt 11 invoice to be paid automatically
