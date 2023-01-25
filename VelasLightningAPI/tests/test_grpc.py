@@ -48,7 +48,8 @@ def test_closechannel(stub):
 
 def test_listchannels(stub):
     peer = "03e347d089c071c27680e26299223e80a740cf3e3fc4b4237fa219bb67121a670b"
-    res = lnd.listchannels(stub, peer)
+    res = lnd.listchannels(stub, peer, active_only=True,
+                           inactive_only=False, public_only=True, private_only=False)  # noqa
     print(res)
 
 

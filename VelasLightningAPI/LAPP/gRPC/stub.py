@@ -110,13 +110,13 @@ def closechannel(stub, txId, vout, force):
             return txid
 
 
-def listchannels(stub, peer):
+def listchannels(stub, peer, active_only, inactive_only, public_only, private_only):  # noqa
     bpeer = convertion.hex_to_bytes(peer)
     request = ln.ListChannelsRequest(
-        active_only=True,
-        # inactive_only=<bool>,
-        # public_only=<bool>,
-        # private_only=<bool>,
+        active_only=active_only,
+        inactive_only=inactive_only,
+        public_only=public_only,
+        private_only=private_only,
         peer=bpeer,
     )
     response = stub.ListChannels(request)

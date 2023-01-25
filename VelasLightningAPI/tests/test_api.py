@@ -102,6 +102,10 @@ def test_closechannel(client):
 def test_listchannels(client):
     data = {
         'peer': NODE_ID,
+        'active_only': True,
+        'inactive_only': False,
+        'public_only': True,
+        'private_only': False
     }
     response = client.post('/listchannels',
                            data=json.dumps(data),

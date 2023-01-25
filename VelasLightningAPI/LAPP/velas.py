@@ -20,7 +20,7 @@ class Velas:
         return:
             channel id of newly created channel
         """
-        channelPoint = lnd.openchannel(self.stub, nodeId, amt)
+        channelPoint = lnd.openchannel(self.stub, nodeId, amt)  # noqa
 
         brev = convertion.reverse_bytes(channelPoint.funding_txid_bytes)
         txid = convertion.bytes_to_hex(brev)
@@ -34,6 +34,7 @@ class Velas:
 
         return res
 
-    def listchannels(self, peer):
-        res = lnd.listchannels(self.stub, peer)
+    def listchannels(self, peer, active_only, inactive_only, public_only, private_only):  # noqa
+        res = lnd.listchannels(self.stub, peer, active_only,
+                               inactive_only, public_only, private_only)
         return res

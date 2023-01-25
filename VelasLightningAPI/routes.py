@@ -88,7 +88,18 @@ def configure_routes(app, velas):
     def listchannels():
         data = request.get_json()
         peer = data.get('peer')
-        res = velas.listchannels(peer)
+        active_only = data.get('active_only')
+        inactive_only = data.get('inactive_only')
+        public_only = data.get('public_only')
+        private_only = data.get('private_only')
+
+        print(data)
+
+        res = velas.listchannels(peer,
+                                 active_only=active_only,
+                                 inactive_only=inactive_only,
+                                 public_only=public_only,
+                                 private_only=private_only)
 
         channels = []
         for chan in res.channels:

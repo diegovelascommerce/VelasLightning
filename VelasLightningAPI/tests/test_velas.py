@@ -24,7 +24,11 @@ def test_openchannel(velas):
 
 
 def test_listchannels(velas):
-    res = velas.listchannels(NODE_ID)
+    res = velas.listchannels(NODE_ID,
+                             active_only=True,
+                             inactive_only=False,
+                             public_only=True,
+                             private_only=False)  # noqa
     print(res)
 
 
