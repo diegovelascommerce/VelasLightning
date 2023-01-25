@@ -8,7 +8,7 @@ Important note: this interface currently only communicates with a testnet LND no
 
 - **HelloLightning** - Communication test
 - **GetInfo** - Returns basic information about the LND node
-- **OpenChannel** - Options a channel between the LND node and another node
+- **OpenChannel** - Opens a channel between the LND node and another node
 - **CloseChannel** - Closes a channel given the channel point
 - **ListChannels** - returns channel balances, optional to pass in a pub key to be given info about only that remote node balance
 - **SubmitBolt11** - Submit a bolt 11 invoice to be paid automatically
@@ -59,6 +59,8 @@ $ curl -X GET -k -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
 
 Opens a channel between the main LND node and another user node. The user node pub key and the channel amount, in Satoshis, must be specified.
 
+// **TO-DO** - add option for opening a private channel - this is the type of channel we should be opening between the main node and user nodes.
+
 **Notes:**
 
 1. This only works when both nodes are online.
@@ -98,6 +100,8 @@ $ curl -X POST -k -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
 This shows the channel balances which can be used to calculate a users balance.
 
 The local balance are the funds on the main node side. The remote balance is the users funds.
+
+// **TO-DO** - add remote balance and channel reserve to the response
 
 Without any arguments, this call returns the channel balances across the entire node. Therefore, to get a user balance, the node id in question must be passed in the body as the "peer".
 
@@ -164,4 +168,3 @@ $ curl -X POST -k -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
   "vout": 0
 }'
 ```
-diego was here
