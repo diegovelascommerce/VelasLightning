@@ -38,3 +38,15 @@ class Velas:
         res = lnd.listchannels(self.stub, peer, active_only,
                                inactive_only, public_only, private_only)
         return res
+
+    def decodepayreq(self, pay_req):
+        res = lnd.decodepayreq(self.stub, pay_req)
+        return res
+
+    def payinvoice(self, pay_req):
+        res = lnd.payinvoice(self.stub, pay_req)
+        return {
+            "payment_error": res.payment_error,
+            "payment_preimage": convertion.bytes_to_hex(res.payment_preimage),
+            "payment_hash": convertion.bytes_to_hex(res.payment_hash)
+        }

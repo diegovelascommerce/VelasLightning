@@ -121,6 +121,33 @@ def configure_routes(app, velas):
             "channels": channels,
         }
 
+    @app.route('/decodereq', methods=['post'])
+    @token_required
+    def decodereq():
+        data = request.get_json()
+        bolt11 = data.get('bolt11')
+
+        res = velas.decodepayreq(pay_req=bolt11)
+        print(res)
+        return {
+            "destination": res.destination,
+            "payment_hash": res.payment_hash,
+            "num_satoshis": res.num_satoshis,
+            "description": res.description,
+            "expiry": res.expiry,
+            "timestamp": res.timestamp,
+        }
+
+    @app.route('/payinvoice', methods=['post'])
+    @token_required
+    def payinvoice():
+        data = request.get_json()
+        bolt11 = data.get('bolt11')
+
+        res = velas.payinvoice(pay_req=bolt11)
+        print(res)
+        return res
+
     @app.errorhandler(Exception)
     def handle_exception(e):
         return {'message': repr(e)}, 500

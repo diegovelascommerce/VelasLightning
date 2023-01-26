@@ -121,16 +121,33 @@ def test_listchannels(client):
     print(response.text)
 
 
-def test_submit_bolt11(client):
-    """
-    this is where workit will submit a bolt11 invoice to be payed automatically.
-
-    the workit app will create the invoice but it the workit backend that will forward it
-    to the REST API for raspberryblitz.
-    """
-    data = {"bolt11": "testBolt11Invoice"}
-    response = client.post('/submit_bolt11',
+def test_decodereq(client):
+    data = {
+        'bolt11': "lntb2u1p3ms7ulpp5kcy46uadkkzn2ec3q84sjkhtpw4rvm0atfyy204mefzyhj20cfcqdp9wpkx2ctnv5s8qcteyp6x7grkv4kxzum5v4ehgcqzpgxqyz5vqsp5sn0209yqdfku0anll6gvjc3xve9gf0jcq2j285az6xky7jc8vyrs9qyyssqmfl3y4r08mua52yt83cd2qyq67qcvll28p2jg8ffkeygnnaqk92juym0ctka9y49hf2jmjkkdupkr5f74aujja8yxpkaump55605szqq45cfjs"  # noqa
+    }
+    response = client.post('/decodereq',
                            data=json.dumps(data),
-                           content_type='application/json')
-    assert response.status_code == 200
-    assert response.text == "Ok"
+                           content_type='application/json',
+                           headers=dict(
+                               Authorization=f"Bearer {TOKEN}"
+                           ))
+
+    assert response is not None
+
+    print(response)
+
+
+def test_payinvoice(client):
+    data = {
+        'bolt11': "lntb2u1p3a9h0npp5nyrz2n4xqdw3xfkc7g2sr0v0h22egv0zrlz73cewf0p40z8alnqqdzqw35xjueqd9ejqcfqw3jhxapqveex7mfqv35k2em0yaejqunpwdcxyetjwfujqurfcqzpgxqyz5vqsp5y5m89ru9yudfl7wqxktwda5hf3u4z5u68ys33rs6nt2d3qrjqcps9qyyssqcd8xjyhf62yemamaa57evn8y7as48pda5dc2aftg4ytyh3200xfn78jnrxgprmyxnajxckfj6rh77k3asx2tym56pwvj6crykf3h7rgqxn6v83"  # noqa
+    }
+    response = client.post('/payinvoice',
+                           data=json.dumps(data),
+                           content_type='application/json',
+                           headers=dict(
+                               Authorization=f"Bearer {TOKEN}"
+                           ))
+
+    assert response is not None
+
+    print(response)
