@@ -113,6 +113,8 @@ def configure_routes(app, velas):
                 "local_chan_reserve_sat": chan.local_chan_reserve_sat,
                 "remote_chan_reserve_sat": chan.remote_chan_reserve_sat,
                 "commit_fee": chan.commit_fee,
+                # eric try out formula from here
+                "remote_balance": chan.capacity - chan.local_balance - chan.commit_fee  # noqa
             })
 
         return {
