@@ -103,11 +103,16 @@ def configure_routes(app, velas):
 
         channels = []
         for chan in res.channels:
+            print(chan)
             channels.append({
+                "active": chan.active,
                 "remote_pubkey": chan.remote_pubkey,
                 "channel_point": chan.channel_point,
                 "capacity": chan.capacity,
-                "local_balance": chan.local_balance
+                "local_balance": chan.local_balance,
+                "local_chan_reserve_sat": chan.local_chan_reserve_sat,
+                "remote_chan_reserve_sat": chan.remote_chan_reserve_sat,
+                "commit_fee": chan.commit_fee,
             })
 
         return {
