@@ -18,7 +18,7 @@ def test_getinfo(velas):
 
 
 def test_openchannel(velas):
-    channelPoint = velas.openchannel(NODE_ID, 20000)
+    channelPoint = velas.openchannel(nodeId=NODE_ID, amt=20000, private=True)
     assert channelPoint is not None
     print(channelPoint)
 

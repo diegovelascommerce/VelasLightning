@@ -61,7 +61,8 @@ def configure_routes(app, velas):
         data = request.get_json()
         nodeId = data.get('nodeId')
         amt = data.get('amt')
-        res = velas.openchannel(nodeId, amt)
+        private = data.get('private')
+        res = velas.openchannel(nodeId=nodeId, amt=amt, private=private)
 
         return {
             "txid": res[0],
@@ -106,15 +107,15 @@ def configure_routes(app, velas):
             print(chan)
             channels.append({
                 "active": chan.active,
+                "private": chan.private,
                 "remote_pubkey": chan.remote_pubkey,
                 "channel_point": chan.channel_point,
                 "capacity": chan.capacity,
                 "local_balance": chan.local_balance,
+                "remote_balance": chan.remote_balance,
                 "local_chan_reserve_sat": chan.local_chan_reserve_sat,
                 "remote_chan_reserve_sat": chan.remote_chan_reserve_sat,
                 "commit_fee": chan.commit_fee,
-                # eric try out formula from here
-                "remote_balance": chan.capacity - chan.local_balance - chan.commit_fee  # noqa
             })
 
         return {

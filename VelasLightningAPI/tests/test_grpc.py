@@ -20,7 +20,7 @@ def test_getinfo(stub):
 
 def test_openchannel(stub):
     res = lnd.openchannel(
-        stub, NODE_ID, 20000)
+        stub, nodeId=NODE_ID, amt=20000, private=True)
 
     assert res.funding_txid_bytes
     print(f"funding_txid_bytes: {res.funding_txid_bytes}")
@@ -47,9 +47,11 @@ def test_closechannel(stub):
 
 
 def test_listchannels(stub):
+    print('test_listchannels')
     peer = "03e347d089c071c27680e26299223e80a740cf3e3fc4b4237fa219bb67121a670b"
     res = lnd.listchannels(stub, peer, active_only=True,
                            inactive_only=False, public_only=True, private_only=False)  # noqa
+    print("foobar")
     print(res)
 
 

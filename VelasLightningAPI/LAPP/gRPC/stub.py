@@ -53,7 +53,7 @@ def getinfo(stub):
     return info
 
 
-def openchannel(stub, nodeId: str, amt: int):
+def openchannel(stub, nodeId: str, amt: int, private: bool):
     request = ln.OpenChannelRequest(
         # sat_per_vbyte= < uint64 > ,
         node_pubkey=convertion.hex_to_bytes(nodeId),
@@ -62,7 +62,7 @@ def openchannel(stub, nodeId: str, amt: int):
         # push_sat= < int64 > ,
         # target_conf= < int32 > ,
         # sat_per_byte= < int64 > ,
-        private=True,
+        private=private,
         # min_htlc_msat= < int64 > ,
         # remote_csv_delay= < uint32 > ,
         min_confs=1,
