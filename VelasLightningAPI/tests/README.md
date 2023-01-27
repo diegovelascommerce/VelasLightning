@@ -7,12 +7,12 @@ The LApp has an API interface for communicating with an LND Node. Currently, it 
 Important note: this interface currently only communicates with a testnet LND node. No real bitcoin are ever at risk using this interface.
 
 - **[HelloLightning](#HelloLightning)** - Communication test
-- **GetInfo** - Returns basic information about the LND node
-- **OpenChannel** - Opens a channel between the LND node and another node
-- **ListChannels** - returns channel balances, optional to pass in a pub key to be given info about only that remote node balance
-- **CloseChannel** - Closes a channel given the channel point
-- **PayInvoice** - Submit a bolt 11 invoice to be paid automatically
-- **DecodeReq** - Decode a bolt 11 invoice to view amount, notes, preimage etc.
+- **[GetInfo](#GetInfo)** - Returns basic information about the LND node
+- **[OpenChannel](#OpenChannel)** - Opens a channel between the LND node and another node
+- **[ListChannels](#ListChannels)** - returns channel balances, optional to pass in a pub key to be given info about only that remote node balance
+- **[CloseChannel](#CloseChannel)** - Closes a channel given the channel point
+- **[PayInvoice](#PayInvoice)** - Submit a bolt 11 invoice to be paid automatically
+- **[DecodeReq](#DecodeReq)** - Decode a bolt 11 invoice to view amount, notes, preimage etc.
 
 Below the list of functions is a detail of each API call, the necessary parameters, and the response.
 
