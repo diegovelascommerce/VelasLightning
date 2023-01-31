@@ -6,30 +6,28 @@
 //
 
 import XCTest
+@testable import VelasLightningFramework
 
 class LAPPTests: XCTestCase {
+    
+    private var lapp:LAPP!
 
     override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+        self.lapp = LAPP(baseUrl: "https://192.168.0.10",
+                         jwt: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ2ZWxhcyIsInN1YiI6IndvcmtpdCJ9.CnksMqUsywjH4W8JgPePodi10pO_xJMrPyq9c19tQmo");
     }
 
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+    func testHelloVelas() {
+        let res = self.lapp.helloVelas()
+        XCTAssertNotNil(res)
+        XCTAssertEqual("Hello VelasLightning", res)
     }
-
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
-    }
-
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
+    
+    func testGetinfo() {
+        let res = self.lapp.getinfo()
+        XCTAssertNotNil(res)
+        XCTAssertEqual(res?.alias, "ruahaman")
+        XCTAssertEqual(res?.identity_pubkey, "029cba2eb9edf18352e90f1a5f71e367af80d6e3ab7a5aa6122309fcbcd4375735")
     }
 
 }

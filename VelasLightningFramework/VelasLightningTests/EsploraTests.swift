@@ -112,7 +112,7 @@ class EsploraTests: XCTestCase {
     func testPostTxTestNet() throws {
         let txHex = "020000000001011c8427c52156ce2970b93efea36278cd654241d1f2fdfc8f8b4054378c98211f00000000003774f18001554800000000000016001490b427f9b45cfad8fa3e90dc66f7a644faf1860e0400473044022067119d37b81e1c7898b2afda4d97a44db952871a24eda31756f2fa1b8d31259a0220025f7ce50e48db64052a328bd41f7607b06ac4ccb02e164e86cb75f2779c88eb01483045022100f2851f75921e5e301af55dd780e84be1c8d296f6ce6e98c9143e95ce9e5e034b02202dd7e1360772a7494e65512e37ed782ae19c10de51a31869b2ff8bb7c44c15fb01475221025d5d220b187cdf1cc739dc31b073d614ac64ecbbd08d044d7baf92f9c4d303f32102b8f94df60259bd1beb7b0b694d14b38a1dd62d27afa17a8a19c386d2c400051752aeb656ed20"
         
-        let res = Esplora.postTx(txHex: txHex, network: Network.testnet)
+        let res = try Esplora.postTx(txHex: txHex, network: Network.testnet)
         
         XCTAssertFalse(res!.isEmpty)
     }

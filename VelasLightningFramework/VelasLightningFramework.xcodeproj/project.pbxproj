@@ -17,6 +17,8 @@
 		812D3860290C441A005EA7E9 /* MyBroadcasterInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 812D385F290C441A005EA7E9 /* MyBroadcasterInterface.swift */; };
 		812D3862290C46C8005EA7E9 /* MyPersister.swift in Sources */ = {isa = PBXBuildFile; fileRef = 812D3861290C46C8005EA7E9 /* MyPersister.swift */; };
 		812D3864290C4A25005EA7E9 /* MyFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 812D3863290C4A25005EA7E9 /* MyFilter.swift */; };
+		813380912988401400291FF5 /* LAPPTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 813380902988401400291FF5 /* LAPPTests.swift */; };
+		813380942988445F00291FF5 /* LAPP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 813380932988445F00291FF5 /* LAPP.swift */; };
 		813649C6291BEE3100C344B6 /* BitcoinDevKit in Frameworks */ = {isa = PBXBuildFile; productRef = 813649C5291BEE3100C344B6 /* BitcoinDevKit */; settings = {ATTRIBUTES = (Required, ); }; };
 		813649C9291BEE8100C344B6 /* LightningDevKit in Frameworks */ = {isa = PBXBuildFile; productRef = 813649C8291BEE8100C344B6 /* LightningDevKit */; settings = {ATTRIBUTES = (Required, ); }; };
 		81481A6729087B2300DA3224 /* VelasLightningFramework.h in Headers */ = {isa = PBXBuildFile; fileRef = 81481A6629087B2300DA3224 /* VelasLightningFramework.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -75,6 +77,8 @@
 		812D385F290C441A005EA7E9 /* MyBroadcasterInterface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyBroadcasterInterface.swift; sourceTree = "<group>"; };
 		812D3861290C46C8005EA7E9 /* MyPersister.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyPersister.swift; sourceTree = "<group>"; };
 		812D3863290C4A25005EA7E9 /* MyFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyFilter.swift; sourceTree = "<group>"; };
+		813380902988401400291FF5 /* LAPPTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LAPPTests.swift; sourceTree = "<group>"; };
+		813380932988445F00291FF5 /* LAPP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LAPP.swift; sourceTree = "<group>"; };
 		81481A6329087B2300DA3224 /* VelasLightningFramework.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = VelasLightningFramework.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		81481A6629087B2300DA3224 /* VelasLightningFramework.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VelasLightningFramework.h; sourceTree = "<group>"; };
 		81481A8D29087B5200DA3224 /* VelasLightningExample.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = VelasLightningExample.xcodeproj; path = ../VelasLightningExample/VelasLightningExample.xcodeproj; sourceTree = "<group>"; };
@@ -122,6 +126,7 @@
 				8121891E2908844000354733 /* LightningTests.swift */,
 				81D31EE22909ACE900A621A0 /* VelasTests.swift */,
 				81E52DCE2939314200607DEC /* FileMgrTests.swift */,
+				813380902988401400291FF5 /* LAPPTests.swift */,
 				81B6F4C6294274320015F74D /* RequestTests.swift */,
 				8148B24E2947A23300F9FC2A /* EsploraTests.swift */,
 			);
@@ -170,6 +175,7 @@
 				812D3857290C3CCE005EA7E9 /* Lightning */,
 				81D31EE02909ABA500A621A0 /* Velas.swift */,
 				81E52DCB29392EBC00607DEC /* FileMgr.swift */,
+				813380932988445F00291FF5 /* LAPP.swift */,
 				81B6F4C1294263570015F74D /* Esplora.swift */,
 				81B6F4C4294268EC0015F74D /* Request.swift */,
 				8173C0C2294A7CE100BCF01F /* Utils.swift */,
@@ -330,6 +336,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				81B6F4C7294274320015F74D /* RequestTests.swift in Sources */,
+				813380912988401400291FF5 /* LAPPTests.swift in Sources */,
 				8121891F2908844000354733 /* LightningTests.swift in Sources */,
 				8148B24F2947A23300F9FC2A /* EsploraTests.swift in Sources */,
 				8121891D2908832200354733 /* BitcoinTests.swift in Sources */,
@@ -342,6 +349,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				813380942988445F00291FF5 /* LAPP.swift in Sources */,
 				81D31EE12909ABA500A621A0 /* Velas.swift in Sources */,
 				812D385C290C3ED8005EA7E9 /* MyFeeEstimator.swift in Sources */,
 				81E52DCC29392EBC00607DEC /* FileMgr.swift in Sources */,

@@ -75,8 +75,8 @@ class VelasTests: XCTestCase {
     
     func testPayInvoice() throws {
         try XCTSkipIf(true)
-        let res = try velas.payInvoice(bolt11: TEST_BOLT11, amtMsat: 20000)
-        XCTAssertTrue(res)
+        //let res = try velas.payInvoice(bolt11: TEST_BOLT11, amtMsat: 20000)
+        //XCTAssertTrue(res)
     }
     
     func testListChannels() throws {
