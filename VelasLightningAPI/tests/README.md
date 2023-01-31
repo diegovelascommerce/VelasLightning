@@ -60,13 +60,12 @@ $ curl -X GET -k -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
 
 Opens a channel between the main LND node and another user node. The user node pub key and the channel amount, in Satoshis, must be specified.
 
-// **TO-DO** - add option for opening a private channel - this is the type of channel we should be opening between the main node and user nodes.
-
 **Notes:**
 
 1. This only works when both nodes are online.
 2. If channel opening failed, we recommend viewing the error response for details.
-3. The response, a combination of transaction id and output number is also known as the "channel point", and is needed for closing channels.
+3. For user reward channels, we recommend opening private channels.
+4. The response, a combination of transaction id and output number is also known as the "channel point", and is needed for closing channels.
 
 Method: POST
 
@@ -78,7 +77,8 @@ Body: JSON
 
 {
 "nodeId": "string",
-"amt": integer
+"amt": integer,
+"private": true
 }
 
 Response: JSON
@@ -90,9 +90,10 @@ Example Response:
 Example Curl Command:
 
 ```sh
-$ curl -X POST -k -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ2ZWxhcyIsInN1YiI6IndvcmtpdCJ9.CnksMqUsywjH4W8JgPePodi10pO_xJMrPyq9c19tQmo' -H 'Content-Type: application/json' -i 'https://45.33.22.210/openchannel' --data '{
-  "nodeId": "0225ff2ae6a3d9722b625072503c2f64f6eddb78d739379d2ee55a16b3b0ed0a17",
-  "amt": 100000
+$ curl -X POST -k -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ2ZWxhcyIsInN1YiI6IndvcmtpdCJ9.CnksMqUsywjH4W8JgPePodi10pO_xJMrPyq9c19tQmo' -H 'Content-Type: application/json' -i 'https://127.0.0.1/openchannel' --data '{
+  "nodeId": "03e347d089c071c27680e26299223e80a740cf3e3fc4b4237fa219bb67121a670b",
+  "amt": 20000,
+  "private": 1
 }'
 ```
 
