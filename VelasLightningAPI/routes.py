@@ -1,9 +1,23 @@
+from velas_jwt import verify_jwt
+from config import config
+from flask import jsonify, request
 import re
 from functools import wraps
+import requests
+import socket
 
-from flask import json, jsonify, request
 
-from velas_jwt import verify_jwt
+def get_urls():
+    public_ip = requests.get('https://checkip.amazonaws.com').text.strip()
+    local_ip = config['grpc']['ip']
+    if local_ip == "127.0.0.1":
+        hostname = socket.gethostname()
+        local_ip = socket.gethostbyname(hostname)
+
+    return {
+        "local": local_ip,
+        "public": public_ip
+    }
 
 
 def token_required(f):
@@ -43,6 +57,7 @@ def configure_routes(app, velas):
         info = velas.getinfo()
         return {
             "identity_pubkey": info.identity_pubkey,
+            "urls": get_urls(),
             "alias": info.alias,
             "num_active_channels": info.num_active_channels,
             "num_inactive_channels": info.num_inactive_channels,
