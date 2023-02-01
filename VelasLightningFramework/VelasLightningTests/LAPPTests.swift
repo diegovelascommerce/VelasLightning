@@ -28,6 +28,8 @@ class LAPPTests: XCTestCase {
         XCTAssertNotNil(res)
         XCTAssertEqual(res?.alias, "ruahaman")
         XCTAssertEqual(res?.identity_pubkey, "029cba2eb9edf18352e90f1a5f71e367af80d6e3ab7a5aa6122309fcbcd4375735")
+        XCTAssertEqual(res?.urls.localIP, "192.168.0.10")
+        XCTAssertEqual(res?.urls.publicIP, "24.50.226.128")
     }
 
 }

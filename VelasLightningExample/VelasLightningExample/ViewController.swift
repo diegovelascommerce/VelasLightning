@@ -6,14 +6,18 @@
 //
 
 import UIKit
+import VelasLightningFramework
 
 class ViewController: UIViewController {
 
     @IBOutlet weak var hostLable: UILabel!
     @IBOutlet weak var nodeIdTextView: UITextView!
+    private var lapp:LAPP!
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.lapp = LAPP(baseUrl: "https://45.33.22.210",
+                         jwt: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ2ZWxhcyIsInN1YiI6IndvcmtpdCJ9.CnksMqUsywjH4W8JgPePodi10pO_xJMrPyq9c19tQmo");
         let (_, pub) = velas.getIPAddresses()
         hostLable.text = pub!
         hostLable.sizeToFit()
@@ -27,14 +31,24 @@ class ViewController: UIViewController {
         catch {
             NSLog("there was a problem getting the node id \(error)")
         }
+        
+
 
     }
     
     @IBAction func connectClick(_ sender: Any) {
         print("connect to a peer")
-        let nodeId = "029cba2eb9edf18352e90f1a5f71e367af80d6e3ab7a5aa6122309fcbcd4375735"
-        let address = "192.168.0.10"
+        
+        let res = self.lapp.getinfo()
+        
+//        let nodeId = "029cba2eb9edf18352e90f1a5f71e367af80d6e3ab7a5aa6122309fcbcd4375735"
+        let nodeId = res!.identity_pubkey
+
+//        let address = "192.168.0.10"
+        let address = res!.urls.publicIP
+        
         let port = NSNumber(9735)
+        
         do {
             let res = try velas.connectToPeer(nodeId: nodeId, address: address, port: port)
             print("connect: \(res)")

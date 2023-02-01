@@ -406,7 +406,7 @@ public class Lightning {
     ///     true if connection went through
     func connect(nodeId: String, address: String, port: NSNumber) throws -> Bool {
         guard let peer_handler = peer_handler else {
-            let error = NSError(domain: "bindNode", code: 1, userInfo: nil)
+            let error = VelasError.connectPeer(msg: "peer_handler not available")
             throw error
         }
         
@@ -415,14 +415,13 @@ public class Lightning {
                                        theirNodeId: Utils.hexStringToByteArray(nodeId))
         
         if (!res) {
-            let error = NSError(domain: "connectPeer",
-                                code: 1,
-                                userInfo: [NSLocalizedDescriptionKey: "failed to connect to peer \(nodeId)@\(address):\(port)"])
+            let error = VelasError.connectPeer(msg: "connection to peer failed: \(nodeId)@\(address):\(port)")
             throw error
         }
         
         return res
     }
+    
     
     /// List peers that you are connected to.
     ///
@@ -431,27 +430,20 @@ public class Lightning {
     ///
     /// return:
     ///     array of bytes that represent the node
-    func listPeers() throws -> String {
+    func listPeers() throws -> [String] {
         guard let peer_manager = peer_manager else {
-            let error = NSError(domain: "listPeers",
-                                code: 1,
-                                userInfo: [NSLocalizedDescriptionKey: "peer_manager not available"])
+            let error = VelasError.listPeers(msg: "peer_handler not available")
             throw error
         }
         
         let peer_node_ids = peer_manager.get_peer_node_ids()
         
-        
-        var json = "["
-        var first = true
+        var peers = [String]()
         for it in peer_node_ids {
-            if (!first) { json += "," }
-            first = false
-            json += "\"" + Utils.bytesToHex(bytes: it) + "\""
+            peers.append(Utils.bytesToHex(bytes: it))
         }
-        json += "]"
         
-        return json
+        return peers
     }
     
     /// Get list of channels that were established with partner node.

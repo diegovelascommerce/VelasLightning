@@ -97,7 +97,7 @@ public class Velas {
     ///
     /// return:
     ///     array of peers
-    public func listPeers() throws -> String {
+    public func listPeers() throws -> [String] {
         return try ln.listPeers()
     }
     
@@ -132,4 +132,6 @@ public class Velas {
 
 public enum VelasError: Error {
     case txFailed(msg:String)
+    case connectPeer(msg:String)
+    case listPeers(msg:String)
 }

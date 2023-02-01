@@ -11,10 +11,22 @@ public struct GetInfoResponse: Codable {
     let alias: String
     let best_header_timestamp: UInt32
     let block_hash: String
-    let identity_pubkey: String
+    public let identity_pubkey: String
     let num_active_channels: Int32
     let num_inactive_channels: Int32
     let num_peers: Int32
+    
+    public struct URLS: Codable {
+        enum CodingKeys: String, CodingKey {
+            case localIP = "local"
+            // Map the JSON key "url" to the Swift property name "htmlLink"
+            case publicIP = "public"
+        }
+        public let localIP: String
+        public let publicIP: String
+        
+    }
+    public let urls: URLS
 }
 
 public class LAPP: NSObject, URLSessionDelegate {
