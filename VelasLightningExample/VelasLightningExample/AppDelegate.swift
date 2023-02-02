@@ -9,6 +9,8 @@ import UIKit
 import VelasLightningFramework
 
 var velas: Velas!
+var lapp:LAPP!
+var velas_plist:[String:Any]!
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -22,6 +24,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             NSLog("\(error)")
             return false
         }
+        
+        let path = Bundle.main.path(forResource: "velas", ofType: "plist")
+        
+        let url = URL(fileURLWithPath: path!)
+        
+        let data = try! Data(contentsOf: url)
+        
+        velas_plist = try! PropertyListSerialization.propertyList(from: data, options: .mutableContainers, format: nil) as! [String:Any]
+        
+        lapp = LAPP(baseUrl: "https://\(velas_plist["grpc_ip"] as! String)",
+                    jwt: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ2ZWxhcyIsInN1YiI6IndvcmtpdCJ9.CnksMqUsywjH4W8JgPePodi10pO_xJMrPyq9c19tQmo");
         
         return true
     }

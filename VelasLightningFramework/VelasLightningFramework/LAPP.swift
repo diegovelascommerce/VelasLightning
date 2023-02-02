@@ -29,6 +29,11 @@ public struct GetInfoResponse: Codable {
     public let urls: URLS
 }
 
+public struct OpenChannelResponse: Codable {
+    public let nodeId: String
+    public let vout: Int32
+}
+
 public class LAPP: NSObject, URLSessionDelegate {
     
     private var baseUrl:String
@@ -121,6 +126,53 @@ public class LAPP: NSObject, URLSessionDelegate {
         }
         
         return res;
+    }
+    
+    public func openChannel(nodeId:String, amt:Int) -> OpenChannelResponse? {
+        let req = "\(self.baseUrl)/openchannel"
+        let url = URL(string: req)
+        var urlRequest = URLRequest(url: url!)
+        
+        urlRequest.setValue("Bearer \(self.jwt)", forHTTPHeaderField: "Authorization")
+        urlRequest.setValue("application/json", forHTTPHeaderField: "content-type")
+        urlRequest.httpMethod = "POST"
+        
+        let parameters:[String:Any] = ["nodeId": nodeId, "amt": amt, "private": 1]
+        
+        do {
+            urlRequest.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted) // pass dictionary to data object and set it as request body
+        } catch let error {
+            print(error.localizedDescription)
+        }
+        
+        let session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: nil)
+        
+        var data:Data?
+        let sem = DispatchSemaphore.init(value: 0)
+        let task = session.dataTask(with: urlRequest) { _data, response, error in
+            defer { sem.signal() }
+            if let error = error {
+                print(error)
+            }
+            if let _data = _data {
+                data = _data
+                print(data!)
+            }
+        }
+        task.resume()
+        sem.wait()
+        
+        var res:OpenChannelResponse?
+        do {
+            res = try JSONDecoder().decode(OpenChannelResponse.self, from: data!)
+        }
+        catch {
+            let res = String(decoding: data!, as: UTF8.self)
+            print(res)
+            return nil
+        }
+       
+        return res
     }
     
 }

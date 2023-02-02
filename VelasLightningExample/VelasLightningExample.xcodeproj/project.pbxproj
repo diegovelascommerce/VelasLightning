@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8104973A298C5639003619D9 /* velas.plist in Resources */ = {isa = PBXBuildFile; fileRef = 81049739298C5639003619D9 /* velas.plist */; };
 		81218922290885B300354733 /* VelasLightningFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 81218921290885B300354733 /* VelasLightningFramework.framework */; };
 		81218923290885B300354733 /* VelasLightningFramework.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 81218921290885B300354733 /* VelasLightningFramework.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		813649CC291BEF9A00C344B6 /* BitcoinDevKit in Frameworks */ = {isa = PBXBuildFile; productRef = 813649CB291BEF9A00C344B6 /* BitcoinDevKit */; };
@@ -34,6 +35,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		81049739298C5639003619D9 /* velas.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = velas.plist; sourceTree = "<group>"; };
 		81218921290885B300354733 /* VelasLightningFramework.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = VelasLightningFramework.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		81481A7629087B5000DA3224 /* VelasLightningExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VelasLightningExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		81481A7929087B5000DA3224 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -94,6 +96,7 @@
 				81481A8229087B5200DA3224 /* Assets.xcassets */,
 				81481A8429087B5200DA3224 /* LaunchScreen.storyboard */,
 				81481A8729087B5200DA3224 /* Info.plist */,
+				81049739298C5639003619D9 /* velas.plist */,
 			);
 			path = VelasLightningExample;
 			sourceTree = "<group>";
@@ -165,6 +168,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8104973A298C5639003619D9 /* velas.plist in Resources */,
 				81481A8629087B5200DA3224 /* LaunchScreen.storyboard in Resources */,
 				81481A8329087B5200DA3224 /* Assets.xcassets in Resources */,
 				81481A8129087B5000DA3224 /* Main.storyboard in Resources */,

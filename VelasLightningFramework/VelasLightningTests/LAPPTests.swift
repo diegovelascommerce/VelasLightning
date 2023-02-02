@@ -31,5 +31,9 @@ class LAPPTests: XCTestCase {
         XCTAssertEqual(res?.urls.localIP, "192.168.0.10")
         XCTAssertEqual(res?.urls.publicIP, "24.50.226.128")
     }
+    
+//    func testOpenChannel(){
+//        let res = self.lapp.openChannel(nodeId: <#T##String#>, amt: 20000)
+//    }
 
 }
