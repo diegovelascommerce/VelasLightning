@@ -13,6 +13,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var hostLable: UILabel!
     @IBOutlet weak var nodeIdTextView: UITextView!
     var nodeId:String!
+    var bolt11:String!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -30,25 +31,32 @@ class ViewController: UIViewController {
         catch {
             NSLog("there was a problem getting the node id \(error)")
         }
-        
-
-
     }
     
     @IBAction func connectClick(_ sender: Any) {
         print("connect to a peer")
         
-        let res = lapp.getinfo()
+        let info = lapp.getinfo()
         
         do {
-            let res = try velas.connectToPeer(nodeId: res!.identity_pubkey,
+            let res = try velas.connectToPeer(nodeId: info!.identity_pubkey,
                                               address: velas_plist["grpc_ip"] as! String,
                                               port: NSNumber(9735))
             print("connect: \(res)")
+            
+            if(res){
+                let alert = UIAlertController(title: "Connected", message: "you are now connected to \(info!.identity_pubkey)@\(velas_plist["grpc_ip"] as! String)", preferredStyle: .alert)
+                
+                alert.addAction(UIAlertAction(title: "Close", style: .cancel))
+
+                self.present(alert, animated: true, completion: nil)
+            }
         }
         catch {
             NSLog("there was a problem: \(error)")
         }
+        
+        
     }
     
     @IBAction func showPeerList(_ sender: Any) {
@@ -56,6 +64,13 @@ class ViewController: UIViewController {
         do {
             let res = try velas.listPeers()
             print("peers: \(res)")
+            if(res.count > 0){
+                let alert = UIAlertController(title: "Peers", message: "peers: \(res)", preferredStyle: .alert)
+                
+                alert.addAction(UIAlertAction(title: "Close", style: .cancel))
+
+                self.present(alert, animated: true, completion: nil)
+            }
         }
         catch {
             NSLog("problem with showPeerList \(error)")
@@ -69,6 +84,13 @@ class ViewController: UIViewController {
         
         if let res = res {
             print(res)
+            
+            let alert = UIAlertController(title: "Channel", message: "channel: \(res)", preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Close", style: .cancel))
+
+            self.present(alert, animated: true, completion: nil)
+           
         }
         else {
             print("there was a problem creating a channel")
@@ -79,6 +101,12 @@ class ViewController: UIViewController {
         do {
             let channels = try velas.listChannels()
             print("channels: \(channels)")
+            
+            let alert = UIAlertController(title: "Channels", message: channels, preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Close", style: .cancel))
+
+            self.present(alert, animated: true, completion: nil)
         }
         catch {
             NSLog("problem with listing channels: \(error)")
@@ -87,13 +115,32 @@ class ViewController: UIViewController {
     
     @IBAction func createBolt11(_ sender: Any) {
         do {
-            let bolt11 = try velas.createInvoice(amtMsat: 500000, description: "this s a test from velas lighting")
-            print("bolt11: \(bolt11)")
+            bolt11 = try velas.createInvoice(amtMsat: 500000, description: "this s a test from velas lighting")
+            
+            print("bolt11: \(bolt11 ?? "nothing")")
         }
         catch {
             NSLog("problem creating bolt11 invoice: \(error)")
         }
+        
+        let alert = UIAlertController(title: "bolt11", message: bolt11, preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "Close", style: .cancel))
+
+        self.present(alert, animated: true, completion: nil)
     }
+    
+    @IBAction func submitBolt11(_ sender: Any) {
+        
+        let res = lapp.payInvoice(bolt11: bolt11)
+        
+        let alert = UIAlertController(title: "submit bolt11", message: "response:\(res) submited", preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "Close", style: .cancel))
+
+        self.present(alert, animated: true, completion: nil)
+    }
+    
     
     @IBAction func closeChannelCooperatively(_ sender: Any) {
         do {

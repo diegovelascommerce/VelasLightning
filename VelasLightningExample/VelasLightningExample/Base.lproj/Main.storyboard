@@ -94,9 +94,9 @@
                                 <rect key="frame" x="103" y="426" width="168" height="45"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="filled" title="Pay Invoice"/>
+                                <buttonConfiguration key="configuration" style="filled" title="Submit Invoice"/>
                                 <connections>
-                                    <action selector="payInvoiceClick:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Smm-JH-cm4"/>
+                                    <action selector="submitBolt11:" destination="BYZ-38-t0r" eventType="touchUpInside" id="hQW-P9-glx"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Nen-Jg-URW">
@@ -115,6 +115,15 @@
                                 <buttonConfiguration key="configuration" style="filled" title="Close Channel Cooperatively"/>
                                 <connections>
                                     <action selector="closeChannelCooperatively:" destination="BYZ-38-t0r" eventType="touchUpInside" id="fkE-wk-LGE"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xxG-ST-94g">
+                                <rect key="frame" x="103" y="479" width="168" height="45"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="filled" title="Pay Invoice"/>
+                                <connections>
+                                    <action selector="payInvoiceClick:" destination="BYZ-38-t0r" eventType="touchUpInside" id="vWA-5I-tQK"/>
                                 </connections>
                             </button>
                         </subviews>

@@ -30,8 +30,14 @@ public struct GetInfoResponse: Codable {
 }
 
 public struct OpenChannelResponse: Codable {
-    public let nodeId: String
-    public let vout: Int32
+    public let txid: String
+    public let vout: Int
+}
+
+public struct PayInvoicResponse: Codable {
+    public let payment_error: String
+    public let payment_hash: String
+    public let payment_preimage: String
 }
 
 public class LAPP: NSObject, URLSessionDelegate {
@@ -165,6 +171,53 @@ public class LAPP: NSObject, URLSessionDelegate {
         var res:OpenChannelResponse?
         do {
             res = try JSONDecoder().decode(OpenChannelResponse.self, from: data!)
+        }
+        catch {
+            let res = String(decoding: data!, as: UTF8.self)
+            print(res)
+            return nil
+        }
+       
+        return res
+    }
+    
+    public func payInvoice(bolt11:String) -> PayInvoicResponse? {
+        let req = "\(self.baseUrl)/payinvoice"
+        let url = URL(string: req)
+        var urlRequest = URLRequest(url: url!)
+        
+        urlRequest.setValue("Bearer \(self.jwt)", forHTTPHeaderField: "Authorization")
+        urlRequest.setValue("application/json", forHTTPHeaderField: "content-type")
+        urlRequest.httpMethod = "POST"
+        
+        let parameters:[String:Any] = ["bolt11": bolt11]
+        
+        do {
+            urlRequest.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted) // pass dictionary to data object and set it as request body
+        } catch let error {
+            print(error.localizedDescription)
+        }
+        
+        let session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: nil)
+        
+        var data:Data?
+        let sem = DispatchSemaphore.init(value: 0)
+        let task = session.dataTask(with: urlRequest) { _data, response, error in
+            defer { sem.signal() }
+            if let error = error {
+                print(error)
+            }
+            if let _data = _data {
+                data = _data
+                print(data!)
+            }
+        }
+        task.resume()
+        sem.wait()
+        
+        var res:PayInvoicResponse?
+        do {
+            res = try JSONDecoder().decode(PayInvoicResponse.self, from: data!)
         }
         catch {
             let res = String(decoding: data!, as: UTF8.self)
