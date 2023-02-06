@@ -134,7 +134,9 @@ class ViewController: UIViewController {
         
         let res = lapp.payInvoice(bolt11: bolt11)
         
-        let alert = UIAlertController(title: "submit bolt11", message: "response:\(res) submited", preferredStyle: .alert)
+        print(res!)
+        
+        let alert = UIAlertController(title: "submit bolt11", message: "response:\(res!) submited", preferredStyle: .alert)
         
         alert.addAction(UIAlertAction(title: "Close", style: .cancel))
 

@@ -2,6 +2,21 @@ import LightningDevKit
 import BitcoinDevKit
 
 
+public class ChannelObject {
+    var channel_id:String = ""
+    var channel_value_satoshis:String = ""
+    var inbound_capacity_msat:String = ""
+    var outbound_capacity_msat:String = ""
+    var is_usable:Bool = false
+    var is_channel_ready:Bool = false
+    var is_outbound:Bool = false
+    var is_public:Bool = false
+    var remote_node_id:String = ""
+    var funding_txo_txid:String = ""
+    var funding_txo_index:UInt16 = 0
+    var confirmations_required:UInt32 = 0
+}
+
 /// This is the main class for handling interactions with the Lightning Network
 public class Lightning {
     
@@ -459,7 +474,7 @@ public class Lightning {
         var jsonArray = "["
         var first = true
         _ = channels.map { (it: ChannelDetails) in
-            let channelObject = self.channel2ChannelObject(it: it)
+            let channelObject = self.channel2ChannelString(it: it)
 
             if (!first) { jsonArray += "," }
             jsonArray += channelObject
@@ -472,7 +487,7 @@ public class Lightning {
     
     
     /// Convert ChannelDetails to a string
-    func channel2ChannelObject(it: ChannelDetails) -> String {
+    func channel2ChannelString(it: ChannelDetails) -> String {
         let short_channel_id = it.get_short_channel_id().getValue() ?? 0
         let confirmations_required = it.get_confirmations_required().getValue() ?? 0;
         let force_close_spend_delay = it.get_force_close_spend_delay().getValue() ?? 0;
@@ -507,6 +522,39 @@ public class Lightning {
         channelObject += "\"user_id\":" + String(it.get_user_channel_id()) + ","
         channelObject += "\"counterparty_node_id\":" + Utils.bytesToHex(bytes: it.get_counterparty().get_node_id())
         channelObject += "}"
+
+        return channelObject
+    }
+    
+    func channel2ChannelObject(it: ChannelDetails) -> ChannelObject {
+        let channelObject = ChannelObject()
+        
+        channelObject.channel_id = Utils.bytesToHex(bytes: it.get_channel_id())
+        
+        channelObject.channel_value_satoshis = String(it.get_channel_value_satoshis())
+        
+        channelObject.inbound_capacity_msat = String(it.get_inbound_capacity_msat())
+        
+        channelObject.outbound_capacity_msat = String(it.get_outbound_capacity_msat())
+        
+        channelObject.is_usable = it.get_is_usable()
+        
+        channelObject.is_channel_ready = it.get_is_channel_ready()
+        
+        channelObject.is_outbound = it.get_is_outbound()
+        
+        channelObject.is_public = it.get_is_public()
+        
+        channelObject.remote_node_id = Utils.bytesToHex(bytes: it.get_counterparty().get_node_id())
+        
+        if let funding_txo = it.get_funding_txo() {
+            channelObject.funding_txo_txid = Utils.bytesToHex(bytes: funding_txo.get_txid())
+            channelObject.funding_txo_index = funding_txo.get_index()
+        }
+
+        let confirmations_required = it.get_confirmations_required().getValue() ?? 0;
+        
+        channelObject.confirmations_required = confirmations_required
 
         return channelObject
     }
