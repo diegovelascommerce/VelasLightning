@@ -77,7 +77,13 @@ def configure_routes(app, velas):
         nodeId = data.get('nodeId')
         amt = data.get('amt')
         private = data.get('private')
-        res = velas.openchannel(nodeId=nodeId, amt=amt, private=private)
+        target_conf = data.get('target_conf')
+        min_confs = data.get('min_confs')
+        res = velas.openchannel(nodeId=nodeId,
+                                amt=amt,
+                                private=private,
+                                target_conf=target_conf,
+                                min_confs=min_confs)
 
         return {
             "txid": res[0],

@@ -20,7 +20,8 @@ def test_getinfo(stub):
 
 def test_openchannel(stub):
     res = lnd.openchannel(
-        stub, nodeId=NODE_ID, amt=20000, private=True)
+        stub, nodeId=NODE_ID, amt=20000, private=True,
+        target_conf=1, min_confs=1)
 
     assert res.funding_txid_bytes
     print(f"funding_txid_bytes: {res.funding_txid_bytes}")

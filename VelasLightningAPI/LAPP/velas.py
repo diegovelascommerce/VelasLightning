@@ -13,14 +13,24 @@ class Velas:
         info = lnd.getinfo(self.stub)
         return info
 
-    def openchannel(self, nodeId, amt, private):
+    def openchannel(self,
+                    nodeId,
+                    amt,
+                    private,
+                    target_conf,
+                    min_confs):
         """
         Create a outbout channel with node submitted
 
         return:
             channel id of newly created channel
         """
-        channelPoint = lnd.openchannel(self.stub, nodeId=nodeId, amt=amt, private=private)  # noqa
+        channelPoint = lnd.openchannel(self.stub,
+                                       nodeId=nodeId,
+                                       amt=amt,
+                                       private=private,
+                                       target_conf=target_conf,
+                                       min_confs=min_confs)
 
         brev = convertion.reverse_bytes(channelPoint.funding_txid_bytes)
         txid = convertion.bytes_to_hex(brev)

@@ -53,19 +53,25 @@ def getinfo(stub):
     return info
 
 
-def openchannel(stub, nodeId: str, amt: int, private: bool):
+def openchannel(stub,
+                nodeId: str,
+                amt: int,
+                private: bool,
+                target_conf: int,
+                min_confs: int):
+
     request = ln.OpenChannelRequest(
         # sat_per_vbyte= < uint64 > ,
         node_pubkey=convertion.hex_to_bytes(nodeId),
         # node_pubkey_string=nodeId,
         local_funding_amount=amt,
         # push_sat= < int64 > ,
-        # target_conf= < int32 > ,
+        target_conf=target_conf,
         # sat_per_byte= < int64 > ,
         private=private,
         # min_htlc_msat= < int64 > ,
         # remote_csv_delay= < uint32 > ,
-        min_confs=1,
+        min_confs=min_confs,
         # spend_unconfirmed= < bool > ,
         # close_address= < string > ,
         # funding_shim= < FundingShim > ,
