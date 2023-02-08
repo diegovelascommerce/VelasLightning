@@ -105,7 +105,7 @@ public class Velas {
     ///
     /// return:
     ///     list of peers
-    public func listChannels() throws -> String {
+    public func listChannels() throws -> [ChannelObject] {
         let res = try ln.listChannels()
         return res
     }

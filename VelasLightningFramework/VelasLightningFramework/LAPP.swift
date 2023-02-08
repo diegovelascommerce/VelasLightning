@@ -134,7 +134,7 @@ public class LAPP: NSObject, URLSessionDelegate {
         return res;
     }
     
-    public func openChannel(nodeId:String, amt:Int) -> OpenChannelResponse? {
+    public func openChannel(nodeId:String, amt:Int, target_conf:Int, min_confs:Int) -> OpenChannelResponse? {
         let req = "\(self.baseUrl)/openchannel"
         let url = URL(string: req)
         var urlRequest = URLRequest(url: url!)
@@ -143,7 +143,7 @@ public class LAPP: NSObject, URLSessionDelegate {
         urlRequest.setValue("application/json", forHTTPHeaderField: "content-type")
         urlRequest.httpMethod = "POST"
         
-        let parameters:[String:Any] = ["nodeId": nodeId, "amt": amt, "private": 1]
+        let parameters:[String:Any] = ["nodeId": nodeId, "amt": amt, "private": 1, "target_conf":target_conf, "min_confs":min_confs ]
         
         do {
             urlRequest.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted) // pass dictionary to data object and set it as request body

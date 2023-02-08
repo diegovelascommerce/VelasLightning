@@ -3,18 +3,18 @@ import BitcoinDevKit
 
 
 public class ChannelObject {
-    var channel_id:String = ""
-    var channel_value_satoshis:String = ""
-    var inbound_capacity_msat:String = ""
-    var outbound_capacity_msat:String = ""
-    var is_usable:Bool = false
-    var is_channel_ready:Bool = false
-    var is_outbound:Bool = false
-    var is_public:Bool = false
-    var remote_node_id:String = ""
-    var funding_txo_txid:String = ""
-    var funding_txo_index:UInt16 = 0
-    var confirmations_required:UInt32 = 0
+    public var channel_id:String = ""
+    public var channel_value_satoshis:String = ""
+    public var inbound_capacity_msat:String = ""
+    public var outbound_capacity_msat:String = ""
+    public var is_usable:Bool = false
+    public var is_channel_ready:Bool = false
+    public var is_outbound:Bool = false
+    public var is_public:Bool = false
+    public var remote_node_id:String = ""
+    public var funding_txo_txid:String = ""
+    public var funding_txo_index:UInt16 = 0
+    public var confirmations_required:UInt32 = 0
 }
 
 /// This is the main class for handling interactions with the Lightning Network
@@ -462,7 +462,7 @@ public class Lightning {
     }
     
     /// Get list of channels that were established with partner node.
-    func listChannels() throws -> String {
+    func listChannels() throws -> [ChannelObject] {
         guard let channel_manager = channel_manager else {
             let error = NSError(domain: "listChannels",
                                 code: 1,
@@ -471,18 +471,16 @@ public class Lightning {
         }
 
         let channels = channel_manager.list_channels().isEmpty ? [] : channel_manager.list_channels()
-        var jsonArray = "["
-        var first = true
+        
+        var channelsArray = [ChannelObject]()
+        
         _ = channels.map { (it: ChannelDetails) in
-            let channelObject = self.channel2ChannelString(it: it)
+            let channelObject = self.channel2ChannelObject(it: it)
 
-            if (!first) { jsonArray += "," }
-            jsonArray += channelObject
-            first = false
+            channelsArray.append(channelObject)
         }
 
-        jsonArray += "]"
-        return jsonArray
+        return channelsArray
     }
     
     
@@ -548,7 +546,8 @@ public class Lightning {
         channelObject.remote_node_id = Utils.bytesToHex(bytes: it.get_counterparty().get_node_id())
         
         if let funding_txo = it.get_funding_txo() {
-            channelObject.funding_txo_txid = Utils.bytesToHex(bytes: funding_txo.get_txid())
+            channelObject.funding_txo_txid = Utils.bytesToHex32Reversed(bytes: Utils.array_to_tuple32(array: funding_txo.get_txid()))
+            
             channelObject.funding_txo_index = funding_txo.get_index()
         }
 

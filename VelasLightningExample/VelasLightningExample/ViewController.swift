@@ -79,30 +79,50 @@ class ViewController: UIViewController {
     }
     
     @IBAction func openChannel(_ sender: Any) {
-    
-        let res = lapp.openChannel(nodeId: self.nodeId, amt: 20000)
-        
-        if let res = res {
-            print(res)
+        do {
+            let peers = try velas.listPeers()
             
-            let alert = UIAlertController(title: "Channel", message: "channel: \(res)", preferredStyle: .alert)
-            
-            alert.addAction(UIAlertAction(title: "Close", style: .cancel))
+            if(peers.count > 0){
+                let res = lapp.openChannel(nodeId: self.nodeId, amt: 20000, target_conf:1, min_confs:1)
+                
+                if let res = res {
+                    print(res)
+                    
+                    let alert = UIAlertController(title: "Channel", message: "channel: \(res)", preferredStyle: .alert)
+                    
+                    alert.addAction(UIAlertAction(title: "Close", style: .cancel))
 
-            self.present(alert, animated: true, completion: nil)
-           
+                    self.present(alert, animated: true, completion: nil)
+                   
+                }
+                else {
+                    print("there was a problem creating a channel")
+                }
+            }
+            else {
+                let alert = UIAlertController(title: "Channel", message: "peer not connected", preferredStyle: .alert)
+                
+                alert.addAction(UIAlertAction(title: "Close", style: .cancel))
+
+                self.present(alert, animated: true, completion: nil)
+            }
+            
         }
-        else {
-            print("there was a problem creating a channel")
+        catch {
+            NSLog("problem with showPeerList \(error)")
         }
     }
     
     @IBAction func listChannels(_ sender: Any) {
         do {
             let channels = try velas.listChannels()
-            print("channels: \(channels)")
+            var res = ""
+            for channel in channels {
+                res.append("channel: \(channel.remote_node_id)@ \(channel.funding_txo_txid):\(channel.funding_txo_index)\n")
+            }
+            print("channels: \(res)")
             
-            let alert = UIAlertController(title: "Channels", message: channels, preferredStyle: .alert)
+            let alert = UIAlertController(title: "Channels", message: "\(res)", preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Close", style: .cancel))
 
@@ -132,15 +152,40 @@ class ViewController: UIViewController {
     
     @IBAction func submitBolt11(_ sender: Any) {
         
-        let res = lapp.payInvoice(bolt11: bolt11)
-        
-        print(res!)
-        
-        let alert = UIAlertController(title: "submit bolt11", message: "response:\(res!) submited", preferredStyle: .alert)
-        
-        alert.addAction(UIAlertAction(title: "Close", style: .cancel))
+        do {
+            let peers = try velas.listPeers()
+            let channels = try velas.listChannels()
+            var ready = true
+            for channel in channels {
+                if channel.is_usable == false || channel.is_channel_ready == false {
+                    ready = false
+                }
+            }
+            if(ready && peers.count > 0){
+                
+                let res = lapp.payInvoice(bolt11: bolt11)
+                
+                print(res!)
+                
+                let alert = UIAlertController(title: "submit bolt11", message: "response:\(res!) submited", preferredStyle: .alert)
+                
+                alert.addAction(UIAlertAction(title: "Close", style: .cancel))
 
-        self.present(alert, animated: true, completion: nil)
+                self.present(alert, animated: true, completion: nil)
+                
+            }
+            else {
+                let message:String = peers.count == 0 ? "peer not connected" : "channels are not ready yet"
+                let alert = UIAlertController(title: "submit bolt11", message: message, preferredStyle: .alert)
+                
+                alert.addAction(UIAlertAction(title: "Close", style: .cancel))
+
+                self.present(alert, animated: true, completion: nil)
+            }
+        }
+        catch {
+            NSLog("problem with listing channels: \(error)")
+        }
     }
     
     
