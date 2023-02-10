@@ -17,7 +17,7 @@ class MyFilter: Filter {
     
     var lightning: Lightning? = nil
     
-    override func register_tx(txid: [UInt8]?, script_pubkey: [UInt8]) {
+    override func registerTx(txid: [UInt8]?, scriptPubkey: [UInt8]) {
         if let txid = txid {
             txIds.insert(txid)
             
@@ -40,7 +40,7 @@ class MyFilter: Filter {
     
     
     // modified to compile
-    override func register_output(output: Bindings.WatchedOutput) {
+    override func registerOutput(output: Bindings.WatchedOutput) {
         utxos.insert(output)
     }
 }

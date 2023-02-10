@@ -20,7 +20,7 @@ class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
         super.init()
     }
 
-    func handle_event(event: Event) {
+    func handleEvent(event: Event) {
                 
         if let _ = event.getValueAsSpendableOutputs() {
             print("ReactNativeLDK: trying to spend output")
@@ -39,16 +39,16 @@ class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
             print("handle_event: Payment Path Failed \(paymentPathFailedEvent)")
         }
 
-        if let _ = event.getValueAsPendingHTLCsForwardable() {
-            print("handle_event: forward HTLC")
-            lightning?.channel_manager?.process_pending_htlc_forwards()
-        }
-
-        if let paymentReceivedEvent = event.getValueAsPaymentReceived() {
-            print("handle_event: payment received")
-            let paymentPreimage = paymentReceivedEvent.getPurpose().getValueAsInvoicePayment()?.getPayment_preimage()
-            let _ = lightning?.channel_manager?.claim_funds(payment_preimage: paymentPreimage!)
-        }
+//        if let _ = event.getValueAsPendingHTLCsForwardable() {
+//            print("handle_event: forward HTLC")
+//            lightning?.channel_manager?.process_pending_htlc_forwards()
+//        }
+//
+//        if let paymentReceivedEvent = event.getValueAsPaymentReceived() {
+//            print("handle_event: payment received")
+//            let paymentPreimage = paymentReceivedEvent.getPurpose().getValueAsInvoicePayment()?.getPayment_preimage()
+//            let _ = lightning?.channel_manager?.claim_funds(payment_preimage: paymentPreimage!)
+//        }
 
         if let _ = event.getValueAsFundingGenerationReady() {
             print("ReactNativeLDK: funding generation ready")
@@ -69,9 +69,9 @@ class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
         }
     }
 
-    override func persist_manager(channel_manager: ChannelManager) -> Result_NoneErrorZ {
+    override open func persistManager(channelManager: ChannelManager) -> Result_NoneErrorZ {
         
-        let channel_manager_bytes = channel_manager.write()
+        let channel_manager_bytes = channelManager.write()
         
         do {
             let data = Data(channel_manager_bytes)
@@ -86,21 +86,20 @@ class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
             NSLog("Velas/Lightning/MyChannelManagerPersister: there was a problem persisting the channel \(error)")
         }
         
-        //return Result_NoneErrorZ()
-        return Result_NoneErrorZ.ok()
+        return Result_NoneErrorZ.initWithOk()
     }
     
-    override func persist_graph(network_graph: NetworkGraph) -> Result_NoneErrorZ {
+    override func persistGraph(networkGraph: NetworkGraph) -> Result_NoneErrorZ {
        
         do {
-            let network_graph_bytes = network_graph.write()
+            let network_graph_bytes = networkGraph.write()
             try FileMgr.writeData(data: Data(network_graph_bytes), path: "network_graph")
             print("persist_network_graph: Success\n");
-            return Result_NoneErrorZ.ok()
+            return Result_NoneErrorZ.initWithOk()
         }
         catch {
             NSLog("persist_network_graph: persist_network_graph: Error \(error)");
-            return Result_NoneErrorZ.ok()
+            return Result_NoneErrorZ.initWithOk()
         }
     }
     

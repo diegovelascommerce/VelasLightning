@@ -15,15 +15,15 @@ var feerate_slow = 253 // estimate fee rate in BTC/kB
 ///      fresh ones every time
 class MyFeeEstimator: FeeEstimator {
     
-    override func get_est_sat_per_1000_weight(confirmation_target: LDKConfirmationTarget) -> UInt32 {
-//        if (confirmation_target as AnyObject === LDKConfirmationTarget_HighPriority as AnyObject) {
-//            print("LDK/FeeEstimator: \(UInt32(feerate_fast))")
-//            return UInt32(feerate_fast)
-//        }
-//        if (confirmation_target as AnyObject === LDKConfirmationTarget_Normal as AnyObject) {
-//            print("LDK/FeeEstimator: \(UInt32(feerate_medium))")
-//            return UInt32(feerate_medium)
-//        }
+    override func getEstSatPer_1000Weight(confirmationTarget: Bindings.ConfirmationTarget) -> UInt32 {
+        if (confirmationTarget as AnyObject === LDKConfirmationTarget_HighPriority as AnyObject) {
+            print("LDK/FeeEstimator: \(UInt32(feerate_fast))")
+            return UInt32(feerate_fast)
+        }
+        if (confirmationTarget as AnyObject === LDKConfirmationTarget_Normal as AnyObject) {
+            print("LDK/FeeEstimator: \(UInt32(feerate_medium))")
+            return UInt32(feerate_medium)
+        }
         return UInt32(feerate_slow)
     }
     

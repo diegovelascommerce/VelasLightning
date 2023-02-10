@@ -17,9 +17,8 @@ class MyPersister: Persist {
         super.init()
     }
     
-    override func persist_new_channel(channel_id: OutPoint, data: ChannelMonitor, update_id: MonitorUpdateId) -> LDKChannelMonitorUpdateStatus {
-        
-        let idBytes: [UInt8] = channel_id.write()
+    override func persistNewChannel(channelId: Bindings.OutPoint, data: Bindings.ChannelMonitor, updateId: Bindings.MonitorUpdateId) -> Bindings.ChannelMonitorUpdateStatus {
+        let idBytes: [UInt8] = channelId.write()
         let monitorBytes: [UInt8] = data.write()
         
         do {
@@ -38,12 +37,35 @@ class MyPersister: Persist {
         }
         
         
-        return LDKChannelMonitorUpdateStatus_Completed
+        return Bindings.ChannelMonitorUpdateStatus.Completed
     }
+    
+//    override func persist_new_channel(channel_id: OutPoint, data: ChannelMonitor, update_id: MonitorUpdateId) -> LDKChannelMonitorUpdateStatus {
+//
+//        let idBytes: [UInt8] = channel_id.write()
+//        let monitorBytes: [UInt8] = data.write()
+//
+//        do {
+//            let data = Data(monitorBytes)
+//            try FileMgr.createDirectory(path: "channels")
+//            try FileMgr.writeData(data: data, path: "channels/\(Utils.bytesToHex(bytes: idBytes))")
+//            print("persist_new_channel: successfully backup channel to channels/\(Utils.bytesToHex(bytes: idBytes))\n")
+//            if let backUpChannel = backUpChannel {
+//                backUpChannel(data)
+//                print("persist_new_channel: successfully backup channel server\n")
+//            }
+//        }
+//        catch {
+//            NSLog("persist_new_channel: problem saving channels/\(Utils.bytesToHex(bytes: idBytes))")
+//
+//        }
+//
+//
+//        return LDKChannelMonitorUpdateStatus_Completed
+//    }
 
-    override func update_persisted_channel(channel_id: OutPoint, update: ChannelMonitorUpdate, data: ChannelMonitor, update_id: MonitorUpdateId) -> LDKChannelMonitorUpdateStatus {
-        
-        let idBytes: [UInt8] = channel_id.write()
+    override func updatePersistedChannel(channelId: Bindings.OutPoint, update: Bindings.ChannelMonitorUpdate, data: Bindings.ChannelMonitor, updateId: Bindings.MonitorUpdateId) -> Bindings.ChannelMonitorUpdateStatus {
+        let idBytes: [UInt8] = channelId.write()
         let monitorBytes: [UInt8] = data.write()
         
         do {
@@ -60,7 +82,29 @@ class MyPersister: Persist {
             NSLog("update_persisted_channel: problem updating channels/\(Utils.bytesToHex(bytes: idBytes))")
         }
         
-        return LDKChannelMonitorUpdateStatus_Completed
+        return Bindings.ChannelMonitorUpdateStatus.Completed
     }
+    
+//    override func update_persisted_channel(channel_id: OutPoint, update: ChannelMonitorUpdate, data: ChannelMonitor, update_id: MonitorUpdateId) -> LDKChannelMonitorUpdateStatus {
+//
+//        let idBytes: [UInt8] = channel_id.write()
+//        let monitorBytes: [UInt8] = data.write()
+//
+//        do {
+//            let data = Data(monitorBytes)
+//            try FileMgr.createDirectory(path: "channels")
+//            try FileMgr.writeData(data: data, path: "channels/\(Utils.bytesToHex(bytes: idBytes))")
+//            print("update_persisted_channel: update channel at channels/\(Utils.bytesToHex(bytes: idBytes))\n")
+//            if let backUpChannel = backUpChannel {
+//                backUpChannel(data)
+//                print("persist_new_channel: successfully backup channel server\n")
+//            }
+//        }
+//        catch {
+//            NSLog("update_persisted_channel: problem updating channels/\(Utils.bytesToHex(bytes: idBytes))")
+//        }
+//
+//        return LDKChannelMonitorUpdateStatus_Completed
+//    }
 }
     

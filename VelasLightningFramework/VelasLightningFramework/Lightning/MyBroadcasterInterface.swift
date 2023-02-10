@@ -10,7 +10,7 @@ class MyBroadcasterInterface: BroadcasterInterface {
         super.init()
     }
     
-    override func broadcast_transaction(tx: [UInt8]) {
+    override func broadcastTransaction(tx: [UInt8]) {
         
         do {
             let txHex = Utils.bytesToHex(bytes: tx)

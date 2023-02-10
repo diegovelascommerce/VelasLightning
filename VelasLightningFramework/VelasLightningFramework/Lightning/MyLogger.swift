@@ -10,15 +10,10 @@ class MyLogger: Logger {
             ("peer_handler.rs", 979, false),
             ("peer_handler.rs", 1282, false),
             ("peer_handler.rs", 1280, false),
-//            ("channelmanager.rs", 6915, true),
-//            ("channelmanager.rs", 5697, true),
-//            ("channelmanager.rs", 5716, true),
-//            ("chainmonitor.rs", 521, true),
-//            ("channel.rs", 5320, true),
         ]
-        let fileArr = record.get_file().split(separator: "/")
-        let line = record.get_line()
-        let args = record.get_args()
+        let fileArr = record.getFile().split(separator: "/")
+        let line = record.getLine()
+        let args = record.getArgs()
         
         if let item = block.first(where: { $0.0 == fileArr.last! && $0.1 == line }) {
             if(item.2){

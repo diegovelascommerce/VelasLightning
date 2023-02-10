@@ -19,8 +19,9 @@ public class Lightning {
     
     let port = UInt16(9735)
     
-    let currency: LDKCurrency
-    let network: LDKNetwork
+    let currency: Bindings.Currency
+//    let network: LDKNetwork
+    let network: Bindings.Network
     var btc: Bitcoin
     
     var timer: Timer?
@@ -37,12 +38,12 @@ public class Lightning {
         self.btc = btc
         
         if btc.network == Network.testnet {
-            self.network = LDKNetwork_Testnet
-            self.currency = LDKCurrency_BitcoinTestnet
+            self.network = Bindings.Network.Testnet
+            self.currency = Bindings.Currency.BitcoinTestnet
         }
         else {
-            self.network = LDKNetwork_Bitcoin
-            self.currency = LDKCurrency_Bitcoin
+            self.network = Bindings.Network.Bitcoin
+            self.currency = Bindings.Currency.Bitcoin
         }
         
                 
@@ -66,11 +67,12 @@ public class Lightning {
         /// What it is used for:
         ///     monitoring the chain for lightning transactions that are relevant to our node,
         ///     and broadcasting transactions
-        chain_monitor = ChainMonitor(chain_source: Option_FilterZ(value: filter),
-                                        broadcaster: broadcaster,
-                                        logger: logger,
-                                        feeest: feeEstimator,
-                                        persister: persister)
+//        chain_monitor = ChainMonitor(chain_source: Option_FilterZ(value: filter),
+//                                        broadcaster: broadcaster,
+//                                        logger: logger,
+//                                        feeest: feeEstimator,
+//                                        persister: persister)
+        chain_monitor = ChainMonitor(chainSource: filter, broadcaster: broadcaster, logger: logger, feeest: feeEstimator, persister: persister)
         
         /// Step 7. Initialize the KeysManager
         ///
@@ -79,9 +81,8 @@ public class Lightning {
         let seed = btc.getPrivKey()
         let timestamp_seconds = UInt64(NSDate().timeIntervalSince1970)
         let timestamp_nanos = UInt32.init(truncating: NSNumber(value: timestamp_seconds * 1000 * 1000))
-        keys_manager = KeysManager(seed: seed, starting_time_secs: timestamp_seconds, starting_time_nanos: timestamp_nanos)
-        let keysInterface = keys_manager!.as_KeysInterface()
-        
+        keys_manager = KeysManager(seed: seed, startingTimeSecs: timestamp_seconds, startingTimeNanos: timestamp_nanos)
+        let keysInterface = keys_manager!.asKeysInterface()
         
         /// Step 8.  Initialize the NetworkGraph
         ///
@@ -116,13 +117,13 @@ public class Lightning {
             } else {
                 print("ReactNativeLDK: network graph failed to load, creating from scratch")
                 print(String(describing: readResult.getError()))
-                networkGraph = NetworkGraph(genesis_hash: Utils.hexStringToByteArray(try btc.getGenesisHash()).reversed(), logger: logger)
+                networkGraph = NetworkGraph(genesisHash: Utils.hexStringToByteArray(try btc.getGenesisHash()).reversed(), logger: logger)
 //                networkGraph = NetworkGraph(genesis_hash: hexStringToByteArray("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f").reversed(), logger: logger)
             }
 //            serializedNetGraph = [UInt8](netGraphData)
         } else {
             //networkGraph = NetworkGraph(genesis_hash: [UInt8](Data(base64Encoded: try btc.getGenesisHash())!), logger: logger)
-            networkGraph = NetworkGraph(genesis_hash: Utils.hexStringToByteArray(try btc.getGenesisHash()).reversed(), logger: logger)
+            networkGraph = NetworkGraph(genesisHash: Utils.hexStringToByteArray(try btc.getGenesisHash()).reversed(), logger: logger)
         }
         
         /// Step 9. Read ChannelMonitors from disk
@@ -189,34 +190,54 @@ public class Lightning {
         ///
         ///     Finally, we can proceed by instantiating the ChannelManager using ChannelManagerConstructor.
         
+        let handshakeConfig = ChannelHandshakeConfig(minimumDepthArg: 2, ourToSelfDelayArg: 144, ourHtlcMinimumMsatArg: 1, maxInboundHtlcValueInFlightPercentOfChannelArg: 10, negotiateScidPrivacyArg: false, announcedChannelArg: false, commitUpfrontShutdownPubkeyArg: true, theirChannelReserveProportionalMillionthsArg: 1)
         
+        let handshakeLimits = ChannelHandshakeLimits(minFundingSatoshisArg: 0, maxFundingSatoshisArg: 20000, maxHtlcMinimumMsatArg: UInt64.max, minMaxHtlcValueInFlightMsatArg: 0, maxChannelReserveSatoshisArg: UInt64.max, minMaxAcceptedHtlcsArg: 0, maxMinimumDepthArg: 144, trustOwnFunding_0confArg: true, forceAnnouncedChannelPreferenceArg: false, theirToSelfDelayArg: 2016)
         
-        let userConfig = UserConfig()
+        let channelConfig = ChannelConfig(forwardingFeeProportionalMillionthsArg: 0, forwardingFeeBaseMsatArg: 1000, cltvExpiryDeltaArg: 72, maxDustHtlcExposureMsatArg: 5_000_000, forceCloseAvoidanceMaxFeeSatoshisArg: 1000)
         
-        let handshakeConfig = ChannelHandshakeConfig()
-        handshakeConfig.set_minimum_depth(val: 1)
-        handshakeConfig.set_announced_channel(val: false)
+//        handshakeConfig.set_minimum_depth(val: 1)
+//        handshakeConfig.set_announced_channel(val: false)
         
-        let handshakeLimits = ChannelHandshakeLimits()
-        handshakeLimits.set_force_announced_channel_preference(val: false)
+//        let userConfig = UserConfig()
+        let userConfig = UserConfig(channelHandshakeConfigArg: handshakeConfig, channelHandshakeLimitsArg: handshakeLimits, channelConfigArg: channelConfig, acceptForwardsToPrivChannelsArg: true, acceptInboundChannelsArg: true, manuallyAcceptInboundChannelsArg: true, acceptInterceptHtlcsArg: true)
+
         
-        userConfig.set_channel_handshake_config(val: handshakeConfig)
-        userConfig.set_channel_handshake_limits(val: handshakeLimits)
-        userConfig.set_accept_inbound_channels(val: true)
+//        let handshakeConfig = ChannelHandshakeConfig()
+//        handshakeConfig.set_minimum_depth(val: 1)
+//        handshakeConfig.set_announced_channel(val: false)
+        
+//        let handshakeLimits = ChannelHandshakeLimits()
+//        handshakeLimits.set_force_announced_channel_preference(val: false)
+        
+//        userConfig.set_channel_handshake_config(val: handshakeConfig)
+//        userConfig.set_channel_handshake_limits(val: handshakeLimits)
+//        userConfig.set_accept_inbound_channels(val: true)
         
         // if there were no channels backup
         if let net_graph_serialized = networkGraph?.write(), !serializedChannelManager.isEmpty {
             channel_manager_constructor = try ChannelManagerConstructor(
-                channel_manager_serialized: serializedChannelManager,
-                channel_monitors_serialized: serializedChannelMonitors,
-                keys_interface: keysInterface,
-                fee_estimator: feeEstimator,
-                chain_monitor: chain_monitor!,
+                channelManagerSerialized: serializedChannelManager,
+                channelMonitorsSerialized: serializedChannelMonitors,
+                keysInterface: keysInterface,
+                feeEstimator: feeEstimator,
+                chainMonitor: chain_monitor!,
                 filter: filter,
-                net_graph_serialized: net_graph_serialized,
-                tx_broadcaster: broadcaster,
+                netGraphSerialized: net_graph_serialized,
+                txBroadcaster: broadcaster,
                 logger: logger
             )
+//            channel_manager_constructor = try ChannelManagerConstructor(
+//                channel_manager_serialized: serializedChannelManager,
+//                channel_monitors_serialized: serializedChannelMonitors,
+//                keys_interface: keysInterface,
+//                fee_estimator: feeEstimator,
+//                chain_monitor: chain_monitor!,
+//                filter: filter,
+//                net_graph_serialized: net_graph_serialized,
+//                tx_broadcaster: broadcaster,
+//                logger: logger
+//            )
         }
         else {
             let latestBlockHash = [UInt8](Data(base64Encoded: try btc.getBlockHash())!)
@@ -225,15 +246,28 @@ public class Lightning {
             channel_manager_constructor = ChannelManagerConstructor(
                 network: network,
                 config: userConfig,
-                current_blockchain_tip_hash: latestBlockHash,
-                current_blockchain_tip_height: latestBlockHeight,
-                keys_interface: keysInterface,
-                fee_estimator: feeEstimator,
-                chain_monitor: chain_monitor!,
-                net_graph: networkGraph, // see `NetworkGraph`
-                tx_broadcaster: broadcaster,
+                currentBlockchainTipHash: latestBlockHash,
+                currentBlockchainTipHeight: latestBlockHeight,
+                keysInterface: keysInterface,
+                feeEstimator: feeEstimator,
+                chainMonitor: chain_monitor!,
+                netGraph: networkGraph, // see `NetworkGraph`
+                txBroadcaster: broadcaster,
                 logger: logger
             )
+            
+//            channel_manager_constructor = ChannelManagerConstructor(
+//                network: network,
+//                config: userConfig,
+//                current_blockchain_tip_hash: latestBlockHash,
+//                current_blockchain_tip_height: latestBlockHeight,
+//                keys_interface: keysInterface,
+//                fee_estimator: feeEstimator,
+//                chain_monitor: chain_monitor!,
+//                net_graph: networkGraph, // see `NetworkGraph`
+//                tx_broadcaster: broadcaster,
+//                logger: logger
+//            )
         }
 //        if serializedChannelManager.isEmpty {
 //            let latestBlockHash = [UInt8](Data(base64Encoded: try btc.getBlockHash())!)
@@ -275,7 +309,7 @@ public class Lightning {
         
         try self.sync()
         
-        channel_manager_constructor?.chain_sync_completed(persister: channel_manager_persister, scorer: nil)
+        channel_manager_constructor?.chainSyncCompleted(persister: channel_manager_persister, scorer: nil)
         
         peer_manager = channel_manager_constructor?.peerManager
         
@@ -299,18 +333,18 @@ public class Lightning {
     
     @objc
     func sync() throws {
-        let txids1 = channel_manager!.as_Confirm().get_relevant_txids()
-        let txids2 = chain_monitor!.as_Confirm().get_relevant_txids()
+        let txids1 = channel_manager!.asConfirm().getRelevantTxids()
+        let txids2 = chain_monitor!.asConfirm().getRelevantTxids()
 //        let txids3 = filter!.txIds
             
 //        let txIds = txids1 + txids2 + txids3
         let txIds = txids1 + txids2
         
-        let transactionSet = Set(txIds)
+//        let transactionSet = Set(txIds)
 
-        if transactionSet.count > 0 {
-            for txIdBytes in transactionSet {
-                let txIdHex = Utils.bytesToHex32Reversed(bytes: Utils.array_to_tuple32(array: txIdBytes))
+        if txIds.count > 0 {
+            for txId in txIds {
+                let txIdHex = Utils.bytesToHex32Reversed(bytes: Utils.array_to_tuple32(array: txId.0))
                 let tx = self.btc.getTx(txId: txIdHex)
                 if let tx = tx, tx.confirmed {
                     try transactionConfirmed(txIdHex:txIdHex, txObj: tx)
@@ -331,8 +365,8 @@ public class Lightning {
             let error = NSError(domain: "Channel manager", code: 1, userInfo: nil)
             throw error
         }
-        channel_manager.as_Confirm().transaction_unconfirmed(txid: Utils.hexStringToByteArray(txIdHex))
-        chain_monitor.as_Confirm().transaction_unconfirmed(txid: Utils.hexStringToByteArray(txIdHex))
+        channel_manager.asConfirm().transactionUnconfirmed(txid: Utils.hexStringToByteArray(txIdHex))
+        chain_monitor.asConfirm().transactionUnconfirmed(txid: Utils.hexStringToByteArray(txIdHex))
     }
     
     func transactionConfirmed(txIdHex: String, txObj: Transaction) throws {
@@ -347,12 +381,13 @@ public class Lightning {
         let merkleProof = btc.getTxMerkleProof(txId: txIdHex)
         let txPos = merkleProof!.pos
 
-        let txTuple = C2Tuple_usizeTransactionZ.new(a: UInt(truncating: txPos as NSNumber), b: [UInt8](txRaw!))
+        //let txTuple = C2Tuple_usizeTransactionZ.new(a: UInt(truncating: txPos as NSNumber), b: [UInt8](txRaw!))
+        let txTuple = (UInt(truncating: txPos as NSNumber), [UInt8](txRaw!))
         let txArray = [txTuple]
 
-        channel_manager.as_Confirm().transactions_confirmed(header: Utils.hexStringToByteArray(headerHex!), txdata: txArray, height: UInt32(truncating: height as NSNumber))
+        channel_manager.asConfirm().transactionsConfirmed(header: Utils.hexStringToByteArray(headerHex!), txdata: txArray, height: UInt32(truncating: height as NSNumber))
         
-        chain_monitor.as_Confirm().transactions_confirmed(header: Utils.hexStringToByteArray(headerHex!), txdata: txArray, height: UInt32(truncating: height as NSNumber))
+        chain_monitor.asConfirm().transactionsConfirmed(header: Utils.hexStringToByteArray(headerHex!), txdata: txArray, height: UInt32(truncating: height as NSNumber))
         
     }
     
@@ -367,9 +402,9 @@ public class Lightning {
         let best_header = btc.getBlockHeader(hash: best_hash!)
 
 
-        channel_manager.as_Confirm().best_block_updated(header: Utils.hexStringToByteArray(best_header!), height: UInt32(truncating: best_height! as NSNumber))
+        channel_manager.asConfirm().bestBlockUpdated(header: Utils.hexStringToByteArray(best_header!), height: UInt32(truncating: best_height! as NSNumber))
 
-        chain_monitor.as_Confirm().best_block_updated(header: Utils.hexStringToByteArray(best_header!), height: UInt32(truncating: best_height! as NSNumber))
+        chain_monitor.asConfirm().bestBlockUpdated(header: Utils.hexStringToByteArray(best_header!), height: UInt32(truncating: best_height! as NSNumber))
         
     }
 
@@ -382,7 +417,7 @@ public class Lightning {
     /// return:
     ///     the nodeId of our lightning node
     func getNodeId() throws -> String {
-        if let nodeId = channel_manager?.get_our_node_id() {
+        if let nodeId = channel_manager?.getOurNodeId() {
             let res = Utils.bytesToHex(bytes: nodeId)
             return res
         } else {
@@ -482,7 +517,7 @@ public class Lightning {
             throw error
         }
         
-        let peer_node_ids = peer_manager.get_peer_node_ids()
+        let peer_node_ids = peer_manager.getPeerNodeIds()
         
         
         var json = "["
@@ -506,7 +541,7 @@ public class Lightning {
             throw error
         }
 
-        let channels = channel_manager.list_channels().isEmpty ? [] : channel_manager.list_channels()
+        let channels = channel_manager.listChannels().isEmpty ? [] : channel_manager.listChannels()
         var jsonArray = "["
         var first = true
         _ = channels.map { (it: ChannelDetails) in
@@ -524,39 +559,39 @@ public class Lightning {
     
     /// Convert ChannelDetails to a string
     func channel2ChannelObject(it: ChannelDetails) -> String {
-        let short_channel_id = it.get_short_channel_id().getValue() ?? 0
-        let confirmations_required = it.get_confirmations_required().getValue() ?? 0;
-        let force_close_spend_delay = it.get_force_close_spend_delay().getValue() ?? 0;
-        let unspendable_punishment_reserve = it.get_unspendable_punishment_reserve().getValue() ?? 0;
+        let short_channel_id = it.getShortChannelId() ?? 0
+        let confirmations_required = it.getConfirmationsRequired() ?? 0;
+        let force_close_spend_delay = it.getForceCloseSpendDelay() ?? 0;
+        let unspendable_punishment_reserve = it.getUnspendablePunishmentReserve() ?? 0;
 
         var channelObject = "{"
-        channelObject += "\"channel_id\":" + "\"" + Utils.bytesToHex(bytes: it.get_channel_id()) + "\","
-        channelObject += "\"channel_value_satoshis\":" + String(it.get_channel_value_satoshis()) + ","
-        channelObject += "\"inbound_capacity_msat\":" + String(it.get_inbound_capacity_msat()) + ","
-        channelObject += "\"outbound_capacity_msat\":" + String(it.get_outbound_capacity_msat()) + ","
+        channelObject += "\"channel_id\":" + "\"" + Utils.bytesToHex(bytes: it.getChannelId()!) + "\","
+        channelObject += "\"channel_value_satoshis\":" + String(it.getChannelValueSatoshis()) + ","
+        channelObject += "\"inbound_capacity_msat\":" + String(it.getInboundCapacityMsat()) + ","
+        channelObject += "\"outbound_capacity_msat\":" + String(it.getOutboundCapacityMsat()) + ","
         channelObject += "\"short_channel_id\":" + "\"" + String(short_channel_id) + "\","
-        channelObject += "\"is_usable\":" + (it.get_is_usable() ? "true" : "false") + ","
-        channelObject += "\"is_channel_ready\":" + (it.get_is_channel_ready() ? "true" : "false") + ","
-        channelObject += "\"is_outbound\":" + (it.get_is_outbound() ? "true" : "false") + ","
-        channelObject += "\"is_public\":" + (it.get_is_public() ? "true" : "false") + ","
-        channelObject += "\"remote_node_id\":" + "\"" + Utils.bytesToHex(bytes: it.get_counterparty().get_node_id()) + "\"," // @deprecated fixme
+        channelObject += "\"is_usable\":" + (it.getIsUsable() ? "true" : "false") + ","
+        channelObject += "\"is_channel_ready\":" + (it.getIsChannelReady() ? "true" : "false") + ","
+        channelObject += "\"is_outbound\":" + (it.getIsOutbound() ? "true" : "false") + ","
+        channelObject += "\"is_public\":" + (it.getIsPublic() ? "true" : "false") + ","
+        channelObject += "\"remote_node_id\":" + "\"" + Utils.bytesToHex(bytes: it.getCounterparty().getNodeId()) + "\"," // @deprecated fixme
 
         // fixme:
-        if let funding_txo = it.get_funding_txo() {
-            channelObject += "\"funding_txo_txid\":" + "\"" + Utils.bytesToHex(bytes: funding_txo.get_txid()) + "\","
-            channelObject += "\"funding_txo_index\":" + String(funding_txo.get_index()) + ","
+        if let funding_txo = it.getFundingTxo() {
+            channelObject += "\"funding_txo_txid\":" + "\"" + Utils.bytesToHex(bytes: funding_txo.getTxid()!) + "\","
+            channelObject += "\"funding_txo_index\":" + String(funding_txo.getIndex()) + ","
         }else{
             channelObject += "\"funding_txo_txid\": null,"
             channelObject += "\"funding_txo_index\": null,"
         }
 
-        channelObject += "\"counterparty_unspendable_punishment_reserve\":" + String(it.get_counterparty().get_unspendable_punishment_reserve()) + ","
-        channelObject += "\"counterparty_node_id\":" + "\"" + Utils.bytesToHex(bytes: it.get_counterparty().get_node_id()) + "\","
+        channelObject += "\"counterparty_unspendable_punishment_reserve\":" + String(it.getCounterparty().getUnspendablePunishmentReserve()) + ","
+        channelObject += "\"counterparty_node_id\":" + "\"" + Utils.bytesToHex(bytes: it.getCounterparty().getNodeId()) + "\","
         channelObject += "\"unspendable_punishment_reserve\":" + String(unspendable_punishment_reserve) + ","
         channelObject += "\"confirmations_required\":" + String(confirmations_required) + ","
         channelObject += "\"force_close_spend_delay\":" + String(force_close_spend_delay) + ","
-        channelObject += "\"user_id\":" + String(it.get_user_channel_id()) + ","
-        channelObject += "\"counterparty_node_id\":" + Utils.bytesToHex(bytes: it.get_counterparty().get_node_id())
+        //channelObject += "\"user_id\":" + String(it.getUserChannelId()!) + ","
+        channelObject += "\"counterparty_node_id\":" + Utils.bytesToHex(bytes: it.getCounterparty().getNodeId())
         channelObject += "}"
 
         return channelObject
@@ -571,12 +606,12 @@ public class Lightning {
             throw error
         }
 
-        let channels = channel_manager.list_channels().isEmpty ? [] : channel_manager.list_channels()
+        let channels = channel_manager.listChannels().isEmpty ? [] : channel_manager.listChannels()
        
         
         _ = try channels.map { (channel: ChannelDetails) in
-            try closeChannelCooperatively(nodeId: channel.get_counterparty().get_node_id(),
-                                      channelId: channel.get_channel_id())
+            try closeChannelCooperatively(nodeId: channel.getCounterparty().getNodeId(),
+                                      channelId: channel.getChannelId()!)
         }
     }
     
@@ -590,7 +625,7 @@ public class Lightning {
     /// return:
     ///     true if close correctly
     func closeChannelCooperatively(nodeId: [UInt8], channelId: [UInt8]) throws -> Bool {
-        guard let close_result = channel_manager?.close_channel(channel_id: channelId, counterparty_node_id: nodeId), close_result.isOk() else {
+        guard let close_result = channel_manager?.closeChannel(channelId: channelId, counterpartyNodeId: nodeId), close_result.isOk() else {
             let error = NSError(domain: "closeChannelCooperatively",
                                 code: 1,
                                 userInfo: [NSLocalizedDescriptionKey: "closeChannelCooperatively Failed"])
@@ -610,12 +645,12 @@ public class Lightning {
             throw error
         }
 
-        let channels = channel_manager.list_channels().isEmpty ? [] : channel_manager.list_channels()
+        let channels = channel_manager.listChannels().isEmpty ? [] : channel_manager.listChannels()
        
         
         _ = try channels.map { (channel: ChannelDetails) in
-            try closeChannelForcefully(nodeId: channel.get_counterparty().get_node_id(),
-                                      channelId: channel.get_channel_id())
+            try closeChannelForcefully(nodeId: channel.getCounterparty().getNodeId(),
+                                      channelId: channel.getChannelId()!)
         }
     }
     
@@ -629,7 +664,7 @@ public class Lightning {
     /// return:
     ///     true is channel was closed
     func closeChannelForcefully(nodeId: [UInt8], channelId: [UInt8]) throws -> Bool {
-        guard let close_result = channel_manager?.force_close_broadcasting_latest_txn(channel_id: channelId, counterparty_node_id: nodeId) else {
+        guard let close_result = channel_manager?.forceCloseBroadcastingLatestTxn(channelId: channelId, counterpartyNodeId: nodeId) else {
             let error = NSError(domain: "closeChannelForce",
                                 code: 1,
                                 userInfo: [NSLocalizedDescriptionKey: "closeChannelForce Failed"])
@@ -683,17 +718,17 @@ public class Lightning {
             throw error
         }
         
-        let invoiceResult = Bindings.swift_create_invoice_from_channelmanager(
+        let invoiceResult = Bindings.swiftCreateInvoiceFromChannelmanager(
             channelmanager: channel_manager,
-            keys_manager: keys_manager.as_KeysInterface(),
+            keysManager: keys_manager.asKeysInterface(),
             logger: logger,
             network: currency,
-            amt_msat: Bindings.Option_u64Z(value: UInt64(exactly: amtMsat)),
+            amtMsat: UInt64(exactly: amtMsat),
             description: description,
-            invoice_expiry_delta_secs: 24 * 3600)
+            invoiceExpiryDeltaSecs: 24 * 3600)
 
         if let invoice = invoiceResult.getValue() {
-            return invoice.to_str()
+            return invoice.toStr()
         } else {
             let error = NSError(domain: "addInvoice",
                                 code: 1,
@@ -720,15 +755,15 @@ public class Lightning {
             throw error
         }
 
-        let parsedInvoice = Invoice.from_str(s: bolt11)
+        let parsedInvoice = Invoice.fromStr(s: bolt11)
 
         guard let parsedInvoiceValue = parsedInvoice.getValue(), parsedInvoice.isOk() else {
             let error = NSError(domain: "payInvoice", code: 1, userInfo: nil)
             throw error
         }
 
-        if let _ = parsedInvoiceValue.amount_milli_satoshis().getValue() {
-            let sendRes = payer.pay_invoice(invoice: parsedInvoiceValue)
+        if let _ = parsedInvoiceValue.amountMilliSatoshis() {
+            let sendRes = payer.payInvoice(invoice: parsedInvoiceValue)
             if sendRes.isOk() {
                 return true
             } else {
