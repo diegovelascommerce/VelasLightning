@@ -9,22 +9,18 @@ public class Velas {
     
     /// Initialize Bitcoin and Lightning
     public init(network: Network = Network.testnet,
-                mnemonic: String? = nil,
-                getChannels: Optional<() -> [Data]> = nil,
-                backUpChannel: Optional<(Data) -> ()> = nil,
-                getChannelManager: Optional<() -> Data> = nil,
-                backUpChannelManager: Optional<(Data) -> ()> = nil) throws {
+                mnemonic: String? = nil) throws {
         btc = try Bitcoin(network: network, mnemonic: mnemonic)
         try btc.sync()
-        ln = try Lightning(btc:btc,
-                           backUpChannel:backUpChannel,
-                           backUpChannelManager:backUpChannelManager)
+        ln = try Lightning(btc:btc)
     }
     
+    /// get the mnemonic that creates the bitcoin wallet and private keys for signing
     public func getMnemonic() -> String {
         return btc.mnemonic
     }
     
+    /// return information about this lightning node
     public func getNodeInformation() throws -> (nodeID:String, address:String, port:String) {
         let nodeID = try getNodeId()
         let address = Utils.getPublicIPAddress()
@@ -32,13 +28,6 @@ public class Velas {
         return (nodeID,address!,port)
     }
     
-    /// Close your channel this nice way.
-    ///
-    /// throws:
-    ///     NSError
-//    public func closeChannel() throws -> Bool {
-//        return try ln.closeChannelCooperatively()
-//    }
     
     /// Create a bolt11 invoice
     ///
@@ -57,10 +46,6 @@ public class Velas {
     ///
     /// params:
     ///     bolt11:  the bolt11 invoice you want to pay
-    ///     amtMsat: amount you want to pay in milisats
-    ///
-    /// throws:
-    ///     NSError
     ///
     /// return:
     ///     true if payment went through
@@ -104,7 +89,7 @@ public class Velas {
     /// Get all the channels that this node is setup for.
     ///
     /// return:
-    ///     list of peers
+    ///     list of channels
     public func listChannels() throws -> String {
         let res = try ln.listChannels()
         return res
@@ -121,10 +106,12 @@ public class Velas {
         return (local, pub)
     }
     
+    /// close channels cooperatively, the good way
     public func closeChannelsCooperatively() throws {
         try ln.closeChannelsCooperatively()
     }
     
+    /// close channels forcfuly, the bad way
     public func closeChannelsForcefully() throws {
         try ln.closeChannelsForcefully()
     }

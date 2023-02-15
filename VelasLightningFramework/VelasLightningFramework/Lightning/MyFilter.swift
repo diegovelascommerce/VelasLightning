@@ -11,35 +11,22 @@ import LightningDevKit
 ///   You'll inform LDK about these transactions/outputs in Step 14.
 class MyFilter: Filter {
     
-    var txIds:Set<[UInt8]> = Set<[UInt8]>()
+    var txIds:[[UInt8]] = [[UInt8]]()
     
     var utxos:Set<Bindings.WatchedOutput> = Set<Bindings.WatchedOutput>()
     
     var lightning: Lightning? = nil
     
+    /// get transactions that we should monitor and filter
     override func registerTx(txid: [UInt8]?, scriptPubkey: [UInt8]) {
         if let txid = txid {
-            txIds.insert(txid)
-            
-            let txIdHex = Utils.bytesToHex32Reversed(bytes: Utils.array_to_tuple32(array: txid))
-            
-            print("register_tx:\(txIdHex)\n")
-            
-//            if let lightning = lightning {
-//                lightning.startSyncTimer()
-//            }
+            txIds.append(txid)
+            print("register_tx:\(Utils.bytesToHex32Reversed(bytes: Utils.array_to_tuple32(array: txid)))\n")
         }
     }
     
-    func remove_tx(txid: [UInt8]){		
-        if let index = txIds.firstIndex(of: txid) {
-            txIds.remove(at: index		)
-        }		
-    }
     
-    
-    
-    // modified to compile
+    /// get outputs that should be monitored
     override func registerOutput(output: Bindings.WatchedOutput) {
         utxos.insert(output)
     }

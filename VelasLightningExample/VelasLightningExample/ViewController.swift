@@ -54,7 +54,13 @@ class ViewController: UIViewController {
         self.present(alert, animated: true, completion: nil)
     }
     
-    
+//    func getNodeInfo() -> (String,String,String) {
+//        let path = Bundle.main.path(forResource: "Animals", ofType:"plist")!
+//        let dict = NSDictionary(contentsOfFile: path)
+//
+//
+//        return (dict["host"]!, dict["port"]!, dict["nodeId"]!)
+//    }
     
     @IBAction func connectClick(_ sender: Any) {
         print("connect to a peer")

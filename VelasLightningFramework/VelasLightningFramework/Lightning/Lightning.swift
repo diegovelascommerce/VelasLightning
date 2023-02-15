@@ -5,33 +5,53 @@ import BitcoinDevKit
 /// This is the main class for handling interactions with the Lightning Network
 public class Lightning {
     
-    
+    // logger for ldk
     var logger: MyLogger!
-    var filter: MyFilter?
-    var networkGraph: NetworkGraph?
-    var keys_manager: KeysManager?
-    var chain_monitor: ChainMonitor?
-    var channel_manager_constructor: ChannelManagerConstructor?
-    var channel_manager: LightningDevKit.ChannelManager?
-    var channel_manager_persister: MyChannelManagerPersister
-    var peer_manager: LightningDevKit.PeerManager?
-    var peer_handler: TCPPeerHandler?
     
+    // filter for transactions
+    var filter: MyFilter?
+    
+    // graph of routes
+    var networkGraph: NetworkGraph?
+    
+    // manges keys for signing
+    var keysManager: KeysManager?
+    
+    // monitors the block chain
+    var chainMonitor: ChainMonitor?
+    
+    // constructor for creating a channel manager.
+    var channelManagerConstructor: ChannelManagerConstructor?
+    
+    // the channel manager
+    var channelManager: LightningDevKit.ChannelManager?
+    
+    // persister for the channel manager
+    var channelManagerPersister: MyChannelManagerPersister
+    
+    // manages the peer list
+    var peerManager: LightningDevKit.PeerManager?
+    
+    // handle peer communication
+    var peerHandler: TCPPeerHandler?
+    
+    // port number for lightning
     let port = UInt16(9735)
     
+    // which currency will the be setup?  Testnet or Bitcoin?
     let currency: Bindings.Currency
-//    let network: LDKNetwork
+
+    // Bitcoin network, or the Testnet network
     let network: Bindings.Network
+    
+    // handles all operations that have to do with bitcoin
     var btc: Bitcoin
     
+    // need it for doing periodic timer events
     var timer: Timer?
     
     /// Setup the LDK
-    public init(btc:Bitcoin,
-                getChannels: Optional<() -> [Data]> = nil,
-                backUpChannel: Optional<(Data) -> ()> = nil,
-                getChannelManager: Optional<() -> Data> = nil,
-                backUpChannelManager: Optional<(Data) -> ()> = nil) throws {
+    public init(btc:Bitcoin) throws {
         
         print("----- Start LDK setup -----")
         
@@ -57,7 +77,7 @@ public class Lightning {
         let broadcaster = MyBroadcasterInterface(btc:btc)
         
         // Step 4. Initialize Persist
-        let persister = MyPersister(backUpChannel: backUpChannel)
+        let persister = MyPersister()
         
         // Step 5. Initialize the Transaction Filter
         filter = MyFilter()
@@ -67,12 +87,11 @@ public class Lightning {
         /// What it is used for:
         ///     monitoring the chain for lightning transactions that are relevant to our node,
         ///     and broadcasting transactions
-//        chain_monitor = ChainMonitor(chain_source: Option_FilterZ(value: filter),
-//                                        broadcaster: broadcaster,
-//                                        logger: logger,
-//                                        feeest: feeEstimator,
-//                                        persister: persister)
-        chain_monitor = ChainMonitor(chainSource: filter, broadcaster: broadcaster, logger: logger, feeest: feeEstimator, persister: persister)
+        chainMonitor = ChainMonitor(chainSource: filter,
+                                    broadcaster: broadcaster,
+                                    logger: logger,
+                                    feeest: feeEstimator,
+                                    persister: persister)
         
         /// Step 7. Initialize the KeysManager
         ///
@@ -81,13 +100,10 @@ public class Lightning {
         let seed = btc.getPrivKey()
         let timestamp_seconds = UInt64(NSDate().timeIntervalSince1970)
         let timestamp_nanos = UInt32.init(truncating: NSNumber(value: timestamp_seconds * 1000 * 1000))
-        keys_manager = KeysManager(seed: seed, startingTimeSecs: timestamp_seconds, startingTimeNanos: timestamp_nanos)
-        let keysInterface = keys_manager!.asKeysInterface()
+        keysManager = KeysManager(seed: seed, startingTimeSecs: timestamp_seconds, startingTimeNanos: timestamp_nanos)
+        let keysInterface = keysManager!.asKeysInterface()
         
         /// Step 8.  Initialize the NetworkGraph
-        ///
-        /// You must follow this step if:
-        ///     you need LDK to provide routes for sending payments (i.e. you are not providing your own routes)
         ///
         /// What it's used for:
         ///     generating routes to send payments over
@@ -100,29 +116,25 @@ public class Lightning {
         ///
         ///     A network graph instance needs to be provided upon initialization,
         ///     which in turn requires the genesis block hash.
-        //let genesis = BestBlock.from_genesis(LDKNetwork_Testnet)
         
-        
-        
-        // net_graph
-        //var serializedNetGraph:[UInt8]? = nil
+        // check if network graph was backed up
         if FileMgr.fileExists(path: "network_graph") {
-//            serializedNetGraph = [UInt8]()
             let file = try FileMgr.readData(path: "network_graph")
             let readResult = NetworkGraph.read(ser: [UInt8](file), arg: logger)
             
+            // if resutl was good load the networkGraph
             if readResult.isOk() {
                 networkGraph = readResult.getValue()
-                print("ReactNativeLDK: loaded network graph ok")
+                print("Lightning: loaded network graph ok")
+            // if there was a problem then create a new one
             } else {
-                print("ReactNativeLDK: network graph failed to load, creating from scratch")
+                print("Lighting: network graph failed to load, create one from scratch")
                 print(String(describing: readResult.getError()))
+                
                 networkGraph = NetworkGraph(genesisHash: Utils.hexStringToByteArray(try btc.getGenesisHash()).reversed(), logger: logger)
-//                networkGraph = NetworkGraph(genesis_hash: hexStringToByteArray("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f").reversed(), logger: logger)
             }
-//            serializedNetGraph = [UInt8](netGraphData)
+        // else just create on from scratch
         } else {
-            //networkGraph = NetworkGraph(genesis_hash: [UInt8](Data(base64Encoded: try btc.getGenesisHash())!), logger: logger)
             networkGraph = NetworkGraph(genesisHash: Utils.hexStringToByteArray(try btc.getGenesisHash()).reversed(), logger: logger)
         }
         
@@ -135,25 +147,18 @@ public class Lightning {
         /// what it's used for:
         ///     managing channel state
         
-        // channel_manager
+        // check if the channel manager was saved
         var serializedChannelManager:[UInt8] = [UInt8]()
-        if let getChannelManager = getChannelManager {
-            let channelManagerData = getChannelManager()
-            serializedChannelManager = [UInt8](channelManagerData)
-        } else if FileMgr.fileExists(path: "channel_manager") {
+        
+        if FileMgr.fileExists(path: "channel_manager") {
             let channelManagerData = try FileMgr.readData(path: "channel_manager")
             serializedChannelManager = [UInt8](channelManagerData)
         }
         
-        // channel_monitors
+        // check if any channels were saved
         var serializedChannelMonitors:[[UInt8]] = [[UInt8]]()
-        if let getChannels = getChannels {
-            let channels = getChannels()
-            for channel in channels {
-                let channelBytes = [UInt8](channel)
-                serializedChannelMonitors.append(channelBytes)
-            }
-        } else if FileMgr.fileExists(path: "channels") {
+        
+        if FileMgr.fileExists(path: "channels") {
             let urls = try FileMgr.contentsOfDirectory(atPath:"channels")
             for url in urls {
                 let channelData = try FileMgr.readData(url: url)
@@ -162,23 +167,13 @@ public class Lightning {
             }
         }
         
-        
-//        // net_graph
-//        var serializedNetGraph:[UInt8]? = nil
-//        if FileMgr.fileExists(path: "network_graph") {
-//            serializedNetGraph = [UInt8]()
-//            let netGraphData = try FileMgr.readData(path: "network_graph")
-//            serializedNetGraph = [UInt8](netGraphData)
-//        }
-        
-        
         /// Step 10.  Initialize the ChannelManager
         ///
         /// you must follow this step if:
         ///     this is the first time you are initializing the ChannelManager
         ///
         /// what it's used for:
-        ///   managing channel state
+        ///   managing the channels
         ///
         /// notes:
         ///
@@ -187,20 +182,46 @@ public class Lightning {
         ///     First, we need the current block height and hash.
         ///
         ///     Second, we also need to initialize a default user config,
-        ///
-        ///     Finally, we can proceed by instantiating the ChannelManager using ChannelManagerConstructor.
         
-        let handshakeConfig = ChannelHandshakeConfig(minimumDepthArg: 2, ourToSelfDelayArg: 144, ourHtlcMinimumMsatArg: 1, maxInboundHtlcValueInFlightPercentOfChannelArg: 10, negotiateScidPrivacyArg: false, announcedChannelArg: false, commitUpfrontShutdownPubkeyArg: true, theirChannelReserveProportionalMillionthsArg: 1)
+        // specifications on how we want to setup our own channdls
+        let handshakeConfig = ChannelHandshakeConfig(minimumDepthArg: 2,
+                                                     ourToSelfDelayArg: 144,
+                                                     ourHtlcMinimumMsatArg: 1,
+                                                     maxInboundHtlcValueInFlightPercentOfChannelArg: 10,
+                                                     negotiateScidPrivacyArg: false,
+                                                     announcedChannelArg: false,
+                                                     commitUpfrontShutdownPubkeyArg: true,
+                                                     theirChannelReserveProportionalMillionthsArg: 1)
         
-        let handshakeLimits = ChannelHandshakeLimits(minFundingSatoshisArg: 0, maxFundingSatoshisArg: 20000, maxHtlcMinimumMsatArg: UInt64.max, minMaxHtlcValueInFlightMsatArg: 0, maxChannelReserveSatoshisArg: UInt64.max, minMaxAcceptedHtlcsArg: 0, maxMinimumDepthArg: 144, trustOwnFunding_0confArg: true, forceAnnouncedChannelPreferenceArg: false, theirToSelfDelayArg: 2016)
+        // specifications on the other party
+        let handshakeLimits = ChannelHandshakeLimits(minFundingSatoshisArg: 0,
+                                                     maxFundingSatoshisArg: 20000,
+                                                     maxHtlcMinimumMsatArg: UInt64.max,
+                                                     minMaxHtlcValueInFlightMsatArg: 0,
+                                                     maxChannelReserveSatoshisArg: UInt64.max,
+                                                     minMaxAcceptedHtlcsArg: 0,
+                                                     maxMinimumDepthArg: 144,
+                                                     trustOwnFunding_0confArg: true,
+                                                     forceAnnouncedChannelPreferenceArg: false,
+                                                     theirToSelfDelayArg: 2016)
         
-        let channelConfig = ChannelConfig(forwardingFeeProportionalMillionthsArg: 0, forwardingFeeBaseMsatArg: 1000, cltvExpiryDeltaArg: 72, maxDustHtlcExposureMsatArg: 5_000_000, forceCloseAvoidanceMaxFeeSatoshisArg: 1000)
+        let channelConfig = ChannelConfig(forwardingFeeProportionalMillionthsArg: 0,
+                                          forwardingFeeBaseMsatArg: 1000,
+                                          cltvExpiryDeltaArg: 72,
+                                          maxDustHtlcExposureMsatArg: 5_000_000,
+                                          forceCloseAvoidanceMaxFeeSatoshisArg: 1000)
         
 //        handshakeConfig.set_minimum_depth(val: 1)
 //        handshakeConfig.set_announced_channel(val: false)
         
 //        let userConfig = UserConfig()
-        let userConfig = UserConfig(channelHandshakeConfigArg: handshakeConfig, channelHandshakeLimitsArg: handshakeLimits, channelConfigArg: channelConfig, acceptForwardsToPrivChannelsArg: true, acceptInboundChannelsArg: true, manuallyAcceptInboundChannelsArg: true, acceptInterceptHtlcsArg: true)
+        let userConfig = UserConfig(channelHandshakeConfigArg: handshakeConfig,
+                                    channelHandshakeLimitsArg: handshakeLimits,
+                                    channelConfigArg: channelConfig,
+                                    acceptForwardsToPrivChannelsArg: true,
+                                    acceptInboundChannelsArg: true,
+                                    manuallyAcceptInboundChannelsArg: false,
+                                    acceptInterceptHtlcsArg: true)
 
         
 //        let handshakeConfig = ChannelHandshakeConfig()
@@ -214,137 +235,96 @@ public class Lightning {
 //        userConfig.set_channel_handshake_limits(val: handshakeLimits)
 //        userConfig.set_accept_inbound_channels(val: true)
         
-        // if there were no channels backup
-        if let net_graph_serialized = networkGraph?.write(), !serializedChannelManager.isEmpty {
-            channel_manager_constructor = try ChannelManagerConstructor(
+        // Create the Channl Manager Constructor
+        
+        // if there was data backed up
+        if !serializedChannelManager.isEmpty {
+            channelManagerConstructor = try ChannelManagerConstructor(
                 channelManagerSerialized: serializedChannelManager,
                 channelMonitorsSerialized: serializedChannelMonitors,
                 keysInterface: keysInterface,
                 feeEstimator: feeEstimator,
-                chainMonitor: chain_monitor!,
+                chainMonitor: chainMonitor!,
                 filter: filter,
-                netGraphSerialized: net_graph_serialized,
+                netGraphSerialized: networkGraph?.write(),
                 txBroadcaster: broadcaster,
                 logger: logger
             )
-//            channel_manager_constructor = try ChannelManagerConstructor(
-//                channel_manager_serialized: serializedChannelManager,
-//                channel_monitors_serialized: serializedChannelMonitors,
-//                keys_interface: keysInterface,
-//                fee_estimator: feeEstimator,
-//                chain_monitor: chain_monitor!,
-//                filter: filter,
-//                net_graph_serialized: net_graph_serialized,
-//                tx_broadcaster: broadcaster,
-//                logger: logger
-//            )
         }
+        // else create the channel manager constructor from scratch
         else {
+            
+            // get the latest block hash and height
             let latestBlockHash = [UInt8](Data(base64Encoded: try btc.getBlockHash())!)
             let latestBlockHeight = try btc.getBlockHeight()
 
-            channel_manager_constructor = ChannelManagerConstructor(
+            channelManagerConstructor = ChannelManagerConstructor(
                 network: network,
                 config: userConfig,
                 currentBlockchainTipHash: latestBlockHash,
                 currentBlockchainTipHeight: latestBlockHeight,
                 keysInterface: keysInterface,
                 feeEstimator: feeEstimator,
-                chainMonitor: chain_monitor!,
+                chainMonitor: chainMonitor!,
                 netGraph: networkGraph, // see `NetworkGraph`
                 txBroadcaster: broadcaster,
                 logger: logger
             )
-            
-//            channel_manager_constructor = ChannelManagerConstructor(
-//                network: network,
-//                config: userConfig,
-//                current_blockchain_tip_hash: latestBlockHash,
-//                current_blockchain_tip_height: latestBlockHeight,
-//                keys_interface: keysInterface,
-//                fee_estimator: feeEstimator,
-//                chain_monitor: chain_monitor!,
-//                net_graph: networkGraph, // see `NetworkGraph`
-//                tx_broadcaster: broadcaster,
-//                logger: logger
-//            )
         }
-//        if serializedChannelManager.isEmpty {
-//            let latestBlockHash = [UInt8](Data(base64Encoded: try btc.getBlockHash())!)
-//            let latestBlockHeight = try btc.getBlockHeight()
-//
-//            channel_manager_constructor = ChannelManagerConstructor(
-//                network: network,
-//                config: userConfig,
-//                current_blockchain_tip_hash: latestBlockHash,
-//                current_blockchain_tip_height: latestBlockHeight,
-//                keys_interface: keysInterface,
-//                fee_estimator: feeEstimator,
-//                chain_monitor: chain_monitor!,
-//                net_graph: networkGraph, // see `NetworkGraph`
-//                tx_broadcaster: broadcaster,
-//                logger: logger
-//            )
-//        }
-//        // else load the channels backup, channel manager, and net_graph
-//        else {
-//            channel_manager_constructor = try ChannelManagerConstructor(
-//                channel_manager_serialized: serializedChannelManager,
-//                channel_monitors_serialized: serializedChannelMonitors,
-//                keys_interface: keysInterface,
-//                fee_estimator: feeEstimator,
-//                chain_monitor: chain_monitor!,
-//                filter: filter,
-//                net_graph_serialized: serializedNetGraph,
-//                tx_broadcaster: broadcaster,
-//                logger: logger
-//            )
-//        }
-            
-        channel_manager = channel_manager_constructor?.channelManager
 
-        channel_manager_persister = MyChannelManagerPersister()
+        // get the channel manager
+        channelManager = channelManagerConstructor?.channelManager
+
+        // set the persister for the channel manager
+        channelManagerPersister = MyChannelManagerPersister()
         
         /// Step 12. Sync ChannelManager and ChainMonitor to chain tip
-        
         try self.sync()
         
-        channel_manager_constructor?.chainSyncCompleted(persister: channel_manager_persister, scorer: nil)
+        // hookup the persister the the channel manager
+        channelManagerConstructor?.chainSyncCompleted(persister: channelManagerPersister, scorer: nil)
         
-        peer_manager = channel_manager_constructor?.peerManager
+        // get the peer manager
+        peerManager = channelManagerConstructor?.peerManager
         
-        peer_handler = channel_manager_constructor?.getTCPPeerHandler()
+        // get the peer handler
+        peerHandler = channelManagerConstructor?.getTCPPeerHandler()
+                
+        channelManagerPersister.lightning = self
         
-//        filter?.lightning = self
-        
-        channel_manager_persister.lightning = self
-        
+        // set the sync funtion to run every two minutes
         startSyncTimer()
-        
         
         print("---- End LDK setup -----")
     }
     
+    // sync the ChannelManager and ChainMonitor every 2 minutes
     func startSyncTimer() {
-        
         self.timer?.invalidate()
         self.timer = Timer.scheduledTimer(timeInterval: 120.0, target: self, selector: #selector(sync), userInfo: nil, repeats: true)
     }
     
+    /// sync the ChannelManger and ChainManager and confirm or unconfirm all the waiting transactions
     @objc
     func sync() throws {
-        let txids1 = channel_manager!.asConfirm().getRelevantTxids()
-        let txids2 = chain_monitor!.asConfirm().getRelevantTxids()
-//        let txids3 = filter!.txIds
-            
-//        let txIds = txids1 + txids2 + txids3
-        let txIds = txids1 + txids2
+        var txIds = [[UInt8]]()
+       
+        for tx in channelManager!.asConfirm().getRelevantTxids() {
+            txIds.append(tx.0)
+        }
         
-//        let transactionSet = Set(txIds)
-
+        for tx in chainMonitor!.asConfirm().getRelevantTxids() {
+            txIds.append(tx.0)
+        }
+        
+        for txId in filter!.txIds {
+            txIds.append(txId)
+        }
+            
+        // confirm or unconfirm each of these transactions
         if txIds.count > 0 {
             for txId in txIds {
-                let txIdHex = Utils.bytesToHex32Reversed(bytes: Utils.array_to_tuple32(array: txId.0))
+                let txIdHex = Utils.bytesToHex32Reversed(bytes: Utils.array_to_tuple32(array: txId))
                 let tx = self.btc.getTx(txId: txIdHex)
                 if let tx = tx, tx.confirmed {
                     try transactionConfirmed(txIdHex:txIdHex, txObj: tx)
@@ -353,58 +333,65 @@ public class Lightning {
                     try transactionUnconfirmed(txIdHex:txIdHex)
                 }
             }
-            try updateBestBlock()
         }
-//        else {
-//            self.timer?.invalidate()
-//        }
+        
+        // sync the ChannelManager and ChainManager
+        try updateBestBlock()
     }
     
-    func transactionUnconfirmed(txIdHex: String) throws {
-        guard let channel_manager = channel_manager, let chain_monitor = chain_monitor else {
-            let error = NSError(domain: "Channel manager", code: 1, userInfo: nil)
-            throw error
-        }
-        channel_manager.asConfirm().transactionUnconfirmed(txid: Utils.hexStringToByteArray(txIdHex))
-        chain_monitor.asConfirm().transactionUnconfirmed(txid: Utils.hexStringToByteArray(txIdHex))
-    }
-    
+    /// confirm the transaction
     func transactionConfirmed(txIdHex: String, txObj: Transaction) throws {
-        guard let channel_manager = channel_manager, let chain_monitor = chain_monitor else {
+        guard let channelManager = channelManager, let chainMonitor = chainMonitor else {
             let error = NSError(domain: "Channel manager", code: 1, userInfo: nil)
             throw error
         }
         
+        // get the transaction data
         let height = txObj.block_height
         let txRaw = btc.getTxRaw(txId: txIdHex)
         let headerHex = btc.getBlockHeader(hash: txObj.block_hash)
         let merkleProof = btc.getTxMerkleProof(txId: txIdHex)
         let txPos = merkleProof!.pos
 
-        //let txTuple = C2Tuple_usizeTransactionZ.new(a: UInt(truncating: txPos as NSNumber), b: [UInt8](txRaw!))
         let txTuple = (UInt(truncating: txPos as NSNumber), [UInt8](txRaw!))
         let txArray = [txTuple]
 
-        channel_manager.asConfirm().transactionsConfirmed(header: Utils.hexStringToByteArray(headerHex!), txdata: txArray, height: UInt32(truncating: height as NSNumber))
+        // confirm transaction for bothe the ChannelMonitor and ChainMonitor
+        channelManager.asConfirm().transactionsConfirmed(header: Utils.hexStringToByteArray(headerHex!), txdata: txArray, height: UInt32(truncating: height as NSNumber))
         
-        chain_monitor.asConfirm().transactionsConfirmed(header: Utils.hexStringToByteArray(headerHex!), txdata: txArray, height: UInt32(truncating: height as NSNumber))
+        chainMonitor.asConfirm().transactionsConfirmed(header: Utils.hexStringToByteArray(headerHex!), txdata: txArray, height: UInt32(truncating: height as NSNumber))
         
     }
     
-    func updateBestBlock() throws {
-        guard let channel_manager = channel_manager, let chain_monitor = chain_monitor else {
+    // set transaction as unconfirmed
+    func transactionUnconfirmed(txIdHex: String) throws {
+        guard let channelManager = channelManager, let chainMonitor = chainMonitor else {
             let error = NSError(domain: "Channel manager", code: 1, userInfo: nil)
             throw error
         }
         
+        // set transaction as unconfirmed for both ChannelManger and ChainManager
+        channelManager.asConfirm().transactionUnconfirmed(txid: Utils.hexStringToByteArray(txIdHex))
+        chainMonitor.asConfirm().transactionUnconfirmed(txid: Utils.hexStringToByteArray(txIdHex))
+    }
+    
+
+    // update the bestblock for both the ChannelManager and ChainManager
+    func updateBestBlock() throws {
+        guard let channelManager = channelManager, let chainMonitor = chainMonitor else {
+            let error = NSError(domain: "Channel manager", code: 1, userInfo: nil)
+            throw error
+        }
+        
+        // get the best block data
         let best_height = btc.getTipHeight()
         let best_hash = btc.getTipHash()
         let best_header = btc.getBlockHeader(hash: best_hash!)
 
 
-        channel_manager.asConfirm().bestBlockUpdated(header: Utils.hexStringToByteArray(best_header!), height: UInt32(truncating: best_height! as NSNumber))
+        channelManager.asConfirm().bestBlockUpdated(header: Utils.hexStringToByteArray(best_header!), height: UInt32(truncating: best_height! as NSNumber))
 
-        chain_monitor.asConfirm().bestBlockUpdated(header: Utils.hexStringToByteArray(best_header!), height: UInt32(truncating: best_height! as NSNumber))
+        chainMonitor.asConfirm().bestBlockUpdated(header: Utils.hexStringToByteArray(best_header!), height: UInt32(truncating: best_height! as NSNumber))
         
     }
 
@@ -417,7 +404,7 @@ public class Lightning {
     /// return:
     ///     the nodeId of our lightning node
     func getNodeId() throws -> String {
-        if let nodeId = channel_manager?.getOurNodeId() {
+        if let nodeId = channelManager?.getOurNodeId() {
             let res = Utils.bytesToHex(bytes: nodeId)
             return res
         } else {
@@ -438,14 +425,14 @@ public class Lightning {
     /// return:
     ///   a boolean to indicate that binding of node was a success
     public func bindNode(_ address:String, _ port:UInt16) throws -> Bool {
-        guard let peer_handler = peer_handler else {
+        guard let peerHandler = peerHandler else {
             let error = NSError(domain: "bindNode",
                                 code: 1,
                                 userInfo: [NSLocalizedDescriptionKey: "peer_handler is not available"])
             throw error
         }
         
-        let res = peer_handler.bind(address: address, port: port)
+        let res = peerHandler.bind(address: address, port: port)
         if(!res){
             let error = NSError(domain: "bindNode",
                                 code: 1,
@@ -470,7 +457,7 @@ public class Lightning {
         return res
     }
     
-    /// Connect to a lightning node
+    /// Connect to a peer
     ///
     /// params:
     ///     nodeId: node id that you want to connect to
@@ -483,12 +470,12 @@ public class Lightning {
     /// return:
     ///     true if connection went through
     func connect(nodeId: String, address: String, port: NSNumber) throws -> Bool {
-        guard let peer_handler = peer_handler else {
+        guard let peerHandler = peerHandler else {
             let error = NSError(domain: "bindNode", code: 1, userInfo: nil)
             throw error
         }
         
-        let res = peer_handler.connect(address: address,
+        let res = peerHandler.connect(address: address,
                                        port: UInt16(truncating: port),
                                        theirNodeId: Utils.hexStringToByteArray(nodeId))
         
@@ -510,19 +497,19 @@ public class Lightning {
     /// return:
     ///     array of bytes that represent the node
     func listPeers() throws -> String {
-        guard let peer_manager = peer_manager else {
+        guard let peerManager = peerManager else {
             let error = NSError(domain: "listPeers",
                                 code: 1,
                                 userInfo: [NSLocalizedDescriptionKey: "peer_manager not available"])
             throw error
         }
         
-        let peer_node_ids = peer_manager.getPeerNodeIds()
+        let peerNodeIds = peerManager.getPeerNodeIds()
         
         
         var json = "["
         var first = true
-        for it in peer_node_ids {
+        for it in peerNodeIds {
             if (!first) { json += "," }
             first = false
             json += "\"" + Utils.bytesToHex(bytes: it) + "\""
@@ -534,14 +521,14 @@ public class Lightning {
     
     /// Get list of channels that were established with partner node.
     func listChannels() throws -> String {
-        guard let channel_manager = channel_manager else {
+        guard let channelManager = channelManager else {
             let error = NSError(domain: "listChannels",
                                 code: 1,
                                 userInfo: [NSLocalizedDescriptionKey: "Channel Manager not initialized"])
             throw error
         }
 
-        let channels = channel_manager.listChannels().isEmpty ? [] : channel_manager.listChannels()
+        let channels = channelManager.listChannels().isEmpty ? [] : channelManager.listChannels()
         var jsonArray = "["
         var first = true
         _ = channels.map { (it: ChannelDetails) in
@@ -599,14 +586,14 @@ public class Lightning {
     
     /// Close all channels in the nice way, cooperatively.
     func closeChannelsCooperatively() throws {
-        guard let channel_manager = channel_manager else {
+        guard let channelManager = channelManager else {
             let error = NSError(domain: "closeChannels",
                                 code: 1,
                                 userInfo: [NSLocalizedDescriptionKey: "Channel Manager not initialized"])
             throw error
         }
 
-        let channels = channel_manager.listChannels().isEmpty ? [] : channel_manager.listChannels()
+        let channels = channelManager.listChannels().isEmpty ? [] : channelManager.listChannels()
        
         
         _ = try channels.map { (channel: ChannelDetails) in
@@ -625,7 +612,7 @@ public class Lightning {
     /// return:
     ///     true if close correctly
     func closeChannelCooperatively(nodeId: [UInt8], channelId: [UInt8]) throws -> Bool {
-        guard let close_result = channel_manager?.closeChannel(channelId: channelId, counterpartyNodeId: nodeId), close_result.isOk() else {
+        guard let close_result = channelManager?.closeChannel(channelId: channelId, counterpartyNodeId: nodeId), close_result.isOk() else {
             let error = NSError(domain: "closeChannelCooperatively",
                                 code: 1,
                                 userInfo: [NSLocalizedDescriptionKey: "closeChannelCooperatively Failed"])
@@ -638,7 +625,7 @@ public class Lightning {
     
     /// Close all channels the ugly way, forcefully.
     func closeChannelsForcefully() throws {
-        guard let channel_manager = channel_manager else {
+        guard let channel_manager = channelManager else {
             let error = NSError(domain: "closeChannels",
                                 code: 1,
                                 userInfo: [NSLocalizedDescriptionKey: "Channel Manager not initialized"])
@@ -664,7 +651,7 @@ public class Lightning {
     /// return:
     ///     true is channel was closed
     func closeChannelForcefully(nodeId: [UInt8], channelId: [UInt8]) throws -> Bool {
-        guard let close_result = channel_manager?.forceCloseBroadcastingLatestTxn(channelId: channelId, counterpartyNodeId: nodeId) else {
+        guard let close_result = channelManager?.forceCloseBroadcastingLatestTxn(channelId: channelId, counterpartyNodeId: nodeId) else {
             let error = NSError(domain: "closeChannelForce",
                                 code: 1,
                                 userInfo: [NSLocalizedDescriptionKey: "closeChannelForce Failed"])
@@ -711,7 +698,7 @@ public class Lightning {
     ///     NSError
     func createInvoice(amtMsat: Int, description: String) throws -> String {
         
-        guard let channel_manager = channel_manager, let keys_manager = keys_manager else {
+        guard let channel_manager = channelManager, let keys_manager = keysManager else {
             let error = NSError(domain: "addInvoice",
                                 code: 1,
                                 userInfo: [NSLocalizedDescriptionKey: "No channel_manager or keys_manager initialized"])
@@ -750,7 +737,7 @@ public class Lightning {
     ///     true is payment when through
     func payInvoice(bolt11: String) throws -> Bool {
 
-        guard let payer = channel_manager_constructor?.payer else {
+        guard let payer = channelManagerConstructor?.payer else {
             let error = NSError(domain: "payInvoice", code: 1, userInfo: nil)
             throw error
         }

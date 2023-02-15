@@ -25,6 +25,7 @@ public class Bitcoin {
         
         self.network = _network
         
+        // if mnemonic is empty then generate a new one
         if _mnemonic == nil {
             self.mnemonic = try generateMnemonic(wordCount: WordCount.words12)
         }
@@ -45,15 +46,21 @@ public class Bitcoin {
         let changeExternalPath: DerivationPath = try DerivationPath(path:"m/84h/1h/0h/1")
         self.changeDescriptor = "wpkh(\(privKey.extend(path:changeExternalPath).asString()))"
         
+        // create electrum client
         let electrumUrl = self.network == Network.testnet ?
             "ssl://electrum.blockstream.info:60002" :
             "ssl://electrum.blockstream.info:50002"
+        
         let electrum = ElectrumConfig(url: electrumUrl, socks5: nil, retry: 5, timeout: nil, stopGap: 10)
         
+        
+        // create a blockchain for syncing and broadcasting
         let blockchainConfig = BlockchainConfig.electrum(config: electrum)
 
         self.blockchain = try Blockchain(config: blockchainConfig)
         
+        
+        // create wallet
         wallet = try Wallet.init(descriptor: descriptor,
                                  changeDescriptor: changeDescriptor,
                                  network: network,
