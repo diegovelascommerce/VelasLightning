@@ -2,6 +2,10 @@ import LightningDevKit
 import BitcoinDevKit
 
 
+public enum LightningError: Error {
+    case peerManager(msg:String)
+}
+
 /// This is the main class for handling interactions with the Lightning Network
 public class Lightning {
     
@@ -496,27 +500,20 @@ public class Lightning {
     ///
     /// return:
     ///     array of bytes that represent the node
-    func listPeers() throws -> String {
+    func listPeers() throws -> [String] {
         guard let peerManager = peerManager else {
-            let error = NSError(domain: "listPeers",
-                                code: 1,
-                                userInfo: [NSLocalizedDescriptionKey: "peer_manager not available"])
-            throw error
+            throw LightningError.peerManager(msg: "peerManager was not available for listPeers")
         }
         
         let peerNodeIds = peerManager.getPeerNodeIds()
         
-        
-        var json = "["
-        var first = true
+        var res = [String]()
+
         for it in peerNodeIds {
-            if (!first) { json += "," }
-            first = false
-            json += "\"" + Utils.bytesToHex(bytes: it) + "\""
+            res.append(Utils.bytesToHex(bytes: it))
         }
-        json += "]"
-        
-        return json
+
+        return res
     }
     
     /// Get list of channels that were established with partner node.

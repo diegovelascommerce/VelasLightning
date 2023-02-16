@@ -7,6 +7,10 @@
 
 import Foundation
 
+public enum RequestError: Error {
+    case responseFailed(msg:String)
+}
+
 public class Request {
     
     public static func get(url:String) -> Data? {
@@ -42,7 +46,7 @@ public class Request {
     public static func post(url:String, body:String) throws -> Data? {
         var result: Data? = nil
 //        var error: NSError? = nil
-        var error: VelasError? = nil
+        var error: RequestError? = nil
         let url = URL(string: url)
         var request = URLRequest(url: url!, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 10)
         let headers = [
@@ -68,7 +72,7 @@ public class Request {
                     }
                     else {
                         //error = NSError(domain: String(decoding: data!, as: UTF8.self), code: 1, userInfo: nil)
-                        error = VelasError.txFailed(msg: String(decoding: data!, as: UTF8.self))
+                        error = RequestError.responseFailed(msg: String(decoding: data!, as: UTF8.self))
                     }
                 }
             }

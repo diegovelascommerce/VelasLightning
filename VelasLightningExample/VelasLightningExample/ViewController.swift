@@ -12,12 +12,21 @@ class ViewController: UIViewController {
     @IBOutlet weak var hostLable: UILabel!
     @IBOutlet weak var nodeIdTextView: UITextView!
     
+    var peer: String!
+    var address: String!
+    var port: NSNumber!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         let (_, pub) = velas.getIPAddresses()
         hostLable.text = pub!
         hostLable.sizeToFit()
         hostLable.center.x = self.view.center.x
+        
+        let plist = getPlist()
+        self.peer = plist["peer"] as? String
+        self.address = plist["address"] as? String
+        self.port = NSNumber(value: Int(plist["port"] as! String)!)
         
         do {
             let nodeId = try velas.getNodeId()
@@ -27,6 +36,16 @@ class ViewController: UIViewController {
             NSLog("there was a problem getting the node id \(error)")
         }
     }
+    
+    func alert(title:String, message:String) {
+        
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        
+        alertController.addAction(UIAlertAction(title: "OK", style: .default))
+        
+        self.present(alertController, animated: true, completion: nil)
+    }
+    
     
     @IBAction func payInvoiceClick(_ sender: Any) {
         
@@ -54,25 +73,20 @@ class ViewController: UIViewController {
         self.present(alert, animated: true, completion: nil)
     }
     
-//    func getNodeInfo() -> (String,String,String) {
-//        let path = Bundle.main.path(forResource: "Animals", ofType:"plist")!
-//        let dict = NSDictionary(contentsOfFile: path)
-//
-//
-//        return (dict["host"]!, dict["port"]!, dict["nodeId"]!)
-//    }
+    func getPlist() -> NSDictionary {
+        let path = Bundle.main.path(forResource: "Velas", ofType:"plist")!
+        let dict = NSDictionary(contentsOfFile: path)
+
+        return dict!
+    }
     
     @IBAction func connectClick(_ sender: Any) {
         print("connect to a peer")
-//        let nodeId = "03e347d089c071c27680e26299223e80a740cf3e3fc4b4237fa219bb67121a670b"
-        let nodeId = "029cba2eb9edf18352e90f1a5f71e367af80d6e3ab7a5aa6122309fcbcd4375735"
-//        let address = "45.33.22.210"
-//        let address = "24.50.226.8"
-        let address = "192.168.0.10"
-        let port = NSNumber(9735)
+
         do {
-            let res = try velas.connectToPeer(nodeId: nodeId, address: address, port: port)
+            let res = try velas.connectToPeer(nodeId: self.peer, address: self.address, port: self.port)
             print("connect: \(res)")
+            alert(title: "Peer Connect", message: "\(res)")
         }
         catch {
             NSLog("there was a problem: \(error)")
@@ -84,6 +98,7 @@ class ViewController: UIViewController {
         do {
             let res = try velas.listPeers()
             print("peers: \(res)")
+            alert(title: "Peer List", message: "\(res)")
         }
         catch {
             NSLog("problem with showPeerList \(error)")

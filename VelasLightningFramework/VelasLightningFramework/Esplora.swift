@@ -16,11 +16,19 @@ public struct Transaction: Codable {
 }
 
 public struct MerkleProof: Codable {
+    // height of block that transaction belongs to
     let block_height: Int32
+    
+    // position of transaction in block
     let pos: Int32
+    
+    // string of hashes that you can use to prove the merkel root
+    let merkle: [String]
 }
 
 public class Esplora {
+    
+    /// get transaction data from blockstream
     public static func getTxStatus(txid:String, network: Network) -> Transaction? {
         let url = network == Network.testnet ?
             "https://blockstream.info/testnet/api/tx/\(txid)/status":
@@ -71,6 +79,7 @@ public class Esplora {
         return res
     }
     
+    // get raw transaction data from blockstream
     public static func getTxRaw(txid:String, network: Network) -> Data? {
         let url = network == Network.testnet ?
             "https://blockstream.info/testnet/api/tx/\(txid)/raw":

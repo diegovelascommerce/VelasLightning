@@ -112,7 +112,7 @@ public class Bitcoin {
         return self.privKey.secretBytes()
     }
     
-    /// Get the block height
+    /// Get the the latest block height from blockchain
     public func getBlockHeight() throws -> UInt32 {
         return try self.blockchain.getHeight()
     }
@@ -136,7 +136,7 @@ public class Bitcoin {
         return res
     }
     
-    /// Get status of transaction
+    /// Get merkel proof of transaction
     public func getTxMerkleProof(txId:String) -> MerkleProof? {
         let res = Esplora.getTxMerkleProof(txid:txId,
                                       network: self.network)
@@ -149,7 +149,7 @@ public class Bitcoin {
         return res
     }
     
-    // Get status of transaction
+    // Get raw data of transaction
     public func getTxRaw(txId:String) -> Data? {
         let res = Esplora.getTxRaw(txid: txId, network: self.network)
         return res

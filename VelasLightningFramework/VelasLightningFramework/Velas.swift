@@ -1,6 +1,8 @@
 import Foundation
 import BitcoinDevKit
 
+
+
 /// Main Class that projects will use to interact with Bitcoin and Lightning
 public class Velas {
     
@@ -82,7 +84,7 @@ public class Velas {
     ///
     /// return:
     ///     array of peers
-    public func listPeers() throws -> String {
+    public func listPeers() throws -> [String] {
         return try ln.listPeers()
     }
     
@@ -117,6 +119,4 @@ public class Velas {
     }
 }
 
-public enum VelasError: Error {
-    case txFailed(msg:String)
-}
+
