@@ -6,15 +6,19 @@
 //
 
 import UIKit
+import VelasLightningFramework
 
 class ViewController: UIViewController {
 
     @IBOutlet weak var hostLable: UILabel!
     @IBOutlet weak var nodeIdTextView: UITextView!
     
-    var peer: String!
-    var address: String!
-    var port: NSNumber!
+    var ip:String!
+    var jwt:String!
+    var port:NSNumber!
+    var nodeId:String!
+    
+    private var lapp:LAPP!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -24,13 +28,19 @@ class ViewController: UIViewController {
         hostLable.center.x = self.view.center.x
         
         let plist = getPlist()
-        self.peer = plist["peer"] as? String
-        self.address = plist["address"] as? String
-        self.port = NSNumber(value: Int(plist["port"] as! String)!)
+        
+        self.ip = plist["ip"] as? String
+        self.jwt = plist["jwt"] as? String
+        self.port = plist["port"] as? NSNumber
+        
+        
+        self.lapp = LAPP(baseUrl: "https://\(String(describing: self.ip!))",
+                         jwt: self.jwt);
         
         do {
-            let nodeId = try velas.getNodeId()
-            nodeIdTextView.text = nodeId
+            self.nodeId = try velas.getNodeId()
+            print("nodeId: \(self.nodeId!)")
+            nodeIdTextView.text = self.nodeId
         }
         catch {
             NSLog("there was a problem getting the node id \(error)")
@@ -84,7 +94,10 @@ class ViewController: UIViewController {
         print("connect to a peer")
 
         do {
-            let res = try velas.connectToPeer(nodeId: self.peer, address: self.address, port: self.port)
+            let info = self.lapp.getinfo()
+            let nodeId = info?.identity_pubkey
+            let url = info?.urls.publicIP
+            let res = try velas.connectToPeer(nodeId: nodeId!, address: url!, port: self.port)
             print("connect: \(res)")
             alert(title: "Peer Connect", message: "\(res)")
         }
@@ -106,10 +119,72 @@ class ViewController: UIViewController {
 
     }
     
+    @IBAction func openChannel(_ sender: Any) {
+        do {
+            let peers = try velas.listPeers()
+            
+            if(peers.count > 0){
+                
+                let res = lapp.openChannel(nodeId: self.nodeId, amt: 20000, target_conf:1, min_confs:1)
+                
+                if let res = res {
+                    print(res)
+                    self.alert(title: "Create Channel", message: "channel: \(res)")
+                }
+                else {
+                    print("there was a problem creating a channel")
+                }
+            }
+            else {
+                self.alert(title: "Create Channel", message: "No peers were connected")
+            }
+            
+        }
+        catch {
+            NSLog("problem with showPeerList \(error)")
+        }
+    }
+    
     @IBAction func listChannels(_ sender: Any) {
         do {
-            let channels = try velas.listChannels()
+            let channels = try velas.listChannelsDict()
             print("channels: \(channels)")
+            self.alert(title: "List Channels", message: "channels: \(channels)")
+        }
+        catch {
+            NSLog("problem with listing channels: \(error)")
+        }
+    }
+    
+    @IBAction func submitBolt11(_ sender: Any) {
+        do {
+            let peers = try velas.listPeers()
+            
+            if(peers.count > 0){
+                let channels = try velas.listChannelsDict()
+                var ready = false
+                
+                for channel in channels {
+                    if channel["is_usable"] as! String == "true" && channel["is_channel_ready"] as! String == "true" {
+                        ready = true
+                    }
+                }
+                
+                if(ready){
+                    let bolt11 = try velas.createInvoice(amtMsat: 500000, description: "this s a test from velas lighting")
+                    print("bolt11: \(bolt11)")
+//                    let res = lapp.payInvoice(bolt11: bolt11)
+                    
+//                    print(res!)
+//                    self.alert(title: "Submit bolt11", message: "\(res!)")
+                } else {
+                    self.alert(title: "Submit bolt11", message: "None of the channels are ready")
+                }
+
+            }
+            else {
+                self.alert(title: "Submit bolt11", message: "No peers were connected")
+            }
         }
         catch {
             NSLog("problem with listing channels: \(error)")

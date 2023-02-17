@@ -540,6 +540,26 @@ public class Lightning {
         return jsonArray
     }
     
+    /// Get list of channels that were established with partner node.
+    func listChannelsDict() throws -> [[String:Any]] {
+        guard let channelManager = channelManager else {
+            let error = NSError(domain: "listChannels",
+                                code: 1,
+                                userInfo: [NSLocalizedDescriptionKey: "Channel Manager not initialized"])
+            throw error
+        }
+
+        let channels = channelManager.listChannels().isEmpty ? [] : channelManager.listChannels()
+        var channelsDict = [[String:Any]]()
+        _ = channels.map { (it: ChannelDetails) in
+            let channelDict = self.channel2ChannelDictionary(it: it)
+            channelsDict.append(channelDict)
+        }
+
+        
+        return channelsDict
+    }
+    
     
     /// Convert ChannelDetails to a string
     func channel2ChannelObject(it: ChannelDetails) -> String {
@@ -579,6 +599,41 @@ public class Lightning {
         channelObject += "}"
 
         return channelObject
+    }
+    
+    /// Convert ChannelDetails to a string
+    func channel2ChannelDictionary(it: ChannelDetails) -> [String:Any] {
+        
+        var channelsDict = [String: Any]()
+        
+        channelsDict["short_channel_id"] = it.getShortChannelId() ?? 0;
+        channelsDict["confirmations_required"] = it.getConfirmationsRequired() ?? 0;
+        channelsDict["force_close_spend_delay"] = it.getForceCloseSpendDelay() ?? 0;
+        channelsDict["unspendable_punishment_reserve"] = it.getUnspendablePunishmentReserve() ?? 0;
+        
+        channelsDict["channel_id"] = Utils.bytesToHex(bytes: it.getChannelId()!)
+        channelsDict["channel_value_satoshis"] = String(it.getChannelValueSatoshis())
+        channelsDict["inbound_capacity_msat"] = String(it.getInboundCapacityMsat())
+        channelsDict["outbound_capacity_msat"] = String(it.getOutboundCapacityMsat())
+        
+        channelsDict["is_usable"] = it.getIsUsable() ? "true" : "false"
+        channelsDict["is_channel_ready"] = it.getIsChannelReady() ? "true" : "false"
+        channelsDict["is_outbound"] = it.getIsOutbound() ? "true" : "false"
+        channelsDict["is_public"] = it.getIsPublic() ? "true" : "false"
+        channelsDict["remote_node_id"] = Utils.bytesToHex(bytes: it.getCounterparty().getNodeId())
+
+        if let funding_txo = it.getFundingTxo() {
+            channelsDict["funding_txo_txid"] = Utils.bytesToHex(bytes: funding_txo.getTxid()!)
+            channelsDict["funding_txo_index"] = String(funding_txo.getIndex())
+        }
+   
+
+        channelsDict["counterparty_unspendable_punishment_reserve"] = String(it.getCounterparty().getUnspendablePunishmentReserve())
+
+//        let channelId = it.getUserChannelId()
+//        channelsDict["user_id"] = String(cString: channelId)
+
+        return channelsDict
     }
     
     /// Close all channels in the nice way, cooperatively.
