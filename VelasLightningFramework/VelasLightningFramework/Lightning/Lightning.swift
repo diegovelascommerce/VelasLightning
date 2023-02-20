@@ -516,29 +516,6 @@ public class Lightning {
         return res
     }
     
-    /// Get list of channels that were established with partner node.
-    func listChannels() throws -> String {
-        guard let channelManager = channelManager else {
-            let error = NSError(domain: "listChannels",
-                                code: 1,
-                                userInfo: [NSLocalizedDescriptionKey: "Channel Manager not initialized"])
-            throw error
-        }
-
-        let channels = channelManager.listChannels().isEmpty ? [] : channelManager.listChannels()
-        var jsonArray = "["
-        var first = true
-        _ = channels.map { (it: ChannelDetails) in
-            let channelObject = self.channel2ChannelObject(it: it)
-
-            if (!first) { jsonArray += "," }
-            jsonArray += channelObject
-            first = false
-        }
-
-        jsonArray += "]"
-        return jsonArray
-    }
     
     /// Get list of channels that were established with partner node.
     func listChannelsDict() throws -> [[String:Any]] {
@@ -561,45 +538,6 @@ public class Lightning {
     }
     
     
-    /// Convert ChannelDetails to a string
-    func channel2ChannelObject(it: ChannelDetails) -> String {
-        let short_channel_id = it.getShortChannelId() ?? 0
-        let confirmations_required = it.getConfirmationsRequired() ?? 0;
-        let force_close_spend_delay = it.getForceCloseSpendDelay() ?? 0;
-        let unspendable_punishment_reserve = it.getUnspendablePunishmentReserve() ?? 0;
-
-        var channelObject = "{"
-        channelObject += "\"channel_id\":" + "\"" + Utils.bytesToHex(bytes: it.getChannelId()!) + "\","
-        channelObject += "\"channel_value_satoshis\":" + String(it.getChannelValueSatoshis()) + ","
-        channelObject += "\"inbound_capacity_msat\":" + String(it.getInboundCapacityMsat()) + ","
-        channelObject += "\"outbound_capacity_msat\":" + String(it.getOutboundCapacityMsat()) + ","
-        channelObject += "\"short_channel_id\":" + "\"" + String(short_channel_id) + "\","
-        channelObject += "\"is_usable\":" + (it.getIsUsable() ? "true" : "false") + ","
-        channelObject += "\"is_channel_ready\":" + (it.getIsChannelReady() ? "true" : "false") + ","
-        channelObject += "\"is_outbound\":" + (it.getIsOutbound() ? "true" : "false") + ","
-        channelObject += "\"is_public\":" + (it.getIsPublic() ? "true" : "false") + ","
-        channelObject += "\"remote_node_id\":" + "\"" + Utils.bytesToHex(bytes: it.getCounterparty().getNodeId()) + "\"," // @deprecated fixme
-
-        // fixme:
-        if let funding_txo = it.getFundingTxo() {
-            channelObject += "\"funding_txo_txid\":" + "\"" + Utils.bytesToHex(bytes: funding_txo.getTxid()!) + "\","
-            channelObject += "\"funding_txo_index\":" + String(funding_txo.getIndex()) + ","
-        }else{
-            channelObject += "\"funding_txo_txid\": null,"
-            channelObject += "\"funding_txo_index\": null,"
-        }
-
-        channelObject += "\"counterparty_unspendable_punishment_reserve\":" + String(it.getCounterparty().getUnspendablePunishmentReserve()) + ","
-        channelObject += "\"counterparty_node_id\":" + "\"" + Utils.bytesToHex(bytes: it.getCounterparty().getNodeId()) + "\","
-        channelObject += "\"unspendable_punishment_reserve\":" + String(unspendable_punishment_reserve) + ","
-        channelObject += "\"confirmations_required\":" + String(confirmations_required) + ","
-        channelObject += "\"force_close_spend_delay\":" + String(force_close_spend_delay) + ","
-        //channelObject += "\"user_id\":" + String(it.getUserChannelId()!) + ","
-        channelObject += "\"counterparty_node_id\":" + Utils.bytesToHex(bytes: it.getCounterparty().getNodeId())
-        channelObject += "}"
-
-        return channelObject
-    }
     
     /// Convert ChannelDetails to a string
     func channel2ChannelDictionary(it: ChannelDetails) -> [String:Any] {
@@ -608,13 +546,13 @@ public class Lightning {
         
         channelsDict["short_channel_id"] = it.getShortChannelId() ?? 0;
         channelsDict["confirmations_required"] = it.getConfirmationsRequired() ?? 0;
-        channelsDict["force_close_spend_delay"] = it.getForceCloseSpendDelay() ?? 0;
-        channelsDict["unspendable_punishment_reserve"] = it.getUnspendablePunishmentReserve() ?? 0;
+//        channelsDict["force_close_spend_delay"] = it.getForceCloseSpendDelay() ?? 0;
+//        channelsDict["unspendable_punishment_reserve"] = it.getUnspendablePunishmentReserve() ?? 0;
         
         channelsDict["channel_id"] = Utils.bytesToHex(bytes: it.getChannelId()!)
         channelsDict["channel_value_satoshis"] = String(it.getChannelValueSatoshis())
-        channelsDict["inbound_capacity_msat"] = String(it.getInboundCapacityMsat())
-        channelsDict["outbound_capacity_msat"] = String(it.getOutboundCapacityMsat())
+//        channelsDict["inbound_capacity_msat"] = String(it.getInboundCapacityMsat())
+//        channelsDict["outbound_capacity_msat"] = String(it.getOutboundCapacityMsat())
         
         channelsDict["is_usable"] = it.getIsUsable() ? "true" : "false"
         channelsDict["is_channel_ready"] = it.getIsChannelReady() ? "true" : "false"
@@ -623,12 +561,14 @@ public class Lightning {
         channelsDict["remote_node_id"] = Utils.bytesToHex(bytes: it.getCounterparty().getNodeId())
 
         if let funding_txo = it.getFundingTxo() {
-            channelsDict["funding_txo_txid"] = Utils.bytesToHex(bytes: funding_txo.getTxid()!)
+            //channelsDict["funding_txo_txid"] = Utils.bytesToHex(bytes: funding_txo.getTxid()!)
+            channelsDict["funding_txo_txid"] =  Utils.bytesToHex32Reversed(bytes: Utils.array_to_tuple32(array: funding_txo.getTxid()!))
+            
             channelsDict["funding_txo_index"] = String(funding_txo.getIndex())
         }
    
 
-        channelsDict["counterparty_unspendable_punishment_reserve"] = String(it.getCounterparty().getUnspendablePunishmentReserve())
+//        channelsDict["counterparty_unspendable_punishment_reserve"] = String(it.getCounterparty().getUnspendablePunishmentReserve())
 
 //        let channelId = it.getUserChannelId()
 //        channelsDict["user_id"] = String(cString: channelId)

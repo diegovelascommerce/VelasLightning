@@ -5,28 +5,12 @@ import LightningDevKit
 class MyLogger: Logger {
     
     override func log(record: Record) {
-        let block = [
-            ("lib.rs", 520, false),
-            ("peer_handler.rs", 979, false),
-            ("peer_handler.rs", 1282, false),
-            ("peer_handler.rs", 1280, false),
-        ]
-        let fileArr = record.getFile().split(separator: "/")
-        let line = record.getLine()
-        let args = record.getArgs()
-        
-        if let item = block.first(where: { $0.0 == fileArr.last! && $0.1 == line }) {
-            if(item.2){
-                print("log: (\(fileArr.last!):\(line)) \(args) \n")
-            }
+        let level = record.getLevel()
+        if level == .Gossip || level == .Trace || level == .Debug {
+            return
         }
-        else {
-            print("log: (\(fileArr.last!):\(line)) \(args) \n")
-        }
-        
-        
-        
-        
+        let recordString = "\(record.getArgs())"
+        print("log: \(recordString)")
     }
     
 }

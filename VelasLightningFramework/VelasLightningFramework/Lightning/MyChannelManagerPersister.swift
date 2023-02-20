@@ -42,12 +42,18 @@ class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
             lightning?.channelManager?.processPendingHtlcForwards()
         }
         
-
+        
 //        if let paymentReceivedEvent = event.getValueAsPaymentReceived() {
 //            print("handle_event: payment received")
 //            let paymentPreimage = paymentReceivedEvent.getPurpose().getValueAsInvoicePayment()?.getPayment_preimage()
 //            let _ = lightning?.channel_manager?.claim_funds(payment_preimage: paymentPreimage!)
 //        }
+        
+        // payment was claimed, so return preimage
+        if let paymentClaimedEvent = event.getValueAsPaymentClaimable() {
+            let paymentPreimage = paymentClaimedEvent.getPurpose().getValueAsInvoicePayment()?.getPaymentPreimage()
+            let _ = lightning?.channelManager?.claimFunds(paymentPreimage: paymentPreimage!)
+        }
 
         if let _ = event.getValueAsFundingGenerationReady() {
             print("ReactNativeLDK: funding generation ready")
@@ -58,11 +64,7 @@ class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
             // we don't route as we are a light mobile node
         }
 
-        // payment was claimed, so return preimage
-        if let paymentClaimedEvent = event.getValueAsPaymentClaimed() {
-            let paymentPreimage = paymentClaimedEvent.getPurpose().getValueAsInvoicePayment()?.getPaymentPreimage()
-            let _ = lightning?.channelManager?.claimFunds(paymentPreimage: paymentPreimage!)
-        }
+        
 
         if let _ = event.getValueAsChannelClosed() {
             print("ReactNativeLDK ChannelClosed")

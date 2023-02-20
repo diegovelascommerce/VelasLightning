@@ -17,6 +17,7 @@ class ViewController: UIViewController {
     var jwt:String!
     var port:NSNumber!
     var nodeId:String!
+    var publicUrl:Bool!
     
     private var lapp:LAPP!
     
@@ -32,6 +33,7 @@ class ViewController: UIViewController {
         self.ip = plist["ip"] as? String
         self.jwt = plist["jwt"] as? String
         self.port = plist["port"] as? NSNumber
+        self.publicUrl = plist["public_url"] as? Bool
         
         
         self.lapp = LAPP(baseUrl: "https://\(String(describing: self.ip!))",
@@ -47,11 +49,17 @@ class ViewController: UIViewController {
         }
     }
     
-    func alert(title:String, message:String) {
+    func alert(title:String, message:String, onAction: ((UIAlertAction)->())? = nil) {
         
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
         
-        alertController.addAction(UIAlertAction(title: "OK", style: .default))
+        if let onAction = onAction {
+            alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: onAction))
+            alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        } else {
+            alertController.addAction(UIAlertAction(title: "OK", style: .default))
+        }
+        
         
         self.present(alertController, animated: true, completion: nil)
     }
@@ -96,7 +104,13 @@ class ViewController: UIViewController {
         do {
             let info = self.lapp.getinfo()
             let nodeId = info?.identity_pubkey
-            let url = info?.urls.publicIP
+            var url:String?
+            if(self.publicUrl){
+                url = info?.urls.publicIP
+            }
+            else {
+                url = info?.urls.localIP
+            }
             let res = try velas.connectToPeer(nodeId: nodeId!, address: url!, port: self.port)
             print("connect: \(res)")
             alert(title: "Peer Connect", message: "\(res)")
@@ -164,15 +178,21 @@ class ViewController: UIViewController {
                 let channels = try velas.listChannelsDict()
                 var ready = false
                 
+                // check to see if any of the channel are ready to receive payments
                 for channel in channels {
                     if channel["is_usable"] as! String == "true" && channel["is_channel_ready"] as! String == "true" {
                         ready = true
                     }
                 }
                 
+                // if there are create a bolt11 and submit it
                 if(ready){
                     let bolt11 = try velas.createInvoice(amtMsat: 500000, description: "this s a test from velas lighting")
                     print("bolt11: \(bolt11)")
+                    self.alert(title: "bolt11", message: bolt11){(action) -> Void in
+                        let res = self.lapp.payInvoice(bolt11: bolt11)
+                        self.alert(title: "Payment Claimed", message: "\(res!)")
+                    }
 //                    let res = lapp.payInvoice(bolt11: bolt11)
                     
 //                    print(res!)
