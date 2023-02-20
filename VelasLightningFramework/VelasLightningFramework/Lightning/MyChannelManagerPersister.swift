@@ -10,13 +10,10 @@ import LightningDevKit
 
 
 class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
-    
-    var backUpChannelManager: Optional<(Data) -> ()>
-    
+        
     var lightning: Lightning? = nil
     
     public init(backUpChannelManager: Optional<(Data) -> ()> = nil) {
-        self.backUpChannelManager = backUpChannelManager
         super.init()
     }
 
@@ -38,12 +35,14 @@ class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
         if let paymentPathFailedEvent = event.getValueAsPaymentPathFailed() {
             print("handle_event: Payment Path Failed \(paymentPathFailedEvent)")
         }
+        
+        
+        if let _ = event.getValueAsPendingHtlcsForwardable() {
+            print("handle_event: forward HTLC")
+            lightning?.channelManager?.processPendingHtlcForwards()
+        }
+        
 
-//        if let _ = event.getValueAsPendingHTLCsForwardable() {
-//            print("handle_event: forward HTLC")
-//            lightning?.channel_manager?.process_pending_htlc_forwards()
-//        }
-//
 //        if let paymentReceivedEvent = event.getValueAsPaymentReceived() {
 //            print("handle_event: payment received")
 //            let paymentPreimage = paymentReceivedEvent.getPurpose().getValueAsInvoicePayment()?.getPayment_preimage()
@@ -59,8 +58,10 @@ class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
             // we don't route as we are a light mobile node
         }
 
-        if let _ = event.getValueAsPaymentClaimed() {
-            
+        // payment was claimed, so return preimage
+        if let paymentClaimedEvent = event.getValueAsPaymentClaimed() {
+            let paymentPreimage = paymentClaimedEvent.getPurpose().getValueAsInvoicePayment()?.getPaymentPreimage()
+            let _ = lightning?.channelManager?.claimFunds(paymentPreimage: paymentPreimage!)
         }
 
         if let _ = event.getValueAsChannelClosed() {
@@ -77,10 +78,6 @@ class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
             let data = Data(channel_manager_bytes)
             try FileMgr.writeData(data: data, path: "channel_manager")
             print("persist_manager: Success")
-            if let backUpChannelManager = backUpChannelManager {
-                backUpChannelManager(data)
-                print("persist_manager: successfully backup channel_manager to server \n")
-            }
         }
         catch {
             NSLog("Velas/Lightning/MyChannelManagerPersister: there was a problem persisting the channel \(error)")
