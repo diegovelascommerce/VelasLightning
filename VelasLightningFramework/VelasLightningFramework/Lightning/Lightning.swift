@@ -544,20 +544,20 @@ public class Lightning {
         
         var channelsDict = [String: Any]()
         
-        channelsDict["short_channel_id"] = it.getShortChannelId() ?? 0;
+//        channelsDict["short_channel_id"] = it.getShortChannelId() ?? 0;
         channelsDict["confirmations_required"] = it.getConfirmationsRequired() ?? 0;
 //        channelsDict["force_close_spend_delay"] = it.getForceCloseSpendDelay() ?? 0;
 //        channelsDict["unspendable_punishment_reserve"] = it.getUnspendablePunishmentReserve() ?? 0;
         
         channelsDict["channel_id"] = Utils.bytesToHex(bytes: it.getChannelId()!)
         channelsDict["channel_value_satoshis"] = String(it.getChannelValueSatoshis())
-//        channelsDict["inbound_capacity_msat"] = String(it.getInboundCapacityMsat())
-//        channelsDict["outbound_capacity_msat"] = String(it.getOutboundCapacityMsat())
+        channelsDict["inbound_capacity_msat"] = String(it.getInboundCapacityMsat())
+        channelsDict["outbound_capacity_msat"] = String(it.getOutboundCapacityMsat())
         
         channelsDict["is_usable"] = it.getIsUsable() ? "true" : "false"
         channelsDict["is_channel_ready"] = it.getIsChannelReady() ? "true" : "false"
-        channelsDict["is_outbound"] = it.getIsOutbound() ? "true" : "false"
-        channelsDict["is_public"] = it.getIsPublic() ? "true" : "false"
+//        channelsDict["is_outbound"] = it.getIsOutbound() ? "true" : "false"
+//        channelsDict["is_public"] = it.getIsPublic() ? "true" : "false"
         channelsDict["remote_node_id"] = Utils.bytesToHex(bytes: it.getCounterparty().getNodeId())
 
         if let funding_txo = it.getFundingTxo() {
