@@ -86,81 +86,90 @@ this method connects the client to another lightning node.
 
 #### `listPeers() throws -> [String]`
 
-- list the peers that client is connected to
-  - you need to be actively connected to a peer if you want to do anything in the lightning network
+lists the peers that client is connected to
+- you need to be actively connected to a peer if you want to do anything in the lightning network
 
-@returns: an array of strings representing peers that client is connected to.
+#### returns -> [String] 
+- returns an array of strings representing peers that client is connected to.
 
-#### `listChannelsDict() throws -> [[String:Any]] `
+### `listChannelsDict() throws -> [[String:Any]] `
 
-- list channels that client has setup.
-- note:  the client does not have the ability to create outbound channels yet.  
-  - since, the client has no liquidity/funds when they first start they can not create a channel
-  - It can only request that the LAPP create an inbound channel with it.
+list channels that client has setup.
+- note:  the client does not have the ability to create outbound channels yet.  Since, the client has no liquidity/funds when they first start they can not create a channel.  It can only request that the LAPP create an outbound channel with it.
 
-@returns:  an array of dictionaries that have information on each channel that you have setup.
+#### returns -> [[String:Any]]
+- returns an array of dictionaries that have information on each channel that you have setup.
 
-#### `createInvoice(amtMsat: Int, description: String) throws -> String`
+### `createInvoice(amtMsat: Int, description: String) throws -> String`
 
-- this creates an bolt11 invoice.
-  - to receive money, you would need to create a bolt11 invoice.
-    - it would look something like this: 
+this creates an bolt11 invoice that you will need to submit to the REST/LAPP in order to receive rewards
+- a bolt11 looks something like this: 
     lnbc2500u1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdq5xysxxatsyp3k7enxv4jsxqzpuaztrnwngzn3kdzw5hydlzf03qdgm2hdq27cqv3agm2awhz5se903vruatfhq77w3ls4evs3ch9zw97j25emudupq63nyw24cg27h2rspfj9srp
-  - you would then submit this to the lapp to receive money.
+ 
+#### parameters:
   
 @amtMsat:  amount you want to be paid in milisatoshis(1000 of a a satoshi)
 
 @description: a description you would like to attach to this invoice.
 
-#### `closeChannelsCooperatively() throws`
+#### returns -> String
+- returns the bolt11 string
 
-- this allows you to close all the cooperatively, this mean you were able to negotiate with the other peer you are connected with and you can both get your share of the channel near instantly.
+### `closeChannelsCooperatively() throws`
 
-#### `closeChannelsForcefully() throws`
+- this allows you to close all the channels cooperatively, this mean you were able to negotiate with the other peer you are connected with and you can both get your share of the channel near instantly.
 
-- this allows you to close all your channels forcefully, this usually because the other peer was not online to negotiate when to close the channel.
-- this is usual considered the bad way to close a channel be cause sometimes you have to wait 2016 block on the blockchain before you can get your money.
+### `closeChannelsForcefully() throws`
+
+- this allows you to close all your channels forcefully, this usually is because the other peer was not online to negotiate when to close the channel.
+- this is usual considered the bad way to close a channel because sometimes you have to wait 2016 block on the blockchain before you can get your money.
 
 
 
 
 # REST API / LAPP
 
-the creation of channels and processing of invoices are handled through the REST API/ LAPP.
+this handles the creation of channels and the processing of invoices through a REST/LAPP interface.
 
-It is recommended that all calls to the REST API / LAPP interface be done through a proxy.
-- that way the location of the lightning node will not be obvious but also make scaling  easier in the future.
-- here is an example of how the REST API / LAPP can be setup.
-- ![](client_to_backend_to_lapp.png)
+It is recommended that all calls to the REST/LAPP interface be done through a proxy.
+that way the location of the lightning node will not be obvious but also make scaling  easier in the future.
+
+here is an example of how the REST API / LAPP can be setup.
+![](client_to_backend_to_lapp.png)
   
+The backend is written in python using [Flask](https://flask.palletsprojects.com/en/2.2.x/).
 
-The backend is writen in python using [Flask](https://flask.palletsprojects.com/en/2.2.x/).
-
-It communicated with a LAPP which communicates with a remote full lighting node using gRPC.
-
-
-## REST API endpoints
+It communicates with a LAPP which communicates with a remote full lighting node using [gRPC](https://grpc.io/).
 
 for security reasons, all requests are encoded using [TLS](https://flask.palletsprojects.com/en/2.2.x/).
 
-- the test server for demoing these endpoints is velastestnet(45.33.22.210) 
-  - it uses a self signed certificate.
-- however, in production the client needs to communicate with a backend that is signed with  a public certification authority.
-  otherwise the app might be rejects by apple.
+also for security reason, all request must have to have a JWT([Json Web Token](https://www.youtube.com/watch?v=7ozQLeFJpqs)) token in the header of the request.
 
-also for security reason, all request have to have a JWT([Json Web Token](https://www.youtube.com/watch?v=7ozQLeFJpqs)) token in the header of the request.
-- for testing purposes the JWT used for communicating with velastestnet(45.33.22.210) was created usings the secret phrase, literally, 'secret'.
+we have a test server setup for experimenting with the REST/LAPP APIs.
+- the server is called velastestnet and it's ip address is 45.33.22.210 
+- it uses a self signed certificate for TLS.
+  - however, in production it is recomended that the client communicate with a backend that  is signed with  a public certification authority like VeriSign, Digicert, etc.
+  otherwise the app might be rejected by apple.
+
+- for testing purposes the JWT token used for communicating with velastestnet(45.33.22.210) was created usings the secret phrase, literally, 'secret'.
   in production it will be expected that the jwt will be created with a much more secure secret phrase.
 
-- attached is an export of all the endpoints that be used for testing with a browser plugin called [RESTClient](https://addons.mozilla.org/en-US/firefox/addon/restclient/).
+included in this project is an export file for a plugin called [RESTClient](https://addons.mozilla.org/en-US/firefox/addon/restclient/).
   - you can download the plugin for both Firefox or Chrome. 
-  - we have tested these endpoints on many different machines.  the ones you want to focus on is https://45.33.22.210
+  - note: we have tested these endpoints on many different machines.  the ones you want to focus on is https://45.33.22.210, the velastestnet server
+
+also we have some unit test that can be useful in showing how the api can work.  it uses [pytest](https://docs.pytest.org/en/7.2.x/).
+- [unit test](https://github.com/diegovelascommerce/VelasLightning/tree/main/VelasLightningAPI/tests)
   
-#### `GET: getinfo`
+## `GET: getinfo`
 
 ![](getinfo.png)
 
 you call this endpoint to get the information of the remote Lighting node that the LAPP is connected to.
+
+you will need to extract information such as the identity_pubkey and the public ip address of the node so that the client can create a connection with that node
+
+### response:
 
 @identity_pubkey: is the node ID of the remote Lightning node that the LAPP is setup with.
 - the client will need this information in order to connect to the remote full lighting node.
@@ -168,62 +177,65 @@ you call this endpoint to get the information of the remote Lighting node that t
 @urls.public:  this the public ip address to the remote Lighting node that the LAPP is setup with.
 - the client will also need this information in order to connect the remote full lighting node.
 
-#### `POST: openchannel`
+## `POST: openchannel`
 
 ![](openchannel.png)
 
-this is responsible for creating a channel on the clients behalf.
+this is responsible for creating a channel between the client and the LAPP backend.
 
-- because when the client first starts up, it does not have any Funds/Liquidity to open a channel.
-- also because for workit, the client is receiving funds therefor it's the LAPP job to create a outbound channel to the client.
+### body:
 
-@nodeId:  node ID of the client which the LAPP will setup a channel with on it's behalf.
+@nodeId:  node ID of the client which the LAPP will setup a channel with it's backend lightning node.
 - this is the node ID of the client that is running VelasLighting Framework.  Not to be confused with the node ID of the remote Lighting node that the LAPP communicates with.
 
 @amt:  the capacity that you want the channel to be.
 - this is specified in satoshis.  
 
+
+### response:
 @txid:  this is the id of the transaction that was used to fund the channel.
 - this can be seen in a block explorer.
   - here I am using [blockstream.info](https://blockstream.info/testnet/)
-  - ![](blockstream.info.png)
+  ![](blockstream.info.png)
 
 @vout: is the index of where the transactions in places in the block.
 - you will need both the txid and the vout in order to close the channel in the future.
-- it is a good idea to save this somewhere like in a table that is associated with your clients.
+- it is a good idea to save this somewhere like in a table that is associated with your client's account information.
 
 
-#### `POST: listchannels`
+## `POST: listchannels`
 
 ![](listchannels.png)
 
 returns a list of channels that the remote Full lightning node has setup.
 
+### body:
 @peer:  the node ID which you want to see channels for.
 - if you leave this blank it will return to you all the channels you have setup in your remote full lightning node
 
+### response:
 @channel_point: this is a combination of the txid and the vout.
-- you will need to provide this information if you want to close the channel.
+- you will need to provide this information if you want to close the channel in the future.
 
-#### `POST: closechannel`
+### `POST: closechannel`
 
 ![](closechannel.png)
 
 this is used to close a channel
 
-- you would probley use this to close the channels on behalf of a client, in case they lost their phone.
+- you would probably use this to close the channels on behalf of a client, in case they lost their phone.
 
-##### body
+### body:
 @txid:  the id of the transaction that was used to fund this channel
 @vout:  the index in the block that the funding transaction was added to.
 
-##### result
+### response:
 @txid:  the id of the transaction that give participants back their money
 - you can see this transaction on a block explorer.  
   ![](blockstream_closechannel.png)
 
 
-#### `POST: payinvoice`
+## `POST: payinvoice`
 
 ![](payinvoice.png)
 
@@ -231,13 +243,13 @@ this is used to pay an invoice that the client generated.
 - example: client reached their goal and generated a bolt11 using `velas.createInvoice`
 - the bolt11 gets processed by the lapp and now the user balance reflects that.
 
-##### body
+### body:
 @bolt11: this is the bolt11 string that was generated by the client.
 
-##### response
+### response:
 @payment_error:  if there were any errors, this field would have a message explaining the problem
 
-@payment_hash:  this is a hash that is used in HTLC.
+@payment_hash:  this is a hash that is used in [HTLC](https://www.youtube.com/watch?v=NcKNzk-H8CY).
 
-@payment_preimage:  this is the preimage that generated the HASH.
+@payment_preimage:  this is the preimage that generated the HASH for the [HTLC](https://www.youtube.com/watch?v=NcKNzk-H8CY).
 - if the payment was successful this field should be filled
