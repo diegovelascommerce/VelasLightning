@@ -1,89 +1,88 @@
-Welcome to the VelasLightning Framework.  
+# Welcome to the VelasLightning Framework.  
+
 A simple framework that cam be used to integrate lightning payment to your application in a none custodial way.
 
-There are Two Major peaces to this project.
+There are two pieces to this project.
 
-1. A client side which uses the LDK ([Lightning Development Kit](https://lightningdevkit.org/)) and the BDK ([Bitcoin Development Kit](https://bitcoindevkit.org/)) to transform you mobile app into a light weight Lightning node.
-2. A REST API that communicates with a LAPP([Lightning Application](https://lightningdevkit.org/)) for creating an managing peers, channels, payments, etc, with a remote Full Lightning Node.
-  - the LAPP is just a python application that communicates with a Lighting Node using [gRPC](https://www.youtube.com/watch?v=gnchfOojMk4)
+1. A client library which uses the LDK ([Lightning Development Kit](https://lightningdevkit.org/)) and the BDK ([Bitcoin Development Kit](https://bitcoindevkit.org/)) to transform your mobile app into a light weight *lightning* node.
+ 
+2. A REST API that communicates with a LAPP([Lightning Application](https://www.youtube.com/watch?v=8-CYfqVfa08)) to connect to peers, create channels, and process payments with a remote *full* *lightning* Node.
+  - the LAPP is just a python application that communicates with the remote lighting node using [gRPC](https://www.youtube.com/watch?v=gnchfOojMk4)
 
-# The Client 
+# The Client library
 
-the client side is packaged as a library that can be included in your application.
-- for example in iOS, the VelasLightning Framework is packaged as an xcFramework.
+the client library can be included in any swift project.  The VelasLightning Framework is packaged as an xcFramework.
 
-the client uses the LDK and BDK to turn you application into a lightweight lightning node.
+the client library uses the LDK and BDK to turn you application into a lightweight lightning node.
 
-it can connect to another lightning peer.
+included in the repo is an example project that shows how to include and use the client library into a iOS application. [Velas Lightning Example Project](https://github.com/diegovelascommerce/VelasLightning/tree/main/VelasLightningExample)
 
-it can make a request to the LAPP to create an inbound channel with it.
+- this project is for demo purposes *only*.  The client is directly communicating with the REST/LAPP interface which we do not recommend.  it's not a good idea to give people an idea on where your money is located.  Also there is some information that is returned from the LAPP that you may want to record and associate with your client's account information in the backend.  Such as the nodeId to their lighting wallet and channel_points to their channels.  Also the test server for the LAPP is using a self signed certificate.  Apple might reject apps that communicate with a backend that is not signed by a certified certificate authority like VeriSign, GoDaddy, etc.
+  
+- rather we recommend that all communication from the client to the LAPP is done through a proxy.  that way the actual location of the remote lighting is not as easily discernable and lightning critical information about the client can be recorded in the backend and associated with your clients.  Also you can just use the TLS/SSL certificate you have setup in your backend for encrypted communication between your app and backend.
+- here is an illustration of the ideal way to have the client communicate with the REST API/LAPP
+![](client_to_backend_to_lapp.png)
 
-it can create bolt11 invoices and submit it to the LAPP for processing to receive money.
+## [Velas Class](https://github.com/diegovelascommerce/VelasLightning/blob/main/VelasLightningFramework/VelasLightningFramework/Velas.swift):
 
-it can list the channels it has open.
-
-it can also close channels that is has setup through the LAPP
-
-included in the repo is an example project that show how to include and use the client side of the VelasLightning Framework in a iOS application. [Velas Lightning Example Project](https://github.com/diegovelascommerce/VelasLightning/tree/main/VelasLightningExample)
-  - this project is for demo purposes only, the client directly communicates with the LAPP which we don't recommend.  it's not a good idea to give people and idea on where your money is located.
-  - rather we recommend that all communication from the client to the LAPP is done through a proxy.  that way the actual location of the remote lighting is not as easily discernable.   
-  - here is an example of the ideal way to have the client communicate with the REST API/LAPP
-  ![](client_to_backend_to_lapp.png)
-
-## Velas Class:
-
-the client will be interacting with the lighting network through a class called Velas.
+the client will be interacting with the lighting network through a class called [Velas](https://github.com/diegovelascommerce/VelasLightning/blob/7cec361affe799d883b0ac9afa6ad4f93c2701ed/VelasLightningFramework/VelasLightningFramework/Velas.swift#L7).
 
 this must be initialized and synced with the lighting network before you can begin to use it.
+- [here is an example on how to do that](https://github.com/diegovelascommerce/VelasLightning/blob/7cec361affe799d883b0ac9afa6ad4f93c2701ed/VelasLightningExample/VelasLightningExample/AppDelegate.swift#L22)
 
-since starting up a lightning node does take sometime because the state of the channels must be synced with the peers they are setup wit.  it is recommended to initialize the Velas class in the same startup method as your application. For example, in the AppDelegate of an iOS project.
-- however you can start the Velas Class anywhere you like just keep in mind that it take a while to sync and it would be a good idea to keep the instance of the Velas class as a global static variable, that way you only have to initialize it once during the lifetime of the application.
+Since starting up a lightning node does take sometime because the state of the channels, peers and transactions must be synced and verified,  it is recommended to initialize the Velas class in the same startup method as your application. For example, in the AppDelegate of an iOS project.
 
-### Methods:
+however, you can start the Velas Class anywhere you like just keep in mind that it take a while to sync and it would be a good idea to keep the instance of the Velas class as a global static variable, that way you only have to initialize it once during the lifetime of the application.  If you are using a dependency injection framework then try to keep the velas object in a statically scope object.  otherwise you will have to restart and resync the velas object each time before using it.
 
-the Velas has the following methods for interacting with the Lightning network
+## Velas Class Methods:
 
-#### `init(network: Network = Network.testnet, mnemonic: String? = nil) throws`
+### `init(network: Network = Network.testnet, mnemonic: String? = nil) throws`
 
-- this is the method that will initialize the Velas Class.  
-
-- the mnemonic is passed over to the BDK which creates the private key of your wallet.  Then it passes the private key to the LDK so that it can create a node associated with you public keys.
+this is the initializer for the Velas Class.  
   
-- here is an example of how to initialize the Velas Class in the appDelegate.
-  [Velas Class init example](https://github.com/diegovelascommerce/VelasLightning/blob/9fe0f7e9275c5ffad363829773bd2bceb091cd3d/VelasLightningExample/VelasLightningExample/AppDelegate.swift#L22)
+a mnemonic is passed over to the BDK which creates the private/public keys for your wallet.  The private key is then passed to the LDK so that it can create a node associated with your key and sign transactions with that it.
+  
+- [here is an example of how to initialize the Velas Class in the appDelegate.](https://github.com/diegovelascommerce/VelasLightning/blob/9fe0f7e9275c5ffad363829773bd2bceb091cd3d/VelasLightningExample/VelasLightningExample/AppDelegate.swift#L22)
     - notice that the Velas object is saved to a global variable of the project.
-    - you don't have to do it this way.  if you are using a dependency management framework you can setup it up as a static scoped object.
+you don't have to do it this way.  if you are using a dependency management framework you can setup it up as a static scoped object.
 
-@network:
-- what blockchain network do you want the velas object to work with.
+#### parameters:
+*@network:* the blockchain network that you want the Velas object to work with.
   - by default it is set to testnet, which is just a testing network.  No real money is used.
 
-@mnemonic:
-- this is mnemonic phrase used to create the private key for your bitcoin wallet.
-  - this should be saved on the users device.
-    - note: if this phrase is lost the user will note be able get their funds.
-      it is important that in addition to saving this phrase on the device that the user writes it down somewhere so that in case he or she loses his phone they can reclaim there funds in another bitcoin wallet.
+*@mnemonic:* this is the mnemonic phrase used to create both the public and private keys for your bitcoin wallet.
 
-#### `getNodeId() throws -> String`
+- this should be saved on the users device. Also there needs to be a screen where the user can see this mnemonic and write it down somewhere so they they can recreate the public/private keys in another bitcoin wallet to reclaim their funds, incase they lose or their phone.
 
-- this method returns the lightning network nodeId of the client.
-  - this information is important when making a request to create a channel through the LAPP.
-  - this should be saved in a data base and associated with the client.
-  - if you want to see the channels associated with your client you will need the nodeId.
 
-#### `connectToPeer(nodeId: String, address: String, port: NSNumber) throws -> Bool`
+### `getNodeId() throws -> String`
 
-- this method connects the client to another lightning node.
-  - before you create channels and submit invoices with another lighting node you have to   connect to it.
-  - to make a connection you will need the nodeId, address, and port of the other lighting node you want to connect to.
+this method returns the lightning network nodeId of the client.
 
-@nodeId: nodeId of the node you want to connect with in the lighting network.
+- this information is important when making a request to the LAPP to create an outbound channel with your clients node. 
+  
+- this should be saved in the backend of your application and associated with the client account information. 
+- if you want to see the channels associated with your client you will need this nodeId.
 
-@address:  ip address of the node you want to connect to
+#### returns -> String:
+ 
+- this is the nodeId of the lightweight Lightning Client that was created on the phone.
 
-@port: the port in which the node is setup to listen for peer requests
+### `connectToPeer(nodeId: String, address: String, port: NSNumber) throws -> Bool`
 
-@returns:  true is connections was a success, false if connection did not go through.
+this method connects the client to another lightning node.
+  - before you can create channels and submit invoices with another lighting node you have to connect to it.
+  - to make a connection you will need the nodeId, address, and port of the other lighting node you the client to connect to.
+
+#### parameters:
+@nodeId: nodeId of the node you want the client to connect with in the lighting network.
+
+@address:  ip address of the remote node you want to connect to
+
+@port: the port in which the remote node is setup to listen for peer requests
+
+#### returns -> Bool : 
+- returns true if connection was a successful, false if connection did not go through.
 
 #### `listPeers() throws -> [String]`
 
