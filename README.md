@@ -18,7 +18,11 @@ the client library uses the LDK and BDK to turn you application into a lightweig
 included in the repo is an example project that shows how to include and use the client library into a iOS application. [Velas Lightning Example Project](https://github.com/diegovelascommerce/VelasLightning/tree/main/VelasLightningExample)
 
 here are some videos demoing how the Velas Lightning Example Project works
-- [demo paying an invoice](VelasLightningInvoiceDemo.mov)
+   - [demo open channel](demo_create_channel.mp4)
+   - [demo paying an invoice](VelasLightningInvoiceDemo.mp4)
+   - [demo closing channel](demo_close_channels.mp4)
+  
+
 
 - this project is for demo purposes *only*.  The client is directly communicating with the REST/LAPP interface which we do not recommend.  it's not a good idea to give people an idea on where your money is located.  Also there is some information that is returned from the LAPP that you may want to record and associate with your client's account information in the backend.  Such as the nodeId to their lighting wallet and channel_points to their channels.  Also the test server for the LAPP is using a self signed certificate.  Apple might reject apps that communicate with a backend that is not signed by a certified certificate authority like VeriSign, GoDaddy, etc.
   
