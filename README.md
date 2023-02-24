@@ -164,6 +164,7 @@ we have a test server setup for experimenting with the REST/LAPP APIs.
 included in this project is an export file for a plugin called [RESTClient](https://addons.mozilla.org/en-US/firefox/addon/restclient/).
   - you can download the plugin for both Firefox or Chrome. 
   - note: we have tested these endpoints on many different machines.  the ones you want to focus on is https://45.33.22.210, the velastestnet server
+  - here is the [export file for RESTClient](RESTClient_dump.json)
 
 also we have some unit test that can be useful in showing how the api can work.  it uses [pytest](https://docs.pytest.org/en/7.2.x/).
 - [unit test](https://github.com/diegovelascommerce/VelasLightning/tree/main/VelasLightningAPI/tests)
