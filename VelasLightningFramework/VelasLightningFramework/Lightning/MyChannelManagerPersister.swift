@@ -93,13 +93,27 @@ class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
         do {
             let network_graph_bytes = networkGraph.write()
             try FileMgr.writeData(data: Data(network_graph_bytes), path: "network_graph")
-            print("persist_network_graph: Success\n");
-            return Result_NoneErrorZ.initWithOk()
+            print("persist_network_graph: save success\n");
         }
         catch {
             NSLog("persist_network_graph: persist_network_graph: Error \(error)");
-            return Result_NoneErrorZ.initWithOk()
         }
+        
+        return Result_NoneErrorZ.initWithOk()
+    }
+    
+    override func persistScorer(scorer: Bindings.WriteableScore) -> Result_NoneErrorZ {
+        do {
+            let scorerBytes = scorer.write()
+            try FileMgr.writeData(data: Data(scorerBytes), path: "probabilistic_scorer")
+            print("probabilistic_scorer: save success")
+        }
+        catch {
+            NSLog("persistScorer: Error \(error)");
+            
+        }
+        
+        return Result_NoneErrorZ.initWithOk()
     }
     
     

@@ -10,8 +10,7 @@ import VelasLightningFramework
 
 class ViewController: UIViewController {
 
-    @IBOutlet weak var hostLable: UILabel!
-    @IBOutlet weak var nodeIdTextView: UITextView!
+    
     
     var ip:String!
     var jwt:String!
@@ -23,11 +22,8 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        let (_, pub) = velas.getIPAddresses()
-        hostLable.text = pub!
-        hostLable.sizeToFit()
-        hostLable.center.x = self.view.center.x
-        
+//        let (_, pub) = velas.getIPAddresses()
+       
         let plist = getPlist()
         
         self.ip = plist["ip"] as? String
@@ -42,7 +38,6 @@ class ViewController: UIViewController {
         do {
             self.nodeId = try velas.getNodeId()
             print("nodeId: \(self.nodeId!)")
-            nodeIdTextView.text = self.nodeId
         }
         catch {
             NSLog("there was a problem getting the node id \(error)")
@@ -104,14 +99,14 @@ class ViewController: UIViewController {
         do {
             let info = self.lapp.getinfo()
             let nodeId = info?.identity_pubkey
-            var url:String?
-            if(self.publicUrl){
-                url = info?.urls.publicIP
-            }
-            else {
-                url = info?.urls.localIP
-            }
-            let res = try velas.connectToPeer(nodeId: nodeId!, address: url!, port: self.port)
+//            var url:String?
+//            if(self.publicUrl){
+//                url = info?.urls.publicIP
+//            }
+//            else {
+//                url = info?.urls.localIP
+//            }
+            let res = try velas.connectToPeer(nodeId: nodeId!, address: self.ip, port: self.port)
             print("connect: \(res)")
             alert(title: "Peer Connect", message: "\(res)")
         }
@@ -163,7 +158,18 @@ class ViewController: UIViewController {
         do {
             let channels = try velas.listChannelsDict()
             print("channels: \(channels)")
-            self.alert(title: "List Channels", message: "channels: \(channels)")
+            self.alert(title: "List All Channels", message: "channels: \(channels)")
+        }
+        catch {
+            NSLog("problem with listing channels: \(error)")
+        }
+    }
+    
+    @IBAction func listChannelsUsable(_ sender: Any) {
+        do {
+            let channels = try velas.listUsableChannelsDict()
+            print("channels: \(channels)")
+            self.alert(title: "List Usable Channels", message: "channels: \(channels)")
         }
         catch {
             NSLog("problem with listing channels: \(error)")

@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>ip</key>
-	<string>45.33.22.210</string>
+	<string>192.168.0.10</string>
 	<key>jwt</key>
 	<string>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ2ZWxhcyIsInN1YiI6IndvcmtpdCJ9.CnksMqUsywjH4W8JgPePodi10pO_xJMrPyq9c19tQmo</string>
 	<key>port</key>

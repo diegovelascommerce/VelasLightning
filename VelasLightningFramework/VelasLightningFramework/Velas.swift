@@ -97,6 +97,15 @@ public class Velas {
         return res
     }
     
+    /// Get all the channels that this node is setup for.
+    ///
+    /// return:
+    ///     list of channels
+    public func listUsableChannelsDict() throws -> [[String:Any]] {
+        let res = try ln.listUsableChannelsDict()
+        return res
+    }
+    
     /// Get the local and public IP addresses of this node
     ///
     /// return:

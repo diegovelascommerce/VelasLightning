@@ -4,6 +4,7 @@ import BitcoinDevKit
 
 public enum LightningError: Error {
     case peerManager(msg:String)
+    case networkGraph(msg:String)
 }
 
 /// This is the main class for handling interactions with the Lightning Network
@@ -17,6 +18,8 @@ public class Lightning {
     
     // graph of routes
     var networkGraph: NetworkGraph?
+    
+    var scorer: MultiThreadedLockableScore?
     
     // manges keys for signing
     var keysManager: KeysManager?
@@ -142,6 +145,23 @@ public class Lightning {
             networkGraph = NetworkGraph(genesisHash: Utils.hexStringToByteArray(try btc.getGenesisHash()).reversed(), logger: logger)
         }
         
+        /// Step 8.5  Setup probability scorer for graph
+        
+        var probabilisticScorer = ProbabilisticScorer(params: ProbabilisticScoringParameters.initWithDefault(), networkGraph: networkGraph!, logger: logger)
+        
+        if FileMgr.fileExists(path: "probabilistic_scorer") {
+            let file = try FileMgr.readData(path: "probabilistic_scorer")
+            let scorerReadResult = ProbabilisticScorer.read(ser: [UInt8](file), argA: ProbabilisticScoringParameters.initWithDefault(), argB: networkGraph!, argC: logger)
+            if let readResult = scorerReadResult.getValue() {
+                print("scorer loaded")
+                probabilisticScorer = readResult
+            } else {
+                print("scorer failed to load")
+            }
+        }
+        
+        scorer = MultiThreadedLockableScore(score: probabilisticScorer.asScore())
+        
         /// Step 9. Read ChannelMonitors from disk
         ///
         /// you must follow this step if:
@@ -152,22 +172,22 @@ public class Lightning {
         ///     managing channel state
         
         // check if the channel manager was saved
-        var serializedChannelManager:[UInt8] = [UInt8]()
+        var channelManagerSerialized:[UInt8] = [UInt8]()
         
         if FileMgr.fileExists(path: "channel_manager") {
             let channelManagerData = try FileMgr.readData(path: "channel_manager")
-            serializedChannelManager = [UInt8](channelManagerData)
+            channelManagerSerialized = [UInt8](channelManagerData)
         }
         
         // check if any channels were saved
-        var serializedChannelMonitors:[[UInt8]] = [[UInt8]]()
+        var channelMonitorsSerialized:[[UInt8]] = [[UInt8]]()
         
         if FileMgr.fileExists(path: "channels") {
             let urls = try FileMgr.contentsOfDirectory(atPath:"channels")
             for url in urls {
                 let channelData = try FileMgr.readData(url: url)
                 let channelBytes = [UInt8](channelData)
-                serializedChannelMonitors.append(channelBytes)
+                channelMonitorsSerialized.append(channelBytes)
             }
         }
         
@@ -242,15 +262,15 @@ public class Lightning {
         // Create the Channl Manager Constructor
         
         // if there was data backed up
-        if !serializedChannelManager.isEmpty {
+        if let netGraphSerialized = networkGraph?.write(), !channelManagerSerialized.isEmpty {
             channelManagerConstructor = try ChannelManagerConstructor(
-                channelManagerSerialized: serializedChannelManager,
-                channelMonitorsSerialized: serializedChannelMonitors,
+                channelManagerSerialized: channelManagerSerialized,
+                channelMonitorsSerialized: channelMonitorsSerialized,
                 keysInterface: keysInterface,
                 feeEstimator: feeEstimator,
                 chainMonitor: chainMonitor!,
                 filter: filter,
-                netGraphSerialized: networkGraph?.write(),
+                netGraphSerialized: netGraphSerialized,
                 txBroadcaster: broadcaster,
                 logger: logger
             )
@@ -527,6 +547,26 @@ public class Lightning {
         }
 
         let channels = channelManager.listChannels().isEmpty ? [] : channelManager.listChannels()
+        var channelsDict = [[String:Any]]()
+        _ = channels.map { (it: ChannelDetails) in
+            let channelDict = self.channel2ChannelDictionary(it: it)
+            channelsDict.append(channelDict)
+        }
+
+        
+        return channelsDict
+    }
+    
+    /// Get list of channels that were established with partner node.
+    func listUsableChannelsDict() throws -> [[String:Any]] {
+        guard let channelManager = channelManager else {
+            let error = NSError(domain: "listChannels",
+                                code: 1,
+                                userInfo: [NSLocalizedDescriptionKey: "Channel Manager not initialized"])
+            throw error
+        }
+
+        let channels = channelManager.listUsableChannels().isEmpty ? [] : channelManager.listChannels()
         var channelsDict = [[String:Any]]()
         _ = channels.map { (it: ChannelDetails) in
             let channelDict = self.channel2ChannelDictionary(it: it)
