@@ -13,32 +13,28 @@ class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
         
     var lightning: Lightning? = nil
     
-    public init(backUpChannelManager: Optional<(Data) -> ()> = nil) {
-        super.init()
-    }
 
     func handleEvent(event: Event) {
                 
         if let _ = event.getValueAsSpendableOutputs() {
-            print("ReactNativeLDK: trying to spend output")
-           
+            print("handleEvent: trying to spend output")
         }
 
         if let paymentSentEvent = event.getValueAsPaymentSent() {
-            print("handle_event: Payment Sent \(paymentSentEvent)")
+            print("handleEvent: Payment Sent \(paymentSentEvent)")
         }
         
         if let paymentFailedEvent = event.getValueAsPaymentFailed() {
-            print("handle_event: Payment Sent \(paymentFailedEvent)")
+            print("handleEvent: Payment Failed \(paymentFailedEvent)")
         }
 
         if let paymentPathFailedEvent = event.getValueAsPaymentPathFailed() {
-            print("handle_event: Payment Path Failed \(paymentPathFailedEvent)")
+            print("handleEvent: Payment Path Failed \(paymentPathFailedEvent)")
         }
         
         
         if let _ = event.getValueAsPendingHtlcsForwardable() {
-            print("handle_event: forward HTLC")
+            print("handleEvent: forward HTLC")
             lightning?.channelManager?.processPendingHtlcForwards()
         }
         
@@ -53,10 +49,12 @@ class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
         if let paymentClaimedEvent = event.getValueAsPaymentClaimable() {
             let paymentPreimage = paymentClaimedEvent.getPurpose().getValueAsInvoicePayment()?.getPaymentPreimage()
             let _ = lightning?.channelManager?.claimFunds(paymentPreimage: paymentPreimage!)
+            print("handleEvent: paymentClaimed preimage=\(paymentPreimage!)")
         }
 
+        // channel is ready to be funded
         if let _ = event.getValueAsFundingGenerationReady() {
-            print("ReactNativeLDK: funding generation ready")
+            print("handleEvent: funding generation ready")
             
         }
 
@@ -67,7 +65,7 @@ class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
         
 
         if let _ = event.getValueAsChannelClosed() {
-            print("ReactNativeLDK ChannelClosed")
+            print("handleEvent: ChannelClosed")
             
         }
     }
@@ -79,10 +77,10 @@ class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
         do {
             let data = Data(channel_manager_bytes)
             try FileMgr.writeData(data: data, path: "channel_manager")
-            print("persist_manager: Success")
+            print("persist_manager: saved")
         }
         catch {
-            NSLog("Velas/Lightning/MyChannelManagerPersister: there was a problem persisting the channel \(error)")
+            NSLog("persist_manager: there was a problem persisting the channel \(error)")
         }
         
         return Result_NoneErrorZ.initWithOk()
@@ -93,16 +91,16 @@ class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
         do {
             let network_graph_bytes = networkGraph.write()
             try FileMgr.writeData(data: Data(network_graph_bytes), path: "network_graph")
-            print("persist_network_graph: save success\n");
+            print("persist_network_graph: saved\n");
         }
         catch {
-            NSLog("persist_network_graph: persist_network_graph: Error \(error)");
+            NSLog("persist_network_graph: error \(error)");
         }
         
         return Result_NoneErrorZ.initWithOk()
     }
     
-    override func persistScorer(scorer: Bindings.WriteableScore) -> Result_NoneErrorZ {
+    override func persistScorer(scorer: WriteableScore) -> Result_NoneErrorZ {
         do {
             let scorerBytes = scorer.write()
             try FileMgr.writeData(data: Data(scorerBytes), path: "probabilistic_scorer")

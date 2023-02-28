@@ -76,10 +76,14 @@ class ViewController: UIViewController {
             
             do {
                 let res = try velas.payInvoice(bolt11: bolt11)
-                print("payment went through: \(res)")
+                if let res = res {
+                    print("payInvoice: success(\(res))")
+//                    self.alert(title: "payInvoice", message: "success(\(res))")
+                }
             }
             catch {
-                print("problem paying invoice: \(error)")
+                print("payInvoice: error(\(error))")
+//                self.alert(title: "payInvoice", message: "error(\(error))")
             }
         }))
 

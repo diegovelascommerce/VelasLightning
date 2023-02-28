@@ -5,6 +5,13 @@ import BitcoinDevKit
 public enum LightningError: Error {
     case peerManager(msg:String)
     case networkGraph(msg:String)
+    case parseInvoice(msg:String)
+}
+
+public struct PayInvoiceResult {
+    let bolt11:String
+    let memo:String
+    let amt:UInt64
 }
 
 /// This is the main class for handling interactions with the Lightning Network
@@ -208,44 +215,45 @@ public class Lightning {
         ///     Second, we also need to initialize a default user config,
         
         // specifications on how we want to setup our own channdls
-        let handshakeConfig = ChannelHandshakeConfig(minimumDepthArg: 2,
-                                                     ourToSelfDelayArg: 144,
-                                                     ourHtlcMinimumMsatArg: 1,
-                                                     maxInboundHtlcValueInFlightPercentOfChannelArg: 10,
-                                                     negotiateScidPrivacyArg: false,
-                                                     announcedChannelArg: false,
-                                                     commitUpfrontShutdownPubkeyArg: true,
-                                                     theirChannelReserveProportionalMillionthsArg: 1)
+//        let handshakeConfig = ChannelHandshakeConfig(minimumDepthArg: 2,
+//                                                     ourToSelfDelayArg: 144,
+//                                                     ourHtlcMinimumMsatArg: 1,
+//                                                     maxInboundHtlcValueInFlightPercentOfChannelArg: 10,
+//                                                     negotiateScidPrivacyArg: false,
+//                                                     announcedChannelArg: false,
+//                                                     commitUpfrontShutdownPubkeyArg: true,
+//                                                     theirChannelReserveProportionalMillionthsArg: 1)
         
         // specifications on the other party
-        let handshakeLimits = ChannelHandshakeLimits(minFundingSatoshisArg: 0,
-                                                     maxFundingSatoshisArg: 20000,
-                                                     maxHtlcMinimumMsatArg: UInt64.max,
-                                                     minMaxHtlcValueInFlightMsatArg: 0,
-                                                     maxChannelReserveSatoshisArg: UInt64.max,
-                                                     minMaxAcceptedHtlcsArg: 0,
-                                                     maxMinimumDepthArg: 144,
-                                                     trustOwnFunding_0confArg: true,
-                                                     forceAnnouncedChannelPreferenceArg: false,
-                                                     theirToSelfDelayArg: 2016)
+//        let handshakeLimits = ChannelHandshakeLimits(minFundingSatoshisArg: 0,
+//                                                     maxFundingSatoshisArg: 20000,
+//                                                     maxHtlcMinimumMsatArg: UInt64.max,
+//                                                     minMaxHtlcValueInFlightMsatArg: 0,
+//                                                     maxChannelReserveSatoshisArg: UInt64.max,
+//                                                     minMaxAcceptedHtlcsArg: 0,
+//                                                     maxMinimumDepthArg: 144,
+//                                                     trustOwnFunding_0confArg: true,
+//                                                     forceAnnouncedChannelPreferenceArg: false,
+//                                                     theirToSelfDelayArg: 2016)
         
-        let channelConfig = ChannelConfig(forwardingFeeProportionalMillionthsArg: 0,
-                                          forwardingFeeBaseMsatArg: 1000,
-                                          cltvExpiryDeltaArg: 72,
-                                          maxDustHtlcExposureMsatArg: 5_000_000,
-                                          forceCloseAvoidanceMaxFeeSatoshisArg: 1000)
+//        let channelConfig = ChannelConfig(forwardingFeeProportionalMillionthsArg: 0,
+//                                          forwardingFeeBaseMsatArg: 1000,
+//                                          cltvExpiryDeltaArg: 72,
+//                                          maxDustHtlcExposureMsatArg: 5_000_000,
+//                                          forceCloseAvoidanceMaxFeeSatoshisArg: 1000)
         
 //        handshakeConfig.set_minimum_depth(val: 1)
 //        handshakeConfig.set_announced_channel(val: false)
         
 //        let userConfig = UserConfig()
-        let userConfig = UserConfig(channelHandshakeConfigArg: handshakeConfig,
-                                    channelHandshakeLimitsArg: handshakeLimits,
-                                    channelConfigArg: channelConfig,
-                                    acceptForwardsToPrivChannelsArg: true,
-                                    acceptInboundChannelsArg: true,
-                                    manuallyAcceptInboundChannelsArg: false,
-                                    acceptInterceptHtlcsArg: true)
+        
+//        let userConfig = UserConfig(channelHandshakeConfigArg: handshakeConfig,
+//                                    channelHandshakeLimitsArg: handshakeLimits,
+//                                    channelConfigArg: channelConfig,
+//                                    acceptForwardsToPrivChannelsArg: true,
+//                                    acceptInboundChannelsArg: true,
+//                                    manuallyAcceptInboundChannelsArg: false,
+//                                    acceptInterceptHtlcsArg: true)
 
         
 //        let handshakeConfig = ChannelHandshakeConfig()
@@ -258,6 +266,19 @@ public class Lightning {
 //        userConfig.set_channel_handshake_config(val: handshakeConfig)
 //        userConfig.set_channel_handshake_limits(val: handshakeLimits)
 //        userConfig.set_accept_inbound_channels(val: true)
+        
+        
+        let handshakeConfig = ChannelHandshakeConfig.initWithDefault()
+        handshakeConfig.setMinimumDepth(val: 2)
+//        handshakeConfig.setAnnouncedChannel(val: false)
+        
+        let handshakeLimits = ChannelHandshakeLimits.initWithDefault()
+        handshakeLimits.setForceAnnouncedChannelPreference(val: false)
+        
+        let userConfig = UserConfig.initWithDefault()
+        userConfig.setChannelHandshakeConfig(val: handshakeConfig)
+        userConfig.setChannelHandshakeLimits(val: handshakeLimits)
+        userConfig.setAcceptInboundChannels(val: true)
         
         // Create the Channl Manager Constructor
         
@@ -306,13 +327,15 @@ public class Lightning {
         try self.sync()
         
         // hookup the persister the the channel manager
-        channelManagerConstructor?.chainSyncCompleted(persister: channelManagerPersister, scorer: nil)
+        channelManagerConstructor?.chainSyncCompleted(persister: channelManagerPersister, scorer: scorer)
         
         // get the peer manager
         peerManager = channelManagerConstructor?.peerManager
         
         // get the peer handler
         peerHandler = channelManagerConstructor?.getTCPPeerHandler()
+        
+        networkGraph = channelManagerConstructor?.netGraph
                 
         channelManagerPersister.lightning = self
         
@@ -756,6 +779,22 @@ public class Lightning {
         }
     }
     
+    /// deserialized the bolt11
+    func deserializeBolt11(bolt11: String) throws -> (Invoice, String, String, UInt64) {
+        let invoiceParsed = Invoice.fromStr(s: bolt11)
+        
+        guard let invoice = invoiceParsed.getValue(), invoiceParsed.isOk() else {
+            let error = NSError(domain: "payInvoice", code: 1, userInfo: nil)
+            throw error
+        }
+        
+        let restoredBolt11 = invoice.toStr()
+        let memo = invoice.intoSignedRaw().rawInvoice().description()?.intoInner()
+        let amt = invoice.amountMilliSatoshis()
+        
+        return (invoice, restoredBolt11, memo!, amt!)
+    }
+    
     /// Pay a bolt11 invoice.
     ///
     /// params:
@@ -767,35 +806,26 @@ public class Lightning {
     ///
     /// return:
     ///     true is payment when through
-    func payInvoice(bolt11: String) throws -> Bool {
+    func payInvoice(bolt11: String) throws -> PayInvoiceResult? {
 
         guard let payer = channelManagerConstructor?.payer else {
             let error = NSError(domain: "payInvoice", code: 1, userInfo: nil)
             throw error
         }
-
-        let parsedInvoice = Invoice.fromStr(s: bolt11)
-
-        guard let parsedInvoiceValue = parsedInvoice.getValue(), parsedInvoice.isOk() else {
-            let error = NSError(domain: "payInvoice", code: 1, userInfo: nil)
-            throw error
-        }
-
-        if let _ = parsedInvoiceValue.amountMilliSatoshis() {
-            let sendRes = payer.payInvoice(invoice: parsedInvoiceValue)
-            if sendRes.isOk() {
-                return true
-            } else {
-                print("pay_invoice error")
-                print(String(describing: sendRes.getError()))
-            }
-        } else {
-            
-            let error = NSError(domain: "payInvoice", code: 1, userInfo: nil)
-            throw error
-        }
         
-        return true
+        let invoiceDeserialized = try deserializeBolt11(bolt11: bolt11)
+        
+        let sendRes = payer.payInvoice(invoice: invoiceDeserialized.0)
+        if sendRes.isOk() {
+            return PayInvoiceResult(bolt11: invoiceDeserialized.1, memo: invoiceDeserialized.2, amt: invoiceDeserialized.3)
+        } else {
+            let error = sendRes.getError()
+            print("payInvoice error: \(String(describing: error?.getValueType()))")
+            return nil
+        }
+       
+        
+        
     }
 
 }
