@@ -44,14 +44,27 @@ class ViewController: UIViewController {
         }
     }
     
-    func alert(title:String, message:String, onAction: ((UIAlertAction)->())? = nil) {
+    func alert(title:String, message:String, text:String? = nil, onAction: ((UIAlertAction)->())? = nil, onSumbit: ((String) ->())? = nil) {
         
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
         
-        if let onAction = onAction {
+        if let onSumbit = onSumbit, let text = text {
+            alertController.addTextField { (textField) in
+                textField.placeholder = text
+            }
+            alertController.addAction(UIAlertAction(title: "Submit", style: .default, handler: { [weak alertController] (_) in
+                
+                guard let textField = alertController?.textFields?[0], let textValue = textField.text else { return }
+                
+                onSumbit(textValue)
+            }))
+            alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        }
+        else if let onAction = onAction {
             alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: onAction))
             alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        } else {
+        }
+        else {
             alertController.addAction(UIAlertAction(title: "OK", style: .default))
         }
         
@@ -61,33 +74,55 @@ class ViewController: UIViewController {
     
     
     @IBAction func payInvoiceClick(_ sender: Any) {
-        
-        let alert = UIAlertController(title: "bolt11", message: "Please enter bolt11", preferredStyle: .alert)
-        
-        alert.addTextField { (textField) in
-            textField.placeholder = "enter bolt11"
+        do {
+            let channels = try velas.listUsableChannelsDict()
+            if(channels.count > 0){
+                self.alert(title: "Pay Invoice", message: "Past bolt11 here", text: "bolt11:", onSumbit: {(bolt11)  in
+                    do {
+                        let res = try velas.payInvoice(bolt11: bolt11)
+                        if let res = res {
+                            self.alert(title: "Pay Invoice", message: "Success(\(res))")
+                        }
+                    }
+                    catch {
+                        NSLog("\(error)")
+                    }
+                })
+            }
+            else {
+                self.alert(title: "Pay Invoice", message: "None of the channels are ready")
+            }
         }
+        catch {
+            NSLog("there was a problem: \(error)")
+        }
+        
+//        let alert = UIAlertController(title: "bolt11", message: "Please enter bolt11", preferredStyle: .alert)
+//
+//        alert.addTextField { (textField) in
+//            textField.placeholder = "enter bolt11"
+//        }
 
-        alert.addAction(UIAlertAction(title: "Submit", style: .default, handler: { [weak alert] (_) in
-            guard let textField = alert?.textFields?[0], let bolt11 = textField.text else { return }
-            
-            // pay invoice
-            print("bolt11: \(bolt11)")
-            
-            do {
-                let res = try velas.payInvoice(bolt11: bolt11)
-                if let res = res {
-                    print("payInvoice: success(\(res))")
-//                    self.alert(title: "payInvoice", message: "success(\(res))")
-                }
-            }
-            catch {
-                print("payInvoice: error(\(error))")
-//                self.alert(title: "payInvoice", message: "error(\(error))")
-            }
-        }))
+//        alert.addAction(UIAlertAction(title: "Submit", style: .default, handler: { [weak alert] (_) in
+//            guard let textField = alert?.textFields?[0], let bolt11 = textField.text else { return }
+//
+//            // pay invoice
+//            print("bolt11: \(bolt11)")
+//
+//            do {
+//                let res = try velas.payInvoice(bolt11: bolt11)
+//                if let res = res {
+//                    print("payInvoice: success(\(res))")
+////                    self.alert(title: "payInvoice", message: "success(\(res))")
+//                }
+//            }
+//            catch {
+//                print("payInvoice: error(\(error))")
+////                self.alert(title: "payInvoice", message: "error(\(error))")
+//            }
+//        }))
 
-        self.present(alert, animated: true, completion: nil)
+//        self.present(alert, animated: true, completion: nil)
     }
     
     func getPlist() -> NSDictionary {
@@ -182,38 +217,34 @@ class ViewController: UIViewController {
     
     @IBAction func submitBolt11(_ sender: Any) {
         do {
-            let peers = try velas.listPeers()
+            let channels = try velas.listUsableChannelsDict()
+            let ready = channels.count > 0 ? true : false
             
-            if(peers.count > 0){
-                let channels = try velas.listChannelsDict()
-                var ready = false
-                
-                // check to see if any of the channel are ready to receive payments
-                for channel in channels {
-                    if channel["is_usable"] as! String == "true" && channel["is_channel_ready"] as! String == "true" {
-                        ready = true
+            if(ready){
+                self.alert(title:"Submit bolt11", message:"Please enter amount in milisats", text:"amount:", onSumbit: {(amt) in
+                    do {
+                        let bolt11 = try velas.createInvoice(
+                            amtMsat: Int(amt)!,
+                            description: "this s a test from velas lighting")
+                        
+                        self.alert(title: "bolt11", message: bolt11, onAction: {(action) -> Void in
+                            let res = self.lapp.payInvoice(bolt11: bolt11)
+                            if let res = res {
+                                self.alert(title: "Payment Claimed", message: "\(res)")
+                            }
+                            else {
+                                NSLog("payment did not go through")
+                            }
+                            
+                        })
                     }
-                }
-                
-                // if there are create a bolt11 and submit it
-                if(ready){
-                    let bolt11 = try velas.createInvoice(amtMsat: 500000, description: "this s a test from velas lighting")
-                    print("bolt11: \(bolt11)")
-                    self.alert(title: "bolt11", message: bolt11){(action) -> Void in
-                        let res = self.lapp.payInvoice(bolt11: bolt11)
-                        self.alert(title: "Payment Claimed", message: "\(res!)")
+                    catch {
+                        NSLog("problem paying invoice \(error)")
                     }
-//                    let res = lapp.payInvoice(bolt11: bolt11)
-                    
-//                    print(res!)
-//                    self.alert(title: "Submit bolt11", message: "\(res!)")
-                } else {
-                    self.alert(title: "Submit bolt11", message: "None of the channels are ready")
-                }
+                })
 
-            }
-            else {
-                self.alert(title: "Submit bolt11", message: "No peers were connected")
+            } else {
+                self.alert(title: "Submit bolt11", message: "None of the channels are ready")
             }
         }
         catch {
@@ -221,15 +252,15 @@ class ViewController: UIViewController {
         }
     }
     
-    @IBAction func createBolt11(_ sender: Any) {
-        do {
-            let bolt11 = try velas.createInvoice(amtMsat: 500000, description: "this s a test from velas lighting")
-            print("bolt11: \(bolt11)")
-        }
-        catch {
-            NSLog("problem creating bolt11 invoice: \(error)")
-        }
-    }
+//    @IBAction func createBolt11(_ sender: Any) {
+//        do {
+//            let bolt11 = try velas.createInvoice(amtMsat: 500000, description: "this s a test from velas lighting")
+//            print("bolt11: \(bolt11)")
+//        }
+//        catch {
+//            NSLog("problem creating bolt11 invoice: \(error)")
+//        }
+//    }
     
     @IBAction func closeChannelCooperatively(_ sender: Any) {
         do {

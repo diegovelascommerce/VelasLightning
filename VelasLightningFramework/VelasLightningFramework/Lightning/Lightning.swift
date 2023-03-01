@@ -9,9 +9,9 @@ public enum LightningError: Error {
 }
 
 public struct PayInvoiceResult {
-    let bolt11:String
-    let memo:String
-    let amt:UInt64
+    public let bolt11:String
+    public let memo:String
+    public let amt:UInt64
 }
 
 /// This is the main class for handling interactions with the Lightning Network

@@ -215,13 +215,15 @@ public class LAPP: NSObject, URLSessionDelegate {
         sem.wait()
         
         var res:PayInvoicResponse?
-        do {
-            res = try JSONDecoder().decode(PayInvoicResponse.self, from: data!)
-        }
-        catch {
-            let res = String(decoding: data!, as: UTF8.self)
-            print(res)
-            return nil
+        if let data = data {
+            do {
+                res = try JSONDecoder().decode(PayInvoicResponse.self, from: data)
+            }
+            catch {
+                let res = String(decoding: data, as: UTF8.self)
+                print(res)
+                return nil
+            }
         }
        
         return res

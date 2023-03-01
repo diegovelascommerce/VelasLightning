@@ -109,10 +109,12 @@ public class Esplora {
             "https://blockstream.info/api/block/\(hash)/header";
         
         let data = Request.get(url: url)
+        if let data = data {
+            let res = String(decoding: data, as: UTF8.self)
+            return res
+        }
         
-        let res = String(decoding: data!, as: UTF8.self)
-        
-        return res
+        return nil
     }
     
     public static func getTipHeight(network: Network) -> Int32? {
