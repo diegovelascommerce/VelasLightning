@@ -9,9 +9,9 @@ class MyLogger: Logger {
 //        if level == .Gossip || level == .Trace || level == .Debug {
 //            return
 //        }
-//        if level == .Gossip {
-//            return
-//        }
+        if level == .Gossip {
+            return
+        }
         let recordString = "\(record.getArgs())"
         print("log: \(recordString)")
     }

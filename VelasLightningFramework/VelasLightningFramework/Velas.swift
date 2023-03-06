@@ -17,6 +17,10 @@ public class Velas {
         ln = try Lightning(btc:btc)
     }
     
+    public func sync() throws {
+        try ln.sync()
+    }
+    
     /// get the mnemonic that creates the bitcoin wallet and private keys for signing
     public func getMnemonic() -> String {
         return btc.mnemonic

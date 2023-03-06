@@ -101,6 +101,7 @@ class MyChannelManagerPersister : Persister, ExtendedChannelManagerPersister {
     }
     
     override func persistScorer(scorer: WriteableScore) -> Result_NoneErrorZ {
+        
         do {
             let scorerBytes = scorer.write()
             try FileMgr.writeData(data: Data(scorerBytes), path: "probabilistic_scorer")

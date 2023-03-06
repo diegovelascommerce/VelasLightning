@@ -21,33 +21,34 @@ public class Lightning {
     var logger: MyLogger!
     
     // filter for transactions
-    var filter: MyFilter?
+    var filter: MyFilter? = nil
     
     // graph of routes
-    var networkGraph: NetworkGraph?
+    var networkGraph: NetworkGraph? = nil
     
-    var scorer: MultiThreadedLockableScore?
+    // finds route
+    var scorer: MultiThreadedLockableScore? = nil
     
     // manges keys for signing
-    var keysManager: KeysManager?
+    var keysManager: KeysManager? = nil
     
     // monitors the block chain
-    var chainMonitor: ChainMonitor?
+    var chainMonitor: ChainMonitor? = nil
     
     // constructor for creating a channel manager.
-    var channelManagerConstructor: ChannelManagerConstructor?
+    var channelManagerConstructor: ChannelManagerConstructor? = nil
     
     // the channel manager
-    var channelManager: LightningDevKit.ChannelManager?
+    var channelManager: LightningDevKit.ChannelManager? = nil
     
     // persister for the channel manager
-    var channelManagerPersister: MyChannelManagerPersister
+    var channelManagerPersister: MyChannelManagerPersister?
     
     // manages the peer list
-    var peerManager: LightningDevKit.PeerManager?
+    var peerManager: LightningDevKit.PeerManager? = nil
     
     // handle peer communication
-    var peerHandler: TCPPeerHandler?
+    var peerHandler: TCPPeerHandler? = nil
     
     // port number for lightning
     let port = UInt16(9735)
@@ -61,8 +62,8 @@ public class Lightning {
     // handles all operations that have to do with bitcoin
     var btc: Bitcoin
     
-    // need it for doing periodic timer events
-    var timer: Timer?
+//    // need it for doing periodic timer events
+//    var timer: Timer? = nil
     
     /// Setup the LDK
     public init(btc:Bitcoin) throws {
@@ -214,63 +215,9 @@ public class Lightning {
         ///
         ///     Second, we also need to initialize a default user config,
         
-        // specifications on how we want to setup our own channdls
-//        let handshakeConfig = ChannelHandshakeConfig(minimumDepthArg: 2,
-//                                                     ourToSelfDelayArg: 144,
-//                                                     ourHtlcMinimumMsatArg: 1,
-//                                                     maxInboundHtlcValueInFlightPercentOfChannelArg: 10,
-//                                                     negotiateScidPrivacyArg: false,
-//                                                     announcedChannelArg: false,
-//                                                     commitUpfrontShutdownPubkeyArg: true,
-//                                                     theirChannelReserveProportionalMillionthsArg: 1)
-        
-        // specifications on the other party
-//        let handshakeLimits = ChannelHandshakeLimits(minFundingSatoshisArg: 0,
-//                                                     maxFundingSatoshisArg: 20000,
-//                                                     maxHtlcMinimumMsatArg: UInt64.max,
-//                                                     minMaxHtlcValueInFlightMsatArg: 0,
-//                                                     maxChannelReserveSatoshisArg: UInt64.max,
-//                                                     minMaxAcceptedHtlcsArg: 0,
-//                                                     maxMinimumDepthArg: 144,
-//                                                     trustOwnFunding_0confArg: true,
-//                                                     forceAnnouncedChannelPreferenceArg: false,
-//                                                     theirToSelfDelayArg: 2016)
-        
-//        let channelConfig = ChannelConfig(forwardingFeeProportionalMillionthsArg: 0,
-//                                          forwardingFeeBaseMsatArg: 1000,
-//                                          cltvExpiryDeltaArg: 72,
-//                                          maxDustHtlcExposureMsatArg: 5_000_000,
-//                                          forceCloseAvoidanceMaxFeeSatoshisArg: 1000)
-        
-//        handshakeConfig.set_minimum_depth(val: 1)
-//        handshakeConfig.set_announced_channel(val: false)
-        
-//        let userConfig = UserConfig()
-        
-//        let userConfig = UserConfig(channelHandshakeConfigArg: handshakeConfig,
-//                                    channelHandshakeLimitsArg: handshakeLimits,
-//                                    channelConfigArg: channelConfig,
-//                                    acceptForwardsToPrivChannelsArg: true,
-//                                    acceptInboundChannelsArg: true,
-//                                    manuallyAcceptInboundChannelsArg: false,
-//                                    acceptInterceptHtlcsArg: true)
-
-        
-//        let handshakeConfig = ChannelHandshakeConfig()
-//        handshakeConfig.set_minimum_depth(val: 1)
-//        handshakeConfig.set_announced_channel(val: false)
-        
-//        let handshakeLimits = ChannelHandshakeLimits()
-//        handshakeLimits.set_force_announced_channel_preference(val: false)
-        
-//        userConfig.set_channel_handshake_config(val: handshakeConfig)
-//        userConfig.set_channel_handshake_limits(val: handshakeLimits)
-//        userConfig.set_accept_inbound_channels(val: true)
-        
-        
         let handshakeConfig = ChannelHandshakeConfig.initWithDefault()
-        handshakeConfig.setMinimumDepth(val: 2)
-//        handshakeConfig.setAnnouncedChannel(val: false)
+        handshakeConfig.setMinimumDepth(val: 1)
+        handshakeConfig.setAnnouncedChannel(val: true)
         
         let handshakeLimits = ChannelHandshakeLimits.initWithDefault()
         handshakeLimits.setForceAnnouncedChannelPreference(val: false)
@@ -281,7 +228,7 @@ public class Lightning {
         userConfig.setAcceptInboundChannels(val: true)
         
         // Create the Channl Manager Constructor
-        
+
         // if there was data backed up
         if let netGraphSerialized = networkGraph?.write(), !channelManagerSerialized.isEmpty {
             channelManagerConstructor = try ChannelManagerConstructor(
@@ -298,7 +245,7 @@ public class Lightning {
         }
         // else create the channel manager constructor from scratch
         else {
-            
+
             // get the latest block hash and height
             let latestBlockHash = [UInt8](Data(base64Encoded: try btc.getBlockHash())!)
             let latestBlockHeight = try btc.getBlockHeight()
@@ -322,34 +269,26 @@ public class Lightning {
 
         // set the persister for the channel manager
         channelManagerPersister = MyChannelManagerPersister()
-        
+
         /// Step 12. Sync ChannelManager and ChainMonitor to chain tip
         try self.sync()
-        
+
         // hookup the persister the the channel manager
-        channelManagerConstructor?.chainSyncCompleted(persister: channelManagerPersister, scorer: scorer)
-        
+        channelManagerConstructor?.chainSyncCompleted(persister: channelManagerPersister!, scorer: scorer)
+
         // get the peer manager
         peerManager = channelManagerConstructor?.peerManager
-        
+
         // get the peer handler
         peerHandler = channelManagerConstructor?.getTCPPeerHandler()
-        
+
         networkGraph = channelManagerConstructor?.netGraph
-                
-        channelManagerPersister.lightning = self
-        
-        // set the sync funtion to run every two minutes
-        startSyncTimer()
+
+        channelManagerPersister?.lightning = self
         
         print("---- End LDK setup -----")
     }
     
-    // sync the ChannelManager and ChainMonitor every 2 minutes
-    func startSyncTimer() {
-        self.timer?.invalidate()
-        self.timer = Timer.scheduledTimer(timeInterval: 120.0, target: self, selector: #selector(sync), userInfo: nil, repeats: true)
-    }
     
     /// sync the ChannelManger and ChainManager and confirm or unconfirm all the waiting transactions
     @objc
@@ -364,9 +303,8 @@ public class Lightning {
             txIds.append(tx.0)
         }
         
-        for txId in filter!.txIds {
-            txIds.append(txId)
-        }
+        print("sync: txids: \(txIds)")
+
             
         // confirm or unconfirm each of these transactions
         if txIds.count > 0 {
@@ -620,7 +558,7 @@ public class Lightning {
         channelsDict["is_usable"] = it.getIsUsable() ? "true" : "false"
         channelsDict["is_channel_ready"] = it.getIsChannelReady() ? "true" : "false"
 //        channelsDict["is_outbound"] = it.getIsOutbound() ? "true" : "false"
-//        channelsDict["is_public"] = it.getIsPublic() ? "true" : "false"
+        channelsDict["is_public"] = it.getIsPublic() ? "true" : "false"
         channelsDict["remote_node_id"] = Utils.bytesToHex(bytes: it.getCounterparty().getNodeId())
 
         if let funding_txo = it.getFundingTxo() {

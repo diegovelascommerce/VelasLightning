@@ -137,17 +137,33 @@ class ViewController: UIViewController {
 
         do {
             let info = self.lapp.getinfo()
-            let nodeId = info?.identity_pubkey
-//            var url:String?
-//            if(self.publicUrl){
-//                url = info?.urls.publicIP
-//            }
-//            else {
-//                url = info?.urls.localIP
-//            }
-            let res = try velas.connectToPeer(nodeId: nodeId!, address: self.ip, port: self.port)
-            print("connect: \(res)")
-            alert(title: "Peer Connect", message: "\(res)")
+            if let info = info {
+                let nodeId = info.identity_pubkey
+                //            var url:String?
+                //            if(self.publicUrl){
+                //                url = info?.urls.publicIP
+                //            }
+                //            else {
+                //                url = info?.urls.localIP
+                //            }
+                let res = try velas.connectToPeer(nodeId: nodeId, address: self.ip, port: self.port)
+                print("connect: \(res)")
+                alert(title: "Peer Connect", message: "\(res)")
+            }
+            else {
+                alert(title: "Peer Connect", message: "could not connect")
+            }
+        }
+        catch {
+            NSLog("there was a problem: \(error)")
+        }
+    }
+    
+    @IBAction func syncClick(_ sender: Any) {
+        print("syncing")
+
+        do {
+            try velas.sync()
         }
         catch {
             NSLog("there was a problem: \(error)")
@@ -173,7 +189,7 @@ class ViewController: UIViewController {
             
             if(peers.count > 0){
                 
-                let res = lapp.openChannel(nodeId: self.nodeId, amt: 20000, target_conf:1, min_confs:1)
+                let res = lapp.openChannel(nodeId: self.nodeId, amt: 20000, target_conf:1, min_confs:1, privChan: false)
                 
                 if let res = res {
                     print(res)
