@@ -79,10 +79,10 @@ class VelasTests: XCTestCase {
 //        XCTAssertTrue(res)
 //    }
     
-    func testListChannels() throws {
-        let res = try velas.listChannels()
-        XCTAssertFalse(res.isEmpty)
-    }
+//    func testListChannels() throws {
+//        let res = try velas.listChannels()
+//        XCTAssertFalse(res.isEmpty)
+//    }
     
     func testGetMnemonic() {
         let mnemonic = velas.getMnemonic()

@@ -69,6 +69,20 @@ class FileMgrTests: XCTestCase {
         }
     }
     
+    func testReadPlist() throws {
+        XCTAssertNoThrow(try FileMgr.writePlist(plist: ["foo":"bar"], path: "test.plist"))
+//
+//        do {
+//            let data = try FileMgr.readData(path: "hello_world.data")
+//            let str = String(decoding: data, as: UTF8.self)
+//            XCTAssertEqual(str, "Hello Data")
+//        }
+//        catch {
+//            print(error)
+//            throw error
+//        }
+    }
+    
     func testCreateDirectory() throws {
         XCTAssertNoThrow(try FileMgr.createDirectory(path: "velas"))
         do {

@@ -8,7 +8,7 @@ extension URL {
 }
 
 /// This is incharge of managing file for iOS
-class FileMgr {
+public class FileMgr {
     
     /// get the current document directory for the app
     static func getDocumentsDirectory() -> URL {
@@ -17,7 +17,7 @@ class FileMgr {
     }
     
     /// write a string to a file
-    static func writeString(string:String, path:String) throws {
+    public static func writeString(string:String, path:String) throws {
         let url = getDocumentsDirectory().appendingPathComponent(path)
         try string.write(to: url, atomically: true, encoding: .utf8)
     }
@@ -28,8 +28,14 @@ class FileMgr {
         try data.write(to: url)
     }
     
+    /// write plist to a file
+    static func writePlist(plist:NSMutableDictionary, path:String) throws {
+        let url = getDocumentsDirectory().appendingPathComponent(path)
+        try plist.write(to: url)
+    }
+    
     /// read string from a file, using a relative path
-    static func readString(path:String) throws -> String {
+    public static func readString(path:String) throws -> String {
         let url = getDocumentsDirectory().appendingPathComponent(path)
         
         return try String(contentsOf: url)
@@ -48,13 +54,13 @@ class FileMgr {
     }
     
     /// check if file exists using a url
-    static func fileExists(url:URL) -> Bool {
+    public static func fileExists(url:URL) -> Bool {
         let res = FileManager.default.fileExists(atPath: url.path)
         return res
     }
     
     /// check if file exists using a relative path
-    static func fileExists(path:String) -> Bool {
+    public static func fileExists(path:String) -> Bool {
         let url = getDocumentsDirectory().appendingPathComponent(path)
         let res = fileExists(url: url)
         return res

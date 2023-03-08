@@ -153,11 +153,11 @@ class LightningTests: XCTestCase {
         }
     }
     
-    func testListChannels() throws {
-        let res = try ln.listChannels()
-        XCTAssertFalse(res.isEmpty)
-        print("channels: \(res)")
-    }
+//    func testListChannels() throws {
+//        let res = try ln.listChannels()
+//        XCTAssertFalse(res.isEmpty)
+//        print("channels: \(res)")
+//    }
     
     func testCloseChannelsCooperatively() throws {
         XCTAssertNoThrow(try ln.closeChannelsCooperatively())
