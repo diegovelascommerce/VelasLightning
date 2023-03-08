@@ -7,7 +7,7 @@ import BitcoinDevKit
 public class Velas {
     
     private var btc:Bitcoin!
-    private var ln:Lightning!
+    public var ln:Lightning!
     
     /// Initialize Bitcoin and Lightning
     public init(network: Network = Network.testnet,

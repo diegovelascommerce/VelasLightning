@@ -11,37 +11,18 @@ import VelasLightningFramework
 class ViewController: UIViewController {
 
     
-    
-    var ip:String!
-    var jwt:String!
-    var port:NSNumber!
-    var nodeId:String!
-    var publicUrl:Bool!
-    
-    private var lapp:LAPP!
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-//        let (_, pub) = velas.getIPAddresses()
-       
-        let plist = getPlist()
+//        do {
+            
+            //let res = try velas.connectToPeer(nodeId: LAPPNodeId, address: LAPPIp, port: LAPPPort)
+//            velas.ln.runScorrer()
+           
+//        }
+//        catch {
+//            NSLog("problem")
+//        }
         
-        self.ip = plist["ip"] as? String
-        self.jwt = plist["jwt"] as? String
-        self.port = plist["port"] as? NSNumber
-        self.publicUrl = plist["public_url"] as? Bool
-        
-        
-        self.lapp = LAPP(baseUrl: "https://\(String(describing: self.ip!))",
-                         jwt: self.jwt);
-        
-        do {
-            self.nodeId = try velas.getNodeId()
-            print("nodeId: \(self.nodeId!)")
-        }
-        catch {
-            NSLog("there was a problem getting the node id \(error)")
-        }
     }
     
     func alert(title:String, message:String, text:String? = nil, onAction: ((UIAlertAction)->())? = nil, onSumbit: ((String) ->())? = nil) {
@@ -85,6 +66,7 @@ class ViewController: UIViewController {
                         }
                     }
                     catch {
+                        self.alert(title: "Pay Invoice", message: "error(\(error))")
                         NSLog("\(error)")
                     }
                 })
@@ -136,25 +118,14 @@ class ViewController: UIViewController {
         print("connect to a peer")
 
         do {
-            let info = self.lapp.getinfo()
-            if let info = info {
-                let nodeId = info.identity_pubkey
-                //            var url:String?
-                //            if(self.publicUrl){
-                //                url = info?.urls.publicIP
-                //            }
-                //            else {
-                //                url = info?.urls.localIP
-                //            }
-                let res = try velas.connectToPeer(nodeId: nodeId, address: self.ip, port: self.port)
-                print("connect: \(res)")
-                alert(title: "Peer Connect", message: "\(res)")
-            }
-            else {
-                alert(title: "Peer Connect", message: "could not connect")
-            }
+            
+            let res = try velas.connectToPeer(nodeId: LAPPNodeId, address: LAPPIp, port: LAPPPort)
+            print("connect: \(res)")
+            alert(title: "Peer Connect", message: "\(res)")
+           
         }
         catch {
+            alert(title: "Peer Connect", message: "could not make connection")
             NSLog("there was a problem: \(error)")
         }
     }
@@ -164,6 +135,7 @@ class ViewController: UIViewController {
 
         do {
             try velas.sync()
+            self.alert(title: "Sync", message: "success")
         }
         catch {
             NSLog("there was a problem: \(error)")
@@ -189,7 +161,7 @@ class ViewController: UIViewController {
             
             if(peers.count > 0){
                 
-                let res = lapp.openChannel(nodeId: self.nodeId, amt: 20000, target_conf:1, min_confs:1, privChan: false)
+                let res = lapp.openChannel(nodeId: velasNodeId, amt: 20000, target_conf:1, min_confs:1, privChan: false)
                 
                 if let res = res {
                     print(res)
@@ -244,7 +216,7 @@ class ViewController: UIViewController {
                             description: "this s a test from velas lighting")
                         
                         self.alert(title: "bolt11", message: bolt11, onAction: {(action) -> Void in
-                            let res = self.lapp.payInvoice(bolt11: bolt11)
+                            let res = lapp.payInvoice(bolt11: bolt11)
                             if let res = res {
                                 self.alert(title: "Payment Claimed", message: "\(res)")
                             }

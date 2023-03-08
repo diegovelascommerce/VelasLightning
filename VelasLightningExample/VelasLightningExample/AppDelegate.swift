@@ -9,6 +9,13 @@ import UIKit
 import VelasLightningFramework
 
 var velas: Velas!
+var velasNodeId: String!
+
+var lapp:LAPP!
+var LAPPIp:String!
+var LAPPJwt:String!
+var LAPPPort:NSNumber!
+var LAPPNodeId:String!
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -18,12 +25,37 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
+        let plist = getPlist()
+        LAPPIp = plist["ip"] as? String
+        LAPPJwt = plist["jwt"] as? String
+        LAPPPort = plist["port"] as? NSNumber
+        
+        lapp = LAPP(baseUrl: "https://\(String(describing: LAPPIp!))",
+                         jwt: LAPPJwt);
+        
         do {
-            velas = try Velas(mnemonic: "arrive remember certain all consider apology celery melt uphold blame call blame")
-        } catch {
-            NSLog("\(error)")
-            return false
+            let info = lapp.getinfo()
+            if let info = info {
+                LAPPNodeId = info.identity_pubkey
+                velas = try Velas(mnemonic: "arrive remember certain all consider apology celery melt uphold blame call blame")
+                velasNodeId = try velas.getNodeId()
+                let res = try velas.connectToPeer(nodeId: LAPPNodeId, address: LAPPIp, port: LAPPPort)
+                print("connect: \(res)")
+            }
+            else {
+                NSLog("could not connect")
+            }
         }
+        catch {
+            NSLog("there was a problem: \(error)")
+        }
+        
+//        do {
+//            velas = try Velas(mnemonic: "arrive remember certain all consider apology celery melt uphold blame call blame")
+//        } catch {
+//            NSLog("\(error)")
+//            return false
+//        }
         
         return true
     }
@@ -41,7 +73,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // If any sessions were discarded while the application was not running, this will be called shortly after application:didFinishLaunchingWithOptions.
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
+    
+    
 
 
+}
+
+func getPlist() -> NSDictionary {
+    let path = Bundle.main.path(forResource: "Velas", ofType:"plist")!
+    let dict = NSDictionary(contentsOfFile: path)
+
+    return dict!
 }
 

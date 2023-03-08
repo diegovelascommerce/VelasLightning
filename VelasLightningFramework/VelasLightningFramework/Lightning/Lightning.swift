@@ -62,9 +62,6 @@ public class Lightning {
     // handles all operations that have to do with bitcoin
     var btc: Bitcoin
     
-//    // need it for doing periodic timer events
-//    var timer: Timer? = nil
-    
     /// Setup the LDK
     public init(btc:Bitcoin) throws {
         
@@ -98,10 +95,6 @@ public class Lightning {
         filter = MyFilter()
         
         /// Step 6. Initialize the ChainMonitor
-        ///
-        /// What it is used for:
-        ///     monitoring the chain for lightning transactions that are relevant to our node,
-        ///     and broadcasting transactions
         chainMonitor = ChainMonitor(chainSource: filter,
                                     broadcaster: broadcaster,
                                     logger: logger,
@@ -109,9 +102,6 @@ public class Lightning {
                                     persister: persister)
         
         /// Step 7. Initialize the KeysManager
-        ///
-        /// What it is used for:
-        ///     providing keys for signing Lightning transactions
         let seed = btc.getPrivKey()
         let timestamp_seconds = UInt64(NSDate().timeIntervalSince1970)
         let timestamp_nanos = UInt32.init(truncating: NSNumber(value: timestamp_seconds * 1000 * 1000))
@@ -119,18 +109,6 @@ public class Lightning {
         let keysInterface = keysManager!.asKeysInterface()
         
         /// Step 8.  Initialize the NetworkGraph
-        ///
-        /// What it's used for:
-        ///     generating routes to send payments over
-        ///
-        /// notes:
-        ///     It will be used internally in ChannelManagerConstructor to build a NetGraphMsgHandler
-        ///
-        ///     If you intend to use the LDK's built-in routing algorithm,
-        ///     you will need to instantiate a NetworkGraph that can later be passed to the ChannelManagerConstructor
-        ///
-        ///     A network graph instance needs to be provided upon initialization,
-        ///     which in turn requires the genesis block hash.
         
         // check if network graph was backed up
         if FileMgr.fileExists(path: "network_graph") {
@@ -148,7 +126,7 @@ public class Lightning {
                 
                 networkGraph = NetworkGraph(genesisHash: Utils.hexStringToByteArray(try btc.getGenesisHash()).reversed(), logger: logger)
             }
-        // else just create on from scratch
+        // else just create one from scratch
         } else {
             networkGraph = NetworkGraph(genesisHash: Utils.hexStringToByteArray(try btc.getGenesisHash()).reversed(), logger: logger)
         }
@@ -170,14 +148,7 @@ public class Lightning {
         
         scorer = MultiThreadedLockableScore(score: probabilisticScorer.asScore())
         
-        /// Step 9. Read ChannelMonitors from disk
-        ///
-        /// you must follow this step if:
-        ///     if LDK is restarting and has at least 1 channel,
-        ///     its channel state will need to be read from disk and fed to the ChannelManager on the next step.
-        ///
-        /// what it's used for:
-        ///     managing channel state
+        /// Step 9. Read ChannelManager and ChannelMonitors from disk
         
         // check if the channel manager was saved
         var channelManagerSerialized:[UInt8] = [UInt8]()
@@ -200,24 +171,10 @@ public class Lightning {
         }
         
         /// Step 10.  Initialize the ChannelManager
-        ///
-        /// you must follow this step if:
-        ///     this is the first time you are initializing the ChannelManager
-        ///
-        /// what it's used for:
-        ///   managing the channels
-        ///
-        /// notes:
-        ///
-        ///     To instantiate the channel manager, we need a couple minor prerequisites.
-        ///
-        ///     First, we need the current block height and hash.
-        ///
-        ///     Second, we also need to initialize a default user config,
         
         let handshakeConfig = ChannelHandshakeConfig.initWithDefault()
         handshakeConfig.setMinimumDepth(val: 1)
-        handshakeConfig.setAnnouncedChannel(val: true)
+        handshakeConfig.setAnnouncedChannel(val: false)
         
         let handshakeLimits = ChannelHandshakeLimits.initWithDefault()
         handshakeLimits.setForceAnnouncedChannelPreference(val: false)
@@ -227,9 +184,7 @@ public class Lightning {
         userConfig.setChannelHandshakeLimits(val: handshakeLimits)
         userConfig.setAcceptInboundChannels(val: true)
         
-        // Create the Channl Manager Constructor
-
-        // if there was data backed up
+        // if there was a backed up
         if let netGraphSerialized = networkGraph?.write(), !channelManagerSerialized.isEmpty {
             channelManagerConstructor = try ChannelManagerConstructor(
                 channelManagerSerialized: channelManagerSerialized,
@@ -258,7 +213,7 @@ public class Lightning {
                 keysInterface: keysInterface,
                 feeEstimator: feeEstimator,
                 chainMonitor: chainMonitor!,
-                netGraph: networkGraph, // see `NetworkGraph`
+                netGraph: networkGraph,
                 txBroadcaster: broadcaster,
                 logger: logger
             )
@@ -273,7 +228,7 @@ public class Lightning {
         /// Step 12. Sync ChannelManager and ChainMonitor to chain tip
         try self.sync()
 
-        // hookup the persister the the channel manager
+        // hookup the persister and scorer to the the channel manager
         channelManagerConstructor?.chainSyncCompleted(persister: channelManagerPersister!, scorer: scorer)
 
         // get the peer manager
@@ -286,12 +241,16 @@ public class Lightning {
 
         channelManagerPersister?.lightning = self
         
+//        _ = peerHandler?.bind(address: "0.0.0.0", port: 9735)
+        
         print("---- End LDK setup -----")
     }
     
+    public func runScorrer(){
+        channelManagerConstructor?.chainSyncCompleted(persister: channelManagerPersister!, scorer: scorer)
+    }
     
     /// sync the ChannelManger and ChainManager and confirm or unconfirm all the waiting transactions
-    @objc
     func sync() throws {
         var txIds = [[UInt8]]()
        
