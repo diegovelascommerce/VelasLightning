@@ -23,7 +23,7 @@ public class FileMgr {
     }
     
     /// write raw data to a file
-    static func writeData(data:Data, path:String) throws {
+    public static func writeData(data:Data, path:String) throws {
         let url = getDocumentsDirectory().appendingPathComponent(path)
         try data.write(to: url)
     }
@@ -42,7 +42,7 @@ public class FileMgr {
     }
     
     /// read raw data from a file, using a relative path
-    static func readData(path:String) throws -> Data {
+    public static func readData(path:String) throws -> Data {
         let url = getDocumentsDirectory().appendingPathComponent(path)
         
         return try Data(contentsOf: url)
@@ -139,6 +139,12 @@ public class FileMgr {
             }
         }
 
+    }
+    
+    public static func getPlist(_ file:String) -> NSDictionary {
+        let path = Bundle.main.path(forResource: file, ofType:"plist")!
+        let dict = NSDictionary(contentsOfFile: path)
+        return dict!
     }
     
     

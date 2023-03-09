@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8113ABC729BA541C009CF12F /* Crypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8113ABC629BA541C009CF12F /* Crypto.swift */; };
+		8113ABC929BA695C009CF12F /* CryptographyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8113ABC829BA695C009CF12F /* CryptographyTests.swift */; };
 		8121891129087D8C00354733 /* VelasLightningFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 81481A6329087B2300DA3224 /* VelasLightningFramework.framework */; };
 		8121891929087FD400354733 /* Bitcoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8121891829087FD400354733 /* Bitcoin.swift */; };
 		8121891B290880DF00354733 /* Lightning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8121891A290880DF00354733 /* Lightning.swift */; };
@@ -54,6 +56,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		8113ABC629BA541C009CF12F /* Crypto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Crypto.swift; sourceTree = "<group>"; };
+		8113ABC829BA695C009CF12F /* CryptographyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptographyTests.swift; sourceTree = "<group>"; };
 		8121890D29087D8C00354733 /* VelasLightningTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VelasLightningTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8121891829087FD400354733 /* Bitcoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bitcoin.swift; sourceTree = "<group>"; };
 		8121891A290880DF00354733 /* Lightning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lightning.swift; sourceTree = "<group>"; };
@@ -111,6 +115,7 @@
 				8173C0C0294A457500BCF01F /* tx_raw_testnet */,
 				8121891C2908832200354733 /* BitcoinTests.swift */,
 				8121891E2908844000354733 /* LightningTests.swift */,
+				8113ABC829BA695C009CF12F /* CryptographyTests.swift */,
 				81D31EE22909ACE900A621A0 /* VelasTests.swift */,
 				812A0648299FE66500AAF475 /* LAPPTests.swift */,
 				81E52DCE2939314200607DEC /* FileMgrTests.swift */,
@@ -164,6 +169,7 @@
 				81E52DCB29392EBC00607DEC /* FileMgr.swift */,
 				81B6F4C1294263570015F74D /* Esplora.swift */,
 				81B6F4C4294268EC0015F74D /* Request.swift */,
+				8113ABC629BA541C009CF12F /* Crypto.swift */,
 				812A0646299FE5FB00AAF475 /* LAPP.swift */,
 				8173C0C2294A7CE100BCF01F /* Utils.swift */,
 			);
@@ -322,6 +328,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				81B6F4C7294274320015F74D /* RequestTests.swift in Sources */,
+				8113ABC929BA695C009CF12F /* CryptographyTests.swift in Sources */,
 				812A0649299FE66500AAF475 /* LAPPTests.swift in Sources */,
 				8121891F2908844000354733 /* LightningTests.swift in Sources */,
 				8148B24F2947A23300F9FC2A /* EsploraTests.swift in Sources */,
@@ -347,6 +354,7 @@
 				81B6F4C2294263570015F74D /* Esplora.swift in Sources */,
 				812D3864290C4A25005EA7E9 /* MyFilter.swift in Sources */,
 				81B6F4C5294268EC0015F74D /* Request.swift in Sources */,
+				8113ABC729BA541C009CF12F /* Crypto.swift in Sources */,
 				8121891929087FD400354733 /* Bitcoin.swift in Sources */,
 				8121891B290880DF00354733 /* Lightning.swift in Sources */,
 			);
