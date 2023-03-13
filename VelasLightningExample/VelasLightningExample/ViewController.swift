@@ -53,6 +53,17 @@ class ViewController: UIViewController {
         self.present(alertController, animated: true, completion: nil)
     }
     
+    @IBAction func getNodeIdClick(_ sender: Any) {
+        do {
+            let nodeId = try velas.getNodeId()
+            print("nodeId: \(nodeId)")
+            self.alert(title: "NodeId", message: nodeId)
+        }
+        catch {
+            NSLog("error: \(error)")
+        }
+    }
+    
     
     @IBAction func payInvoiceClick(_ sender: Any) {
         do {
@@ -107,12 +118,12 @@ class ViewController: UIViewController {
 //        self.present(alert, animated: true, completion: nil)
     }
     
-    func getPlist() -> NSDictionary {
-        let path = Bundle.main.path(forResource: "Velas", ofType:"plist")!
-        let dict = NSDictionary(contentsOfFile: path)
-
-        return dict!
-    }
+//    func getPlist() -> NSDictionary {
+//        let path = Bundle.main.path(forResource: "Velas", ofType:"plist")!
+//        let dict = NSDictionary(contentsOfFile: path)
+//
+//        return dict!
+//    }
     
     @IBAction func connectClick(_ sender: Any) {
         print("connect to a peer")
@@ -161,15 +172,18 @@ class ViewController: UIViewController {
             
             if(peers.count > 0){
                 
-                let res = lapp.openChannel(nodeId: velasNodeId, amt: 20000, target_conf:1, min_confs:1, privChan: false)
+                self.alert(title:"Create Channel", message:"Please enter amount in milisats", text:"amount:", onSumbit: {(amt) in
+                    let res = lapp.openChannel(nodeId: velasNodeId, amt: Int(amt) ?? 20000, target_conf:1, min_confs:1, privChan: true)
+                    
+                    if let res = res {
+                        print(res)
+                        self.alert(title: "Channel created", message: "channel: \(res)")
+                    }
+                    else {
+                        print("there was a problem creating a channel")
+                    }
+                })
                 
-                if let res = res {
-                    print(res)
-                    self.alert(title: "Create Channel", message: "channel: \(res)")
-                }
-                else {
-                    print("there was a problem creating a channel")
-                }
             }
             else {
                 self.alert(title: "Create Channel", message: "No peers were connected")

@@ -25,7 +25,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
-        let plist = getPlist()
+        let plist = FileMgr.getPlist("velas")
         LAPPIp = plist["ip"] as? String
         LAPPJwt = plist["jwt"] as? String
         LAPPPort = plist["port"] as? NSNumber
@@ -74,15 +74,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
     
-    
-
 
 }
 
-func getPlist() -> NSDictionary {
-    let path = Bundle.main.path(forResource: "Velas", ofType:"plist")!
-    let dict = NSDictionary(contentsOfFile: path)
-
-    return dict!
-}
 

@@ -1,11 +1,11 @@
 import LightningDevKit
 import BitcoinDevKit
 
-
 public enum LightningError: Error {
     case peerManager(msg:String)
     case networkGraph(msg:String)
     case parseInvoice(msg:String)
+    case channelManager(msg:String)
 }
 
 public struct PayInvoiceResult {
@@ -26,16 +26,16 @@ public class Lightning {
     // graph of routes
     var networkGraph: NetworkGraph? = nil
     
-    // finds route
+    // scores routes
     var scorer: MultiThreadedLockableScore? = nil
     
-    // manges keys for signing
+    // manages keys for signing
     var keysManager: KeysManager? = nil
     
     // monitors the block chain
     var chainMonitor: ChainMonitor? = nil
     
-    // constructor for creating a channel manager.
+    // constructor for creating the channel manager.
     var channelManagerConstructor: ChannelManagerConstructor? = nil
     
     // the channel manager
@@ -44,10 +44,10 @@ public class Lightning {
     // persister for the channel manager
     var channelManagerPersister: MyChannelManagerPersister?
     
-    // manages the peer list
+    // manages the peer that node is connected to
     var peerManager: LightningDevKit.PeerManager? = nil
     
-    // handle peer communication
+    // handle peer communications
     var peerHandler: TCPPeerHandler? = nil
     
     // port number for lightning
@@ -115,18 +115,20 @@ public class Lightning {
             let file = try FileMgr.readData(path: "network_graph")
             let readResult = NetworkGraph.read(ser: [UInt8](file), arg: logger)
             
-            // if resutl was good load the networkGraph
+            // loaded backedup networkGraph
             if readResult.isOk() {
                 networkGraph = readResult.getValue()
                 print("Lightning: loaded network graph ok")
-            // if there was a problem then create a new one
+                
+            // create new NetworkGraph
             } else {
                 print("Lighting: network graph failed to load, create one from scratch")
                 print(String(describing: readResult.getError()))
                 
                 networkGraph = NetworkGraph(genesisHash: Utils.hexStringToByteArray(try btc.getGenesisHash()).reversed(), logger: logger)
             }
-        // else just create one from scratch
+            
+        // create new NetworkGraph
         } else {
             networkGraph = NetworkGraph(genesisHash: Utils.hexStringToByteArray(try btc.getGenesisHash()).reversed(), logger: logger)
         }
@@ -240,15 +242,13 @@ public class Lightning {
         networkGraph = channelManagerConstructor?.netGraph
 
         channelManagerPersister?.lightning = self
-        
-//        _ = peerHandler?.bind(address: "0.0.0.0", port: 9735)
-        
+                
         print("---- End LDK setup -----")
     }
     
-    public func runScorrer(){
-        channelManagerConstructor?.chainSyncCompleted(persister: channelManagerPersister!, scorer: scorer)
-    }
+//    public func runScorrer(){
+//        channelManagerConstructor?.chainSyncCompleted(persister: channelManagerPersister!, scorer: scorer)
+//    }
     
     /// sync the ChannelManger and ChainManager and confirm or unconfirm all the waiting transactions
     func sync() throws {
@@ -320,7 +320,7 @@ public class Lightning {
     }
     
 
-    // update the bestblock for both the ChannelManager and ChainManager
+    /// update the bestblock for both the ChannelManager and ChainManager
     func updateBestBlock() throws {
         guard let channelManager = channelManager, let chainMonitor = chainMonitor else {
             let error = NSError(domain: "Channel manager", code: 1, userInfo: nil)
@@ -436,7 +436,7 @@ public class Lightning {
     /// List peers that you are connected to.
     ///
     /// throws:
-    ///     NSError
+    ///     LightningError.peerManager
     ///
     /// return:
     ///     array of bytes that represent the node
@@ -457,13 +457,16 @@ public class Lightning {
     }
     
     
-    /// Get list of channels that were established with partner node.
+    /// Get list of all channels
+    ///
+    /// throws:
+    ///     LightningError.channelManager
+    ///
+    /// returns:
+    ///     array of channels
     func listChannelsDict() throws -> [[String:Any]] {
         guard let channelManager = channelManager else {
-            let error = NSError(domain: "listChannels",
-                                code: 1,
-                                userInfo: [NSLocalizedDescriptionKey: "Channel Manager not initialized"])
-            throw error
+            throw LightningError.channelManager(msg: "Channel Manager not initialized")
         }
 
         let channels = channelManager.listChannels().isEmpty ? [] : channelManager.listChannels()
@@ -473,17 +476,18 @@ public class Lightning {
             channelsDict.append(channelDict)
         }
 
-        
         return channelsDict
     }
     
-    /// Get list of channels that were established with partner node.
+    /// Get list of usable channels.
+    ///
+    /// throws:
+    ///
+    /// returns:
+    ///     array of usable channels
     func listUsableChannelsDict() throws -> [[String:Any]] {
         guard let channelManager = channelManager else {
-            let error = NSError(domain: "listChannels",
-                                code: 1,
-                                userInfo: [NSLocalizedDescriptionKey: "Channel Manager not initialized"])
-            throw error
+            throw LightningError.channelManager(msg: "Channel Manager not initialized")
         }
 
         let channels = channelManager.listUsableChannels().isEmpty ? [] : channelManager.listChannels()
@@ -493,7 +497,6 @@ public class Lightning {
             channelsDict.append(channelDict)
         }
 
-        
         return channelsDict
     }
     
