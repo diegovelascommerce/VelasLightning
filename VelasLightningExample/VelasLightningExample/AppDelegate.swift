@@ -36,8 +36,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         do {
             let info = lapp.getinfo()
             if let info = info {
+                if FileMgr.fileExists(path: "mnemonic") {
+                    let mnemonic = try FileMgr.readString(path: "mnemonic")
+                    print("mnemonic: \(mnemonic)")
+                    velas = try Velas(mnemonic: mnemonic)
+                }
+                else {
+                    velas = try Velas()
+                    let mnemonic = velas.getMnemonic()
+                    print("mnemonic: \(mnemonic)")
+                    try FileMgr.writeString(string: mnemonic, path: "mnemonic")
+                }
+                
                 LAPPNodeId = info.identity_pubkey
-                velas = try Velas(mnemonic: "arrive remember certain all consider apology celery melt uphold blame call blame")
                 velasNodeId = try velas.getNodeId()
                 let res = try velas.connectToPeer(nodeId: LAPPNodeId, address: LAPPIp, port: LAPPPort)
                 print("connect: \(res)")

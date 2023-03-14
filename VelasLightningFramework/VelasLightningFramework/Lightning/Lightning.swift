@@ -6,6 +6,10 @@ public enum LightningError: Error {
     case networkGraph(msg:String)
     case parseInvoice(msg:String)
     case channelManager(msg:String)
+    case nodeId(msg:String)
+    case bindNode(msg:String)
+    case connectPeer(msg:String)
+    case Invoice(msg:String)
 }
 
 public struct PayInvoiceResult {
@@ -53,7 +57,7 @@ public class Lightning {
     // port number for lightning
     let port = UInt16(9735)
     
-    // which currency will the be setup?  Testnet or Bitcoin?
+    // which currency will be setup?  Testnet or Bitcoin?
     let currency: Bindings.Currency
 
     // Bitcoin network, or the Testnet network
@@ -140,6 +144,7 @@ public class Lightning {
         if FileMgr.fileExists(path: "probabilistic_scorer") {
             let file = try FileMgr.readData(path: "probabilistic_scorer")
             let scorerReadResult = ProbabilisticScorer.read(ser: [UInt8](file), argA: ProbabilisticScoringParameters.initWithDefault(), argB: networkGraph!, argC: logger)
+            
             if let readResult = scorerReadResult.getValue() {
                 print("scorer loaded")
                 probabilisticScorer = readResult
@@ -246,10 +251,6 @@ public class Lightning {
         print("---- End LDK setup -----")
     }
     
-//    public func runScorrer(){
-//        channelManagerConstructor?.chainSyncCompleted(persister: channelManagerPersister!, scorer: scorer)
-//    }
-    
     /// sync the ChannelManger and ChainManager and confirm or unconfirm all the waiting transactions
     func sync() throws {
         var txIds = [[UInt8]]()
@@ -352,10 +353,7 @@ public class Lightning {
             let res = Utils.bytesToHex(bytes: nodeId)
             return res
         } else {
-            let error = NSError(domain: "getNodeId",
-                                code: 1,
-                                userInfo: [NSLocalizedDescriptionKey: "failed to get nodeId"])
-            throw error
+            throw LightningError.nodeId(msg:"failed to get nodeID")
         }
     }
     
@@ -370,18 +368,12 @@ public class Lightning {
     ///   a boolean to indicate that binding of node was a success
     public func bindNode(_ address:String, _ port:UInt16) throws -> Bool {
         guard let peerHandler = peerHandler else {
-            let error = NSError(domain: "bindNode",
-                                code: 1,
-                                userInfo: [NSLocalizedDescriptionKey: "peer_handler is not available"])
-            throw error
+            throw LightningError.peerManager(msg: "peer_handler is not available")
         }
         
         let res = peerHandler.bind(address: address, port: port)
         if(!res){
-            let error = NSError(domain: "bindNode",
-                                code: 1,
-                                userInfo: [NSLocalizedDescriptionKey: "failed to bind \(address):\(port)"])
-            throw error
+            throw LightningError.bindNode(msg: "failed to bind \(address):\(port)")
         }
         print("Velas/Lightning/bindNode: connected")
         print("Velas/Lightning/bindNode address: \(address)")
@@ -415,8 +407,7 @@ public class Lightning {
     ///     true if connection went through
     func connect(nodeId: String, address: String, port: NSNumber) throws -> Bool {
         guard let peerHandler = peerHandler else {
-            let error = NSError(domain: "bindNode", code: 1, userInfo: nil)
-            throw error
+            throw LightningError.peerManager(msg: "peerHandler not working")
         }
         
         let res = peerHandler.connect(address: address,
@@ -424,10 +415,7 @@ public class Lightning {
                                        theirNodeId: Utils.hexStringToByteArray(nodeId))
         
         if (!res) {
-            let error = NSError(domain: "connectPeer",
-                                code: 1,
-                                userInfo: [NSLocalizedDescriptionKey: "failed to connect to peer \(nodeId)@\(address):\(port)"])
-            throw error
+            throw LightningError.connectPeer(msg: "failed to connect to peer")
         }
         
         return res
@@ -542,15 +530,11 @@ public class Lightning {
     /// Close all channels in the nice way, cooperatively.
     func closeChannelsCooperatively() throws {
         guard let channelManager = channelManager else {
-            let error = NSError(domain: "closeChannels",
-                                code: 1,
-                                userInfo: [NSLocalizedDescriptionKey: "Channel Manager not initialized"])
-            throw error
+            throw LightningError.channelManager(msg: "Channel Manager not initialized")
         }
 
         let channels = channelManager.listChannels().isEmpty ? [] : channelManager.listChannels()
        
-        
         _ = try channels.map { (channel: ChannelDetails) in
             try closeChannelCooperatively(nodeId: channel.getCounterparty().getNodeId(),
                                       channelId: channel.getChannelId()!)
@@ -568,10 +552,7 @@ public class Lightning {
     ///     true if close correctly
     func closeChannelCooperatively(nodeId: [UInt8], channelId: [UInt8]) throws -> Bool {
         guard let close_result = channelManager?.closeChannel(channelId: channelId, counterpartyNodeId: nodeId), close_result.isOk() else {
-            let error = NSError(domain: "closeChannelCooperatively",
-                                code: 1,
-                                userInfo: [NSLocalizedDescriptionKey: "closeChannelCooperatively Failed"])
-            throw error
+            throw LightningError.channelManager(msg: "closeChannelCooperatively")
         }
         try removeChannelBackup(channelId: Utils.bytesToHex(bytes: channelId))
         
@@ -581,15 +562,11 @@ public class Lightning {
     /// Close all channels the ugly way, forcefully.
     func closeChannelsForcefully() throws {
         guard let channel_manager = channelManager else {
-            let error = NSError(domain: "closeChannels",
-                                code: 1,
-                                userInfo: [NSLocalizedDescriptionKey: "Channel Manager not initialized"])
-            throw error
+            throw LightningError.channelManager(msg: "closeChannelsForcefully")
         }
 
         let channels = channel_manager.listChannels().isEmpty ? [] : channel_manager.listChannels()
        
-        
         _ = try channels.map { (channel: ChannelDetails) in
             try closeChannelForcefully(nodeId: channel.getCounterparty().getNodeId(),
                                       channelId: channel.getChannelId()!)
@@ -607,10 +584,7 @@ public class Lightning {
     ///     true is channel was closed
     func closeChannelForcefully(nodeId: [UInt8], channelId: [UInt8]) throws -> Bool {
         guard let close_result = channelManager?.forceCloseBroadcastingLatestTxn(channelId: channelId, counterpartyNodeId: nodeId) else {
-            let error = NSError(domain: "closeChannelForce",
-                                code: 1,
-                                userInfo: [NSLocalizedDescriptionKey: "closeChannelForce Failed"])
-            throw error
+            throw LightningError.channelManager(msg: "closeChannelForce Failed")
         }
         if (close_result.isOk()) {
             try removeChannelBackup(channelId: Utils.bytesToHex(bytes: channelId))
@@ -654,10 +628,7 @@ public class Lightning {
     func createInvoice(amtMsat: Int, description: String) throws -> String {
         
         guard let channel_manager = channelManager, let keys_manager = keysManager else {
-            let error = NSError(domain: "addInvoice",
-                                code: 1,
-                                userInfo: [NSLocalizedDescriptionKey: "No channel_manager or keys_manager initialized"])
-            throw error
+            throw LightningError.channelManager(msg: "createInvoice")
         }
         
         let invoiceResult = Bindings.swiftCreateInvoiceFromChannelmanager(
@@ -684,8 +655,7 @@ public class Lightning {
         let invoiceParsed = Invoice.fromStr(s: bolt11)
         
         guard let invoice = invoiceParsed.getValue(), invoiceParsed.isOk() else {
-            let error = NSError(domain: "payInvoice", code: 1, userInfo: nil)
-            throw error
+            throw LightningError.Invoice(msg: "deserializeBolt11")
         }
         
         let restoredBolt11 = invoice.toStr()
@@ -709,8 +679,7 @@ public class Lightning {
     func payInvoice(bolt11: String) throws -> PayInvoiceResult? {
 
         guard let payer = channelManagerConstructor?.payer else {
-            let error = NSError(domain: "payInvoice", code: 1, userInfo: nil)
-            throw error
+            throw LightningError.channelManager(msg: "payInvoice")
         }
         
         let invoiceDeserialized = try deserializeBolt11(bolt11: bolt11)
