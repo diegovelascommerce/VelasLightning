@@ -50,7 +50,7 @@ public class Bitcoin {
         let electrumUrl = self.network == Network.testnet ?
             "ssl://electrum.blockstream.info:60002" :
             "ssl://electrum.blockstream.info:50002"
-        
+                
         let electrum = ElectrumConfig(url: electrumUrl, socks5: nil, retry: 5, timeout: nil, stopGap: 10)
         
         

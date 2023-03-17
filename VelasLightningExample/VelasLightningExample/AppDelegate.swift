@@ -57,8 +57,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 NSLog("could not connect")
             }
         }
+        catch VelasError.Electrum(let msg){
+            NSLog("problem with electrum: \(msg)")
+        }
+        catch VelasError.Error(let msg){
+            NSLog("problem with velas: \(msg)")
+        }
         catch {
-            NSLog("there was a problem: \(error)")
+            NSLog("error: \(error)")
         }
         
 //        do {

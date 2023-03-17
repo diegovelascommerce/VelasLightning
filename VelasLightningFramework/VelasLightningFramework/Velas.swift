@@ -1,7 +1,10 @@
 import Foundation
 import BitcoinDevKit
 
-
+public enum VelasError: Error {
+    case Electrum(msg:String)
+    case Error(msg:String)
+}
 
 /// Main Class that projects will use to interact with Bitcoin and Lightning
 public class Velas {
@@ -12,9 +15,17 @@ public class Velas {
     /// Initialize Bitcoin and Lightning
     public init(network: Network = Network.testnet,
                 mnemonic: String? = nil) throws {
-        btc = try Bitcoin(network: network, mnemonic: mnemonic)
-        try btc.sync()
-        ln = try Lightning(btc:btc)
+        do {
+            btc = try Bitcoin(network: network, mnemonic: mnemonic)
+            try btc.sync()
+            ln = try Lightning(btc:btc)
+        }
+        catch BdkError.Electrum(let message) {
+            throw VelasError.Electrum(msg: message)
+        }
+        catch {
+            throw VelasError.Error(msg: "\(error)")
+        }
     }
     
     public func sync() throws {
