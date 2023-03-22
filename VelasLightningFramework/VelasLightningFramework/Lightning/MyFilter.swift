@@ -13,7 +13,7 @@ class MyFilter: Filter {
     
     var txIds:[[UInt8]] = [[UInt8]]()
     
-    var utxos:Set<Bindings.WatchedOutput> = Set<Bindings.WatchedOutput>()
+    var outputs:[Bindings.WatchedOutput] = [Bindings.WatchedOutput]()
     
     var lightning: Lightning? = nil
     
@@ -25,9 +25,8 @@ class MyFilter: Filter {
         }
     }
     
-    
-    /// get outputs that should be monitored
+    /// get outputs that should be monitored if it gets spended
     override func registerOutput(output: Bindings.WatchedOutput) {
-        utxos.insert(output)
+        outputs.append(output)
     }
 }

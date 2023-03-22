@@ -146,6 +146,14 @@ class EsploraTests: XCTestCase {
         print(res!)
     }
     
+    func testGetTxIdFromBlock() throws {
+        let res = Esplora.getTxIdFromBlock(hash: "000000000000000ffb9151dc9fb4208e7a362f8f7a29ad58a982e8c04d4d4223", index: 1, network: Network.testnet)
+        XCTAssertNotNil(res)
+        
+        XCTAssertFalse(res!.isEmpty)
+        XCTAssertEqual(res, "62dab0f999e98c550dd5dbc6b0b77dc0db58a23d596cf2bde989ce46c43d6eae")
+    }
+    
     
 
 

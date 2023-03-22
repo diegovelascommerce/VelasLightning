@@ -142,4 +142,16 @@ public class Esplora {
         
         return res
     }
+    
+    public static func getTxIdFromBlock(hash:String, index:Int, network: Network) -> String? {
+        let url = network == Network.testnet ?
+            "https://blockstream.info/testnet/api/block/\(hash)/txid/\(index)":
+            "https://blockstream.info/api/block/\(hash)/txid/\(index)";
+        
+        let data = Request.get(url: url)
+        
+        let res = String(decoding: data!, as: UTF8.self)
+        
+        return res
+    }
 }

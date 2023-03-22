@@ -10,6 +10,7 @@ public enum LightningError: Error {
     case bindNode(msg:String)
     case connectPeer(msg:String)
     case Invoice(msg:String)
+    case payInvoice(msg:String)
 }
 
 public struct PayInvoiceResult {
@@ -253,62 +254,134 @@ public class Lightning {
     
     /// sync the ChannelManger and ChainManager and confirm or unconfirm all the waiting transactions
     func sync() throws {
-        var txIds = [[UInt8]]()
+        var reorgTxIds = [[UInt8]]()
+        var confirmedTxs = [[String:Any]]()
        
+        /// get all txIds that could be reorginized
+        
         for tx in channelManager!.asConfirm().getRelevantTxids() {
-            txIds.append(tx.0)
+            reorgTxIds.append(tx.0)
         }
         
         for tx in chainMonitor!.asConfirm().getRelevantTxids() {
-            txIds.append(tx.0)
+            reorgTxIds.append(tx.0)
         }
-        
-        print("sync: txids: \(txIds)")
+                
+        /// unconfirm any transactions that that have been reorginized or add them to the confirmed list
 
-            
-        // confirm or unconfirm each of these transactions
-        if txIds.count > 0 {
-            for txId in txIds {
+        if reorgTxIds.count > 0 {
+            for txId in reorgTxIds {
                 let txIdHex = Utils.bytesToHex32Reversed(bytes: Utils.array_to_tuple32(array: txId))
                 let tx = self.btc.getTx(txId: txIdHex)
-                if let tx = tx, tx.confirmed {
-                    try transactionConfirmed(txIdHex:txIdHex, txObj: tx)
-                }
-                else {
+                if let tx = tx, tx.confirmed == false {
                     try transactionUnconfirmed(txIdHex:txIdHex)
                 }
+                // add it to confirmed list
+                else if let tx = tx, tx.confirmed == true {
+                    let txDict = getTransactionDict(txIdHex: txIdHex, tx: tx)
+                    confirmedTxs.append(txDict)
+                }
             }
+        }
+        
+        /// add the txIds from the filter object.
+        
+        if let filteredTxIds = filter?.txIds, filteredTxIds.count > 0 {
+            for txId in filteredTxIds {
+                let txIdHex = Utils.bytesToHex32Reversed(bytes: Utils.array_to_tuple32(array: txId))
+                let tx = self.btc.getTx(txId: txIdHex)
+                if let tx = tx, tx.confirmed == true {
+                    if(!confirmedTxs.contains(where: { $0["txIdHex"] as! String == txIdHex })){
+                        let txDict = getTransactionDict(txIdHex: txIdHex, tx: tx)
+                        confirmedTxs.append(txDict)
+                    }
+                    
+                }
+            }
+        }
+        
+        /// add txIds that spent the outputs
+        
+        if let outputs = filter?.outputs, outputs.count > 0 {
+            for output in outputs {
+                let blockhash = output.getBlockHash()
+                
+                // if block hash bytes are not null get the transaction spending the output
+                // how do they know that?
+                if let _ = blockhash {
+                    let txId = output.getOutpoint().getTxid()
+                    let txIdHex = Utils.bytesToHex32Reversed(bytes: Utils.array_to_tuple32(array: txId!))
+                    let tx = self.btc.getTx(txId: txIdHex)
+                    if let tx = tx, tx.confirmed == true {
+                        if(!confirmedTxs.contains(where: { $0["txIdHex"] as! String == txIdHex })){
+                            let txDict = getTransactionDict(txIdHex: txIdHex, tx: tx)
+                            confirmedTxs.append(txDict)
+                        }
+                    }
+                }
+            }
+        }
+        
+        /// group txIds by blockheight
+        
+        let groupByBlockHeight = Dictionary(grouping: confirmedTxs) { txDict in
+            txDict["height"] as! Int32
+        }
+        
+        /// confirm txids
+        
+        for (_, txList) in groupByBlockHeight.sorted(by: { $0.key < $1.key }) {
+            
+            // sort txIds by output order
+            let sortedTxList = txList.sorted(by: {
+                return ($0["txPos"] as! Int32) < ($1["txPos"] as! Int32)
+            })
+            
+            try transactionsConfirmed(txList: sortedTxList)
         }
         
         // sync the ChannelManager and ChainManager
         try updateBestBlock()
     }
     
+    /// return Transaction data in a dictonary
+    func getTransactionDict(txIdHex: String, tx: Transaction) -> [String:Any] {
+        var txDict = [String:Any]()
+        txDict["txIdHex"] = txIdHex
+        txDict["height"] = tx.block_height
+        txDict["txRaw"] = btc.getTxRaw(txId: txIdHex)
+        txDict["headerHex"] = btc.getBlockHeader(hash: tx.block_hash)
+        let merkleProof = btc.getTxMerkleProof(txId: txIdHex)
+        txDict["txPos"] = merkleProof!.pos
+        return txDict
+    }
+    
     /// confirm the transaction
-    func transactionConfirmed(txIdHex: String, txObj: Transaction) throws {
+    func transactionsConfirmed(txList: [[String:Any]]) throws {
         guard let channelManager = channelManager, let chainMonitor = chainMonitor else {
             let error = NSError(domain: "Channel manager", code: 1, userInfo: nil)
             throw error
         }
         
-        // get the transaction data
-        let height = txObj.block_height
-        let txRaw = btc.getTxRaw(txId: txIdHex)
-        let headerHex = btc.getBlockHeader(hash: txObj.block_hash)
-        let merkleProof = btc.getTxMerkleProof(txId: txIdHex)
-        let txPos = merkleProof!.pos
-
-        let txTuple = (UInt(truncating: txPos as NSNumber), [UInt8](txRaw!))
-        let txArray = [txTuple]
+        var txArray = [(UInt,[UInt8])]()
+        
+        for tx in txList {
+            let txPos = UInt(tx["txPos"] as! Int32)
+            let txRaw = [UInt8](tx["txRaw"] as! Data)
+            txArray.append((txPos,txRaw))
+        }
+        
+        let headerHex = txList[0]["headerHex"] as! String
+        let height = UInt32(truncating: txList[0]["height"] as! NSNumber)
 
         // confirm transaction for bothe the ChannelMonitor and ChainMonitor
-        channelManager.asConfirm().transactionsConfirmed(header: Utils.hexStringToByteArray(headerHex!), txdata: txArray, height: UInt32(truncating: height as NSNumber))
-        
-        chainMonitor.asConfirm().transactionsConfirmed(header: Utils.hexStringToByteArray(headerHex!), txdata: txArray, height: UInt32(truncating: height as NSNumber))
+        channelManager.asConfirm().transactionsConfirmed(header: Utils.hexStringToByteArray(headerHex), txdata: txArray, height: height)
+
+        chainMonitor.asConfirm().transactionsConfirmed(header: Utils.hexStringToByteArray(headerHex), txdata: txArray, height: height)
         
     }
     
-    // set transaction as unconfirmed
+    /// set transaction as unconfirmed
     func transactionUnconfirmed(txIdHex: String) throws {
         guard let channelManager = channelManager, let chainMonitor = chainMonitor else {
             let error = NSError(domain: "Channel manager", code: 1, userInfo: nil)
@@ -690,11 +763,8 @@ public class Lightning {
         } else {
             let error = sendRes.getError()
             print("payInvoice error: \(String(describing: error?.getValueType()))")
-            return nil
+            throw LightningError.payInvoice(msg: "payInvoice error: \(String(describing: error?.getValueType()))")
         }
-       
-        
-        
     }
 
 }
