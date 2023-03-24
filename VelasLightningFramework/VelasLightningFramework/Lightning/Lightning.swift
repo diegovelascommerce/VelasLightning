@@ -49,6 +49,8 @@ public class Lightning {
     // persister for the channel manager
     var channelManagerPersister: MyChannelManagerPersister?
     
+    
+    
     // manages the peer that node is connected to
     var peerManager: LightningDevKit.PeerManager? = nil
     
@@ -129,13 +131,17 @@ public class Lightning {
             } else {
                 print("Lighting: network graph failed to load, create one from scratch")
                 print(String(describing: readResult.getError()))
+                let genesisHash = try btc.getGenesisHash()
                 
-                networkGraph = NetworkGraph(genesisHash: Utils.hexStringToByteArray(try btc.getGenesisHash()).reversed(), logger: logger)
+//                networkGraph = NetworkGraph(genesisHash: Utils.hexStringToByteArray(try btc.getGenesisHash()).reversed(), logger: logger)
+                networkGraph = NetworkGraph(genesisHash: Utils.hexStringToByteArray(genesisHash), logger: logger)
             }
             
         // create new NetworkGraph
         } else {
-            networkGraph = NetworkGraph(genesisHash: Utils.hexStringToByteArray(try btc.getGenesisHash()).reversed(), logger: logger)
+//            networkGraph = NetworkGraph(genesisHash: Utils.hexStringToByteArray(try btc.getGenesisHash()).reversed(), logger: logger)
+            let genesisHash = try btc.getGenesisHash()
+            networkGraph = NetworkGraph(genesisHash: Utils.hexStringToByteArray(genesisHash), logger: logger)
         }
         
         /// Step 8.5  Setup probability scorer for graph
@@ -158,7 +164,8 @@ public class Lightning {
         
         /// Step 9. Read ChannelManager and ChannelMonitors from disk
         
-        // check if the channel manager was saved
+        /// check if the channel manager was saved
+        
         var channelManagerSerialized:[UInt8] = [UInt8]()
         
         if FileMgr.fileExists(path: "channel_manager") {
@@ -166,7 +173,8 @@ public class Lightning {
             channelManagerSerialized = [UInt8](channelManagerData)
         }
         
-        // check if any channels were saved
+        /// check if any channels were saved
+        
         var channelMonitorsSerialized:[[UInt8]] = [[UInt8]]()
         
         if FileMgr.fileExists(path: "channels") {
@@ -210,7 +218,8 @@ public class Lightning {
         else {
 
             // get the latest block hash and height
-            let latestBlockHash = [UInt8](Data(base64Encoded: try btc.getBlockHash())!)
+            //let latestBlockHash = [UInt8](Data(base64Encoded: try btc.getBlockHash())!)
+            let latestBlockHash = Utils.hexStringToByteArray(try btc.getBlockHash())
             let latestBlockHeight = try btc.getBlockHeight()
 
             channelManagerConstructor = ChannelManagerConstructor(
@@ -252,7 +261,8 @@ public class Lightning {
         print("---- End LDK setup -----")
     }
     
-    /// sync the ChannelManger and ChainManager and confirm or unconfirm all the waiting transactions
+    /// unconfirm or confirm all the transactions that can be reorg and confirm all transation and outputs
+    /// that come from the Filter object.
     func sync() throws {
         var reorgTxIds = [[UInt8]]()
         var confirmedTxs = [[String:Any]]()
@@ -274,7 +284,7 @@ public class Lightning {
                 let txIdHex = Utils.bytesToHex32Reversed(bytes: Utils.array_to_tuple32(array: txId))
                 let tx = self.btc.getTx(txId: txIdHex)
                 if let tx = tx, tx.confirmed == false {
-                    try transactionUnconfirmed(txIdHex:txIdHex)
+                    try transactionUnconfirmed(txId:txId)
                 }
                 // add it to confirmed list
                 else if let tx = tx, tx.confirmed == true {
@@ -305,9 +315,9 @@ public class Lightning {
         if let outputs = filter?.outputs, outputs.count > 0 {
             for output in outputs {
                 let blockhash = output.getBlockHash()
-                
+
                 // if block hash bytes are not null get the transaction spending the output
-                // how do they know that?
+                // how do they know that? I thought that was my job???
                 if let _ = blockhash {
                     let txId = output.getOutpoint().getTxid()
                     let txIdHex = Utils.bytesToHex32Reversed(bytes: Utils.array_to_tuple32(array: txId!))
@@ -382,15 +392,15 @@ public class Lightning {
     }
     
     /// set transaction as unconfirmed
-    func transactionUnconfirmed(txIdHex: String) throws {
+    func transactionUnconfirmed(txId: [UInt8]) throws {
         guard let channelManager = channelManager, let chainMonitor = chainMonitor else {
             let error = NSError(domain: "Channel manager", code: 1, userInfo: nil)
             throw error
         }
         
         // set transaction as unconfirmed for both ChannelManger and ChainManager
-        channelManager.asConfirm().transactionUnconfirmed(txid: Utils.hexStringToByteArray(txIdHex))
-        chainMonitor.asConfirm().transactionUnconfirmed(txid: Utils.hexStringToByteArray(txIdHex))
+        channelManager.asConfirm().transactionUnconfirmed(txid: txId)
+        chainMonitor.asConfirm().transactionUnconfirmed(txid: txId)
     }
     
 
