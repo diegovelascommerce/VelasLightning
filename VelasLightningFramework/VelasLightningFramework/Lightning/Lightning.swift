@@ -49,8 +49,6 @@ public class Lightning {
     // persister for the channel manager
     var channelManagerPersister: MyChannelManagerPersister?
     
-    
-    
     // manages the peer that node is connected to
     var peerManager: LightningDevKit.PeerManager? = nil
     
@@ -113,7 +111,7 @@ public class Lightning {
         let timestamp_seconds = UInt64(NSDate().timeIntervalSince1970)
         let timestamp_nanos = UInt32.init(truncating: NSNumber(value: timestamp_seconds * 1000 * 1000))
         keysManager = KeysManager(seed: seed, startingTimeSecs: timestamp_seconds, startingTimeNanos: timestamp_nanos)
-        let keysInterface = keysManager!.asKeysInterface()
+//        let keysInterface = keysManager!.asKeysInterface()
         
         /// Step 8.  Initialize the NetworkGraph
         
@@ -131,17 +129,18 @@ public class Lightning {
             } else {
                 print("Lighting: network graph failed to load, create one from scratch")
                 print(String(describing: readResult.getError()))
-                let genesisHash = try btc.getGenesisHash()
+//                let genesisHash = try btc.getGenesisHash()
                 
 //                networkGraph = NetworkGraph(genesisHash: Utils.hexStringToByteArray(try btc.getGenesisHash()).reversed(), logger: logger)
-                networkGraph = NetworkGraph(genesisHash: Utils.hexStringToByteArray(genesisHash), logger: logger)
+                networkGraph = NetworkGraph(network: self.network, logger: logger)
             }
             
         // create new NetworkGraph
         } else {
 //            networkGraph = NetworkGraph(genesisHash: Utils.hexStringToByteArray(try btc.getGenesisHash()).reversed(), logger: logger)
-            let genesisHash = try btc.getGenesisHash()
-            networkGraph = NetworkGraph(genesisHash: Utils.hexStringToByteArray(genesisHash), logger: logger)
+//            let genesisHash = try btc.getGenesisHash()
+//            networkGraph = NetworkGraph(genesisHash: Utils.hexStringToByteArray(genesisHash), logger: logger)
+            networkGraph = NetworkGraph(network: self.network, logger: logger)
         }
         
         /// Step 8.5  Setup probability scorer for graph
@@ -200,18 +199,32 @@ public class Lightning {
         userConfig.setChannelHandshakeLimits(val: handshakeLimits)
         userConfig.setAcceptInboundChannels(val: true)
         
+        let constructionParameters = ChannelManagerConstructionParameters(
+            config: userConfig,
+            entropySource: keysManager!.asEntropySource(),
+            nodeSigner: keysManager!.asNodeSigner(),
+            signerProvider: keysManager!.asSignerProvider(),
+            feeEstimator: feeEstimator,
+            chainMonitor: chainMonitor!,
+            txBroadcaster: broadcaster,
+            logger: logger,
+            scorer: scorer
+        )
+        
         // if there was a backed up
         if let netGraphSerialized = networkGraph?.write(), !channelManagerSerialized.isEmpty {
             channelManagerConstructor = try ChannelManagerConstructor(
                 channelManagerSerialized: channelManagerSerialized,
                 channelMonitorsSerialized: channelMonitorsSerialized,
-                keysInterface: keysInterface,
-                feeEstimator: feeEstimator,
-                chainMonitor: chainMonitor!,
-                filter: filter,
+//                keysInterface: keysInterface,
+//                feeEstimator: feeEstimator,
+//                chainMonitor: chainMonitor!,
                 netGraphSerialized: netGraphSerialized,
-                txBroadcaster: broadcaster,
-                logger: logger
+                filter: filter,
+//                txBroadcaster: broadcaster,
+//                logger: logger
+                params: constructionParameters
+                
             )
         }
         // else create the channel manager constructor from scratch
@@ -221,18 +234,20 @@ public class Lightning {
             //let latestBlockHash = [UInt8](Data(base64Encoded: try btc.getBlockHash())!)
             let latestBlockHash = Utils.hexStringToByteArray(try btc.getBlockHash())
             let latestBlockHeight = try btc.getBlockHeight()
+            
 
             channelManagerConstructor = ChannelManagerConstructor(
                 network: network,
-                config: userConfig,
+//                config: userConfig,
                 currentBlockchainTipHash: latestBlockHash,
                 currentBlockchainTipHeight: latestBlockHeight,
-                keysInterface: keysInterface,
-                feeEstimator: feeEstimator,
-                chainMonitor: chainMonitor!,
+//                keysInterface: keysInterface,
+//                feeEstimator: feeEstimator,
+//                chainMonitor: chainMonitor!,
                 netGraph: networkGraph,
-                txBroadcaster: broadcaster,
-                logger: logger
+//                txBroadcaster: broadcaster,
+//                logger: logger
+                params: constructionParameters
             )
         }
 
@@ -246,7 +261,8 @@ public class Lightning {
         try self.sync()
 
         // hookup the persister and scorer to the the channel manager
-        channelManagerConstructor?.chainSyncCompleted(persister: channelManagerPersister!, scorer: scorer)
+//        channelManagerConstructor?.chainSyncCompleted(persister: channelManagerPersister!, scorer: scorer)
+        channelManagerConstructor?.chainSyncCompleted(persister: channelManagerPersister!)
 
         // get the peer manager
         peerManager = channelManagerConstructor?.peerManager
@@ -305,7 +321,6 @@ public class Lightning {
                         let txDict = getTransactionDict(txIdHex: txIdHex, tx: tx)
                         confirmedTxs.append(txDict)
                     }
-                    
                 }
             }
         }
@@ -314,21 +329,23 @@ public class Lightning {
         
         if let outputs = filter?.outputs, outputs.count > 0 {
             for output in outputs {
-                let blockhash = output.getBlockHash()
-
-                // if block hash bytes are not null get the transaction spending the output
-                // how do they know that? I thought that was my job???
-                if let _ = blockhash {
-                    let txId = output.getOutpoint().getTxid()
-                    let txIdHex = Utils.bytesToHex32Reversed(bytes: Utils.array_to_tuple32(array: txId!))
-                    let tx = self.btc.getTx(txId: txIdHex)
-                    if let tx = tx, tx.confirmed == true {
-                        if(!confirmedTxs.contains(where: { $0["txIdHex"] as! String == txIdHex })){
-                            let txDict = getTransactionDict(txIdHex: txIdHex, tx: tx)
-                            confirmedTxs.append(txDict)
+                let outpoint = output.getOutpoint()
+                let txId = outpoint.getTxid()
+                let txIdHex = Utils.bytesToHex32Reversed(bytes: Utils.array_to_tuple32(array: txId!))
+                let outputIndex = outpoint.getIndex()
+                
+                if let res = btc.outSpend(txId: txIdHex, index: outputIndex) {
+                    if res.spent {
+                        let tx = self.btc.getTx(txId: res.txid!)
+                        if let tx = tx, tx.confirmed == true {
+                            if(!confirmedTxs.contains(where: { $0["txIdHex"] as! String == res.txid! })){
+                                let txDict = getTransactionDict(txIdHex: res.txid!, tx: tx)
+                                confirmedTxs.append(txDict)
+                            }
                         }
                     }
                 }
+
             }
         }
         
@@ -521,7 +538,10 @@ public class Lightning {
         var res = [String]()
 
         for it in peerNodeIds {
-            res.append(Utils.bytesToHex(bytes: it))
+            let nodeId = Utils.bytesToHex(bytes: it.0)
+            let address = Utils.bytesToIpAddress(bytes: it.1!.getValueAsIPv4()!.getAddr())
+            let port = it.1!.getValueAsIPv4()!.getPort()
+            res.append("\(nodeId)@\(address):\(port)")
         }
 
         return res
@@ -710,18 +730,29 @@ public class Lightning {
     ///     NSError
     func createInvoice(amtMsat: Int, description: String) throws -> String {
         
-        guard let channel_manager = channelManager, let keys_manager = keysManager else {
+        guard let channelManager = channelManager, let keysManager = keysManager else {
             throw LightningError.channelManager(msg: "createInvoice")
         }
         
-        let invoiceResult = Bindings.swiftCreateInvoiceFromChannelmanager(
-            channelmanager: channel_manager,
-            keysManager: keys_manager.asKeysInterface(),
+//        let invoiceResult = Bindings.swiftCreateInvoiceFromChannelmanager(
+//            channelmanager: channel_manager,
+//            keysManager: keysManager.asKeysInterface(),
+//            logger: logger,
+//            network: currency,
+//            amtMsat: UInt64(exactly: amtMsat),
+//            description: description,
+//            invoiceExpiryDeltaSecs: 24 * 3600)
+        let invoiceResult = Bindings.createInvoiceFromChannelmanager(
+            channelmanager: channelManager,
+            nodeSigner: keysManager.asNodeSigner(),
             logger: logger,
-            network: currency,
+            network: self.currency,
             amtMsat: UInt64(exactly: amtMsat),
             description: description,
-            invoiceExpiryDeltaSecs: 24 * 3600)
+            invoiceExpiryDeltaSecs: 24 * 3600,
+            minFinalCltvExpiryDelta: 24
+        )
+
 
         if let invoice = invoiceResult.getValue() {
             return invoice.toStr()
@@ -761,20 +792,37 @@ public class Lightning {
     ///     true is payment when through
     func payInvoice(bolt11: String) throws -> PayInvoiceResult? {
 
-        guard let payer = channelManagerConstructor?.payer else {
-            throw LightningError.channelManager(msg: "payInvoice")
+//        guard let payer = channelManagerConstructor?.payer else {
+//            throw LightningError.channelManager(msg: "payInvoice")
+//        }
+        
+//        let invoice = try deserializeBolt11(bolt11: bolt11)
+        let invoiceResult = Invoice.fromStr(s: bolt11)
+        guard let invoice = invoiceResult.getValue() else {
+            throw LightningError.Invoice(msg: "couldn't parse bolt11")
         }
+        let deserializedBolt11 = try deserializeBolt11(bolt11: bolt11)
         
-        let invoiceDeserialized = try deserializeBolt11(bolt11: bolt11)
-        
-        let sendRes = payer.payInvoice(invoice: invoiceDeserialized.0)
-        if sendRes.isOk() {
-            return PayInvoiceResult(bolt11: invoiceDeserialized.1, memo: invoiceDeserialized.2, amt: invoiceDeserialized.3)
+        let invoicePaymentResult = Bindings.payInvoice(invoice: invoice,
+                                                       retryStrategy: Bindings.Retry.initWithAttempts(a: 3),
+                                                       channelmanager: channelManagerConstructor!.channelManager)
+        if invoicePaymentResult.isOk() {
+            return PayInvoiceResult(bolt11: deserializedBolt11.1, memo: deserializedBolt11.2, amt: deserializedBolt11.3)
         } else {
-            let error = sendRes.getError()
+            let error = invoicePaymentResult.getError()
             print("payInvoice error: \(String(describing: error?.getValueType()))")
             throw LightningError.payInvoice(msg: "payInvoice error: \(String(describing: error?.getValueType()))")
         }
+        
+//        let sendRes = payer.payInvoice(invoice: invoiceDeserialized.0)
+//        let sendRes = Bindings.payInvoice(invoice: invoice, retryStrategy: <#T##Bindings.Retry#>, channelmanager: <#T##Bindings.ChannelManager#>)
+//        if sendRes.isOk() {
+//            return PayInvoiceResult(bolt11: invoiceDeserialized.1, memo: invoiceDeserialized.2, amt: invoiceDeserialized.3)
+//        } else {
+//            let error = sendRes.getError()
+//            print("payInvoice error: \(String(describing: error?.getValueType()))")
+//            throw LightningError.payInvoice(msg: "payInvoice error: \(String(describing: error?.getValueType()))")
+//        }
     }
 
 }

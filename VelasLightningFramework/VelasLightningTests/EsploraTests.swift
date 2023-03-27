@@ -155,6 +155,21 @@ class EsploraTests: XCTestCase {
     }
     
     
+    func testOutSpend() throws {
+        var res = Esplora.outSpend(txId: "4e23cd9d5984328393d5215d98df96dea04180cc033005c0998ad67578da5c0b", index: 1, network: Network.testnet)
+        XCTAssertNotNil(res)
+        XCTAssertFalse(res!.spent)
+        print(res!)
+        
+        res = Esplora.outSpend(txId: "e739bd6300f02d468cedaf1fe7753aa932c3e5c6fbff532c32d78a10f4ea48d6", index: 1, network: Network.testnet)
+        XCTAssertNotNil(res)
+        XCTAssertTrue(res!.spent)
+        XCTAssertEqual(res!.txid!, "d43ab5c6078d6c046e8c1bc0e5c9f8f340daf26dd76ee6f64c6e816fc2e174a1")
+        XCTAssertEqual(res!.vin!, 0)
+        print(res!)
+    }
+    
+    
 
 
     

@@ -26,6 +26,13 @@ public struct MerkleProof: Codable {
     let merkle: [String]
 }
 
+public struct OutSpent: Codable {
+    // was output spent
+    let spent: Bool
+    let txid: String?
+    let vin: Int?
+}
+
 public class Esplora {
     
     /// get transaction data from blockstream
@@ -151,6 +158,27 @@ public class Esplora {
         let data = Request.get(url: url)
         
         let res = String(decoding: data!, as: UTF8.self)
+        
+        return res
+    }
+    
+    public static func outSpend(txId:String, index:UInt16, network: Network) -> OutSpent? {
+        let url = network == Network.testnet ?
+            "https://blockstream.info/testnet/api/tx/\(txId)/outspend/\(index)":
+            "https://blockstream.info/api/tx/\(txId)/outspend/\(index)";
+        
+        let data = Request.get(url: url)
+        
+//        let res = String(decoding: data!, as: UTF8.self)
+        
+        var res:OutSpent?
+        do {
+            res = try JSONDecoder().decode(OutSpent.self, from: data!)
+        }
+        catch {
+            print(error)
+            return nil
+        }
         
         return res
     }

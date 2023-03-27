@@ -14,8 +14,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/lightningdevkit/ldk-swift",
       "state" : {
-        "revision" : "b71d1afd8b60d59b7cea6eb2dde46f10114419f0",
-        "version" : "0.0.113"
+        "revision" : "a2838bd48838b1b6288c8ce1c05e2a488ac1409e",
+        "version" : "0.0.114"
       }
     }
   ],

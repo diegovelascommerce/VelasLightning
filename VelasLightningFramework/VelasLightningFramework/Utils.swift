@@ -28,6 +28,29 @@ public class Utils {
         return hexString.lowercased()
     }
     
+    /// convert bytes array to Hex String
+    ///
+    /// params:
+    ///     bytes:  bytes to convert
+    ///
+    /// return:
+    ///     hex string of byte array
+    static func bytesToIpAddress(bytes: [UInt8]) -> String
+    {
+        var result: String = ""
+        var count = 1
+        for byte in bytes
+        {
+            result.append(String(Int(byte)))
+            if count < bytes.count {
+                result.append(".")
+                count = count + 1
+            }
+        }
+        
+        return result
+    }
+    
     /// Convert string of hex to a byte array.
     ///
     /// params:

@@ -167,4 +167,10 @@ public class Bitcoin {
         return res
     }
     
+    // Check if output was spend
+    public func outSpend(txId:String, index:UInt16) -> OutSpent? {
+        let res = Esplora.outSpend(txId: txId, index: index, network: self.network)
+        return res
+    }
+    
 }
