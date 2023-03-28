@@ -6,6 +6,12 @@
 //
 import Foundation
 
+public enum LAPPError: Error {
+    case JSONDecoder(msg:String)
+    case Error(msg:String)
+}
+
+
 public struct GetInfoResponse: Codable {
     let alias: String
     let best_header_timestamp: UInt32
@@ -76,14 +82,13 @@ public class LAPP: NSObject, URLSessionDelegate {
         
         var data:Data?
         let sem = DispatchSemaphore.init(value: 0)
-        let task = session.dataTask(with: urlRequest) { _data, response, error in
+        let task = session.dataTask(with: urlRequest) { (_data, response, _error) in
             defer { sem.signal() }
-            if let error = error {
-                print(error)
+            if let _error = _error {
+                print(_error)
             }
             if let _data = _data {
                 data = _data
-                print(data!)
             }
         }
         task.resume()
@@ -91,12 +96,11 @@ public class LAPP: NSObject, URLSessionDelegate {
 
         
         let res = String(decoding: data!, as: UTF8.self)
-        print(res)
         
         return res;
     }
     
-    public func getinfo() -> GetInfoResponse? {
+    public func getinfo() throws -> GetInfoResponse? {
         let req = "\(self.baseUrl)/getinfo"
         let url = URL(string: req)
         var urlRequest = URLRequest(url: url!)
@@ -106,20 +110,24 @@ public class LAPP: NSObject, URLSessionDelegate {
         let session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: nil)
         
         var data:Data?
+        var error: Error?
+
         let sem = DispatchSemaphore.init(value: 0)
-        let task = session.dataTask(with: urlRequest) { _data, response, error in
+        let task = session.dataTask(with: urlRequest) { _data, response, _error in
             defer { sem.signal() }
-            if let error = error {
-                print(error)
+            if let _error = _error {
+                error = _error
             }
             if let _data = _data {
                 data = _data
-                print(data!)
             }
         }
         task.resume()
         sem.wait()
 
+        if let error = error {
+            throw LAPPError.Error(msg: "\(error)")
+        }
         
         var res:GetInfoResponse?
         if let data {
@@ -128,7 +136,7 @@ public class LAPP: NSObject, URLSessionDelegate {
             }
             catch {
                 print(error)
-                return nil
+                throw LAPPError.JSONDecoder(msg: "getinfo")
             }
         }
         
