@@ -34,7 +34,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                          jwt: LAPPJwt);
         
         do {
-            let info = lapp.getinfo()
+            let info = try lapp.getinfo()
             if let info = info {
                 if FileMgr.fileExists(path: "mnemonic") {
                     let mnemonic = try FileMgr.readString(path: "mnemonic")

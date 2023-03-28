@@ -11,6 +11,13 @@ public enum LAPPError: Error {
     case Error(msg:String)
 }
 
+public struct LoginResponse: Codable {
+    public let success: Bool
+    public let token: String
+    public let authId: UInt
+    public let authName: String
+}
+
 
 public struct GetInfoResponse: Codable {
     let alias: String
@@ -47,11 +54,28 @@ public struct PayInvoicResponse: Codable {
 
 public class LAPP: NSObject, URLSessionDelegate {
     
-    private var baseUrl:String
+    public static var shared:LAPP? = nil
     
-    private var jwt:String
+    public static var info:GetInfoResponse? = nil
     
-    public init(baseUrl:String, jwt:String) {
+    private var baseUrl:String?
+    
+    private var jwt:String?
+    
+    public static func setupAndLogin(plist:String, username:String, password:String) throws {
+        let plist = FileMgr.getPlist(plist)
+        let url = plist["url"] as? String
+        let lapp = LAPP(baseUrl: url!);
+        
+        let res = try lapp.login(username: username, password: password)
+        lapp.jwt = res?.token
+        
+        shared = lapp
+    }
+    
+    
+    
+    public init(baseUrl:String, jwt:String? = nil) {
         self.baseUrl = baseUrl
         self.jwt = jwt
     }
@@ -72,11 +96,11 @@ public class LAPP: NSObject, URLSessionDelegate {
         }
     
     public func helloVelas() -> String? {
-        let req = "\(self.baseUrl)/"
+        let req = "\(self.baseUrl!)/"
         let url = URL(string: req)
         var urlRequest = URLRequest(url: url!)
         urlRequest.httpMethod = "GET"
-        urlRequest.setValue("Bearer \(self.jwt)", forHTTPHeaderField: "Authorization")
+        urlRequest.setValue("Bearer \(self.jwt!)", forHTTPHeaderField: "Authorization")
         
         let session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: nil)
         
@@ -100,12 +124,62 @@ public class LAPP: NSObject, URLSessionDelegate {
         return res;
     }
     
-    public func getinfo() throws -> GetInfoResponse? {
-        let req = "\(self.baseUrl)/getinfo"
+    public func login(username:String, password:String) throws -> LoginResponse? {
+        let req = "\(self.baseUrl!)/auth/login"
         let url = URL(string: req)
         var urlRequest = URLRequest(url: url!)
         urlRequest.httpMethod = "GET"
-        urlRequest.setValue("Bearer \(self.jwt)", forHTTPHeaderField: "Authorization")
+        
+        let session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: nil)
+        
+        let parameters:[String:Any] = ["username": username, "password": password]
+        
+        do {
+            urlRequest.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted) // pass dictionary to data object and set it as request body
+        } catch let error {
+            print(error.localizedDescription)
+        }
+        
+        var data:Data?
+        var error: Error?
+
+        let sem = DispatchSemaphore.init(value: 0)
+        let task = session.dataTask(with: urlRequest) { _data, response, _error in
+            defer { sem.signal() }
+            if let _error = _error {
+                error = _error
+            }
+            if let _data = _data {
+                data = _data
+            }
+        }
+        task.resume()
+        sem.wait()
+
+        if let error = error {
+            throw LAPPError.Error(msg: "\(error)")
+        }
+        
+        var res:LoginResponse?
+        if let data {
+            do {
+                res = try JSONDecoder().decode(LoginResponse.self, from: data)
+            }
+            catch {
+                print(error)
+                throw LAPPError.JSONDecoder(msg: "Login")
+            }
+        }
+        
+        return res;
+    }
+    
+    public func getinfo() throws -> GetInfoResponse? {
+        let req = "\(self.baseUrl!)/getinfo"
+        let url = URL(string: req)
+        var urlRequest = URLRequest(url: url!)
+        urlRequest.httpMethod = "GET"
+        urlRequest.setValue("Bearer \(self.jwt!)", forHTTPHeaderField: "Authorization")
         
         let session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: nil)
         
@@ -148,7 +222,7 @@ public class LAPP: NSObject, URLSessionDelegate {
         let url = URL(string: req)
         var urlRequest = URLRequest(url: url!)
         
-        urlRequest.setValue("Bearer \(self.jwt)", forHTTPHeaderField: "Authorization")
+        urlRequest.setValue("Bearer \(self.jwt!)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("application/json", forHTTPHeaderField: "content-type")
         urlRequest.httpMethod = "POST"
         
@@ -195,7 +269,7 @@ public class LAPP: NSObject, URLSessionDelegate {
         let url = URL(string: req)
         var urlRequest = URLRequest(url: url!)
         
-        urlRequest.setValue("Bearer \(self.jwt)", forHTTPHeaderField: "Authorization")
+        urlRequest.setValue("Bearer \(self.jwt!)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("application/json", forHTTPHeaderField: "content-type")
         urlRequest.httpMethod = "POST"
         

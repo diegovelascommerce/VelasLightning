@@ -9,8 +9,87 @@ public enum VelasError: Error {
 /// Main Class that projects will use to interact with Bitcoin and Lightning
 public class Velas {
     
+    public static var shared:Velas?
+    
+    /// setup velas
+    public static func setupAndLogin(plist:String, username:String, password:String) {
+        do {
+            try LAPP.setupAndLogin(plist: plist, username: username, password: password)
+            if let lapp = LAPP.shared {
+                let info = try lapp.getinfo()
+                if let info = info {
+                    LAPP.info = info
+                    
+                    if FileMgr.fileExists(path: "mnemonic") && FileMgr.fileExists(path: "key") {
+                        let mnemonicData = try FileMgr.readData(path: "mnemonic")
+                        let key = try FileMgr.readString(path: "key")
+                        if let mnemonic = Cryptography.decrypt(encryptedData: mnemonicData, key: key) {
+                            print("read mnemonic: \(mnemonic)")
+                            shared = try Velas(mnemonic: mnemonic)
+                        }
+
+                    }
+                    else {
+                        shared = try Velas()
+                        if let velas = shared {
+                            let mnemonic = velas.getMnemonic()
+                            print("create new mnemonic: \(mnemonic)")
+                            if let (cipherData, key) = Cryptography.encrypt(message: mnemonic) {
+                                try FileMgr.writeString(string: key, path: "key")
+                                try FileMgr.writeData(data: cipherData, path: "mnemonic")
+                            }
+                        }
+                    }
+                }
+                
+            }
+        }
+        catch VelasError.Electrum(let msg){
+            NSLog("problem with Electrum: \(msg)")
+        }
+        catch VelasError.Error(let msg){
+            NSLog("problem with Velas: \(msg)")
+        }
+        catch LAPPError.JSONDecoder(let msg) {
+            NSLog("problem with JSONDecoder: \(msg)")
+        }
+        catch LAPPError.Error(let msg) {
+            NSLog("problem with lapp: \(msg)")
+        }
+        catch {
+            NSLog("velas error: \(error)")
+        }
+    }
+    
+    public static func connect() -> Bool {
+        do {
+            if let velas = shared, let info = LAPP.info {
+                let connected = try velas.connectToPeer(nodeId: info.identity_pubkey, address: info.urls.publicIP, port: 9735)
+                return connected
+            }
+        }
+        catch VelasError.Electrum(let msg){
+            NSLog("problem with Electrum: \(msg)")
+        }
+        catch VelasError.Error(let msg){
+            NSLog("problem with Velas: \(msg)")
+        }
+        catch LAPPError.JSONDecoder(let msg) {
+            NSLog("problem with JSONDecoder: \(msg)")
+        }
+        catch LAPPError.Error(let msg) {
+            NSLog("problem with lapp: \(msg)")
+        }
+        catch {
+            NSLog("velas error: \(error)")
+        }
+        return false
+    }
+    
     private var btc:Bitcoin!
     public var ln:Lightning!
+    
+    
     
     /// Initialize Bitcoin and Lightning
     public init(network: Network = Network.testnet,
