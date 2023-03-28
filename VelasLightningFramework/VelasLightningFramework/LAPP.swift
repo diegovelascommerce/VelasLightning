@@ -218,7 +218,7 @@ public class LAPP: NSObject, URLSessionDelegate {
     }
     
     public func openChannel(nodeId:String, amt:Int, target_conf:Int, min_confs:Int, privChan:Bool) -> OpenChannelResponse? {
-        let req = "\(self.baseUrl)/openchannel"
+        let req = "\(self.baseUrl!)/openchannel"
         let url = URL(string: req)
         var urlRequest = URLRequest(url: url!)
         
@@ -265,7 +265,7 @@ public class LAPP: NSObject, URLSessionDelegate {
     }
     
     public func payInvoice(bolt11:String) -> PayInvoicResponse? {
-        let req = "\(self.baseUrl)/payinvoice"
+        let req = "\(self.baseUrl!)/payinvoice"
         let url = URL(string: req)
         var urlRequest = URLRequest(url: url!)
         
