@@ -11,37 +11,74 @@ public class Velas {
     
     public static var shared:Velas?
     
-    /// setup velas
-    public static func setupAndLogin(plist:String, username:String, password:String) {
+    public static func Login(url:String, username:String, password:String){
         do {
-            try LAPP.setupAndLogin(plist: plist, username: username, password: password)
-            if let lapp = LAPP.shared {
-                let info = try lapp.getinfo()
-                if let info = info {
-                    LAPP.info = info
-                    
-                    if FileMgr.fileExists(path: "mnemonic") && FileMgr.fileExists(path: "key") {
-                        let mnemonicData = try FileMgr.readData(path: "mnemonic")
-                        let key = try FileMgr.readString(path: "key")
-                        if let mnemonic = Cryptography.decrypt(encryptedData: mnemonicData, key: key) {
-                            print("read mnemonic: \(mnemonic)")
-                            shared = try Velas(mnemonic: mnemonic)
-                        }
-
-                    }
-                    else {
-                        shared = try Velas()
-                        if let velas = shared {
-                            let mnemonic = velas.getMnemonic()
-                            print("create new mnemonic: \(mnemonic)")
-                            if let (cipherData, key) = Cryptography.encrypt(message: mnemonic) {
-                                try FileMgr.writeString(string: key, path: "key")
-                                try FileMgr.writeData(data: cipherData, path: "mnemonic")
-                            }
-                        }
-                    }
+            try LAPP.Login(url: url, username: username, password: password)
+            
+            if Velas.Check() {
+                Velas.Load()
+                let _ = Velas.Connect()
+            }
+        }
+        catch LAPPError.Error(let msg){
+            NSLog("LAPPError: \(msg)")
+        }
+        catch {
+            NSLog("Velas: \(error)")
+        }
+    }
+    
+    // check if velas object has already been created
+    public static func Check() -> Bool {
+        let mnemonic = FileMgr.fileExists(path: "mnemonic")
+        return mnemonic
+    }
+    
+    /// load velas
+    public static func Load() {
+        do {
+            if FileMgr.fileExists(path: "key") {
+                let mnemonicData = try FileMgr.readData(path: "mnemonic")
+                let key = try FileMgr.readString(path: "key")
+                if let mnemonic = Cryptography.decrypt(encryptedData: mnemonicData, key: key) {
+                    print("read mnemonic: \(mnemonic)")
+                    shared = try Velas(mnemonic: mnemonic)
                 }
-                
+            }
+            else {
+                let mnemonic = try FileMgr.readString(path: "mnemonic")
+                shared = try Velas(mnemonic: mnemonic)
+            }
+            
+        }
+        catch VelasError.Electrum(let msg){
+            NSLog("problem with Electrum: \(msg)")
+        }
+        catch VelasError.Error(let msg){
+            NSLog("problem with Velas: \(msg)")
+        }
+        catch LAPPError.JSONDecoder(let msg) {
+            NSLog("problem with JSONDecoder: \(msg)")
+        }
+        catch LAPPError.Error(let msg) {
+            NSLog("problem with lapp: \(msg)")
+        }
+        catch {
+            NSLog("velas error: \(error)")
+        }
+    }
+    
+    /// setup velas
+    public static func Setup() {
+        do {
+            shared = try Velas()
+            if let velas = shared {
+                let mnemonic = velas.getMnemonic()
+                print("create new mnemonic: \(mnemonic)")
+                if let (cipherData, key) = Cryptography.encrypt(message: mnemonic) {
+                    try FileMgr.writeString(string: key, path: "key")
+                    try FileMgr.writeData(data: cipherData, path: "mnemonic")
+                }
             }
         }
         catch VelasError.Electrum(let msg){
@@ -61,7 +98,7 @@ public class Velas {
         }
     }
     
-    public static func connect() -> Bool {
+    public static func Connect() -> Bool {
         do {
             if let velas = shared, let info = LAPP.info {
                 let connected = try velas.connectToPeer(nodeId: info.identity_pubkey, address: info.urls.publicIP, port: 9735)
@@ -85,6 +122,54 @@ public class Velas {
         }
         return false
     }
+    
+    /// Make a request to LAPP to create a channel
+    public static func OpenChannel(amt:Int) -> Bool {
+        if let velas = shared {
+            do {
+                if try velas.listPeers().count > 0 {
+                    if let lapp = LAPP.shared {
+                        let res = try lapp.openChannel(nodeId: velas.getNodeId(), amt: amt, target_conf:1, min_confs:1, privChan: true)
+                        
+                        if let _ = res {
+                            return true
+                        }
+                        else {
+                            return false
+                        }
+                    }
+                }
+            }
+            catch {
+                NSLog("velas: problem with getting peers")
+            }
+        }
+        return false
+    }
+    
+    /// Create a bolt11 and make request to LAPP to pay it.
+    public static func RequestPayment(amt:Int, description:String) -> Bool {
+        if let velas = shared {
+            do {
+                let bolt11 = try velas.createInvoice(
+                    amtMsat: amt,
+                    description: description)
+                
+                if let res = LAPP.PayInvoice(bolt11: bolt11) {
+                    return res.payment_error.isEmpty && !res.payment_hash.isEmpty
+                }
+                else {
+                    return false
+                }
+            }
+            catch {
+                NSLog("velas: \(error)")
+            }
+            return false
+        }
+        return false
+    }
+    
     
     private var btc:Bitcoin!
     public var ln:Lightning!

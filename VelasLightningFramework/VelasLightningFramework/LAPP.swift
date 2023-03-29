@@ -13,9 +13,10 @@ public enum LAPPError: Error {
 
 public struct LoginResponse: Codable {
     public let success: Bool
-    public let token: String
-    public let authId: UInt
-    public let authName: String
+    public let token: String?
+    public let message: String?
+//    public let authId: UInt
+//    public let authName: String
 }
 
 
@@ -41,6 +42,13 @@ public struct GetInfoResponse: Codable {
     public let urls: URLS
 }
 
+public struct GetNodeIdResponse: Codable {
+    public let success: Bool
+    public let message: String?
+    public let node_id: String?
+    public let public_url: String?
+}
+
 public struct OpenChannelResponse: Codable {
     public let txid: String
     public let vout: Int
@@ -58,17 +66,43 @@ public class LAPP: NSObject, URLSessionDelegate {
     
     public static var info:GetInfoResponse? = nil
     
+    public static var nodeId:GetNodeIdResponse? = nil
+    
     private var baseUrl:String?
     
     private var jwt:String?
     
-    public static func setupAndLogin(plist:String, username:String, password:String) throws {
-        let plist = FileMgr.getPlist(plist)
-        let url = plist["url"] as? String
-        let lapp = LAPP(baseUrl: url!);
+    public static func Login(url:String, username:String, password:String) throws {
+        
+        let lapp = LAPP(baseUrl: url);
         
         let res = try lapp.login(username: username, password: password)
         lapp.jwt = res?.token
+        
+        let _nodeId = try lapp.getNodeId()
+        
+        nodeId = _nodeId
+        
+        shared = lapp
+    }
+    
+//    public func getNodeId() throws {
+//        if let lapp = shared {
+//            let nodeId = try lapp.getNodeId()
+//            LAPP.nodeId = nodeId
+//        }
+//    }
+    
+    public static func Setup(plist:String) throws {
+        let plist = FileMgr.getPlist(plist)
+        let url = plist["url"] as! String
+        let jwt = plist["jwt"] as! String
+        
+        let lapp = LAPP(baseUrl: url);
+        lapp.jwt = jwt
+        
+        let info = try lapp.getinfo()
+        LAPP.info = info
         
         shared = lapp
     }
@@ -128,14 +162,17 @@ public class LAPP: NSObject, URLSessionDelegate {
         let req = "\(self.baseUrl!)/auth/login"
         let url = URL(string: req)
         var urlRequest = URLRequest(url: url!)
-        urlRequest.httpMethod = "GET"
+        urlRequest.httpMethod = "POST"
+        urlRequest.setValue("application/json", forHTTPHeaderField: "content-type")
         
         let session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: nil)
         
         let parameters:[String:Any] = ["username": username, "password": password]
         
+//        urlRequest.httpBody = "username=1@1.com&password=123456".data(using:.utf8)
         do {
-            urlRequest.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted) // pass dictionary to data object and set it as request body
+            urlRequest.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted)
+
         } catch let error {
             print(error.localizedDescription)
         }
@@ -161,8 +198,8 @@ public class LAPP: NSObject, URLSessionDelegate {
         }
         
         var res:LoginResponse?
-        if let data {
-            do {
+        if let data = data {
+            do {                
                 res = try JSONDecoder().decode(LoginResponse.self, from: data)
             }
             catch {
@@ -171,7 +208,11 @@ public class LAPP: NSObject, URLSessionDelegate {
             }
         }
         
-        return res;
+        if res?.token != nil {
+            return res
+        }
+        
+        return nil;
     }
     
     public func getinfo() throws -> GetInfoResponse? {
@@ -211,6 +252,48 @@ public class LAPP: NSObject, URLSessionDelegate {
             catch {
                 print(error)
                 throw LAPPError.JSONDecoder(msg: "getinfo")
+            }
+        }
+        
+        return res;
+    }
+    
+    public func getNodeId() throws -> GetNodeIdResponse? {
+        let req = "\(self.baseUrl!)/get_node_id"
+        let url = URL(string: req)
+        var urlRequest = URLRequest(url: url!)
+        urlRequest.httpMethod = "GET"
+        urlRequest.setValue("Bearer \(self.jwt!)", forHTTPHeaderField: "Authorization")
+        
+        let session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: nil)
+        
+        var data:Data?
+        var error: Error?
+
+        let sem = DispatchSemaphore.init(value: 0)
+        let task = session.dataTask(with: urlRequest) { _data, response, _error in
+            defer { sem.signal() }
+            if let _error = _error {
+                error = _error
+            }
+            if let _data = _data {
+                data = _data
+            }
+        }
+        task.resume()
+        sem.wait()
+
+        if let error = error {
+            throw LAPPError.Error(msg: "\(error)")
+        }
+        
+        var res:GetNodeIdResponse?
+        if let data {
+            do {
+                res = try JSONDecoder().decode(GetNodeIdResponse.self, from: data)
+            }
+            catch {
+                throw LAPPError.JSONDecoder(msg: "getinfo: \(error)")
             }
         }
         
@@ -262,6 +345,15 @@ public class LAPP: NSObject, URLSessionDelegate {
         }
        
         return res
+    }
+    
+    /// Make a request to LAPP to pay invoice.
+    public static func PayInvoice(bolt11:String) -> PayInvoicResponse? {
+        if let lapp = shared {
+            let res = lapp.payInvoice(bolt11: bolt11)
+            return res
+        }
+        return nil
     }
     
     public func payInvoice(bolt11:String) -> PayInvoicResponse? {
