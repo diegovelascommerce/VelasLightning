@@ -259,7 +259,7 @@ public class LAPP: NSObject, URLSessionDelegate {
     }
     
     public func getNodeId() throws -> GetNodeIdResponse? {
-        let req = "\(self.baseUrl!)/get_node_id"
+        let req = "\(self.baseUrl!)/lapp/get_node_id"
         let url = URL(string: req)
         var urlRequest = URLRequest(url: url!)
         urlRequest.httpMethod = "GET"
