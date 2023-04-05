@@ -17,7 +17,8 @@ public class Velas {
             
             if Velas.Check() {
                 Velas.Load()
-                let _ = Velas.Connect()
+                let connected = Velas.Connect()
+                print("velas connected: \(connected)")
             }
         }
         catch LAPPError.Error(let msg){
@@ -100,9 +101,15 @@ public class Velas {
     
     public static func Connect() -> Bool {
         do {
-            if let velas = shared, let info = LAPP.info {
-                let connected = try velas.connectToPeer(nodeId: info.identity_pubkey, address: info.urls.publicIP, port: 9735)
-                return connected
+            if let velas = shared {
+                if let nodeInfo = LAPP.NodeId {
+                    let connected = try velas.connectToPeer(nodeId: nodeInfo.node_id!, address: nodeInfo.public_url!, port: 9735)
+                    return connected
+                }
+                if let info = LAPP.Info {
+                    let connected = try velas.connectToPeer(nodeId: info.identity_pubkey, address: info.urls.publicIP, port: 9735)
+                    return connected
+                }
             }
         }
         catch VelasError.Electrum(let msg){
@@ -123,19 +130,45 @@ public class Velas {
         return false
     }
     
+    public static func Peers() -> [String] {
+        do {
+            if let velas = shared {
+                let num = try velas.ln.listPeers()
+                return num
+            }
+        }
+        catch {
+            NSLog("velas no peers")
+        }
+        return []
+    }
+    
+    public static func Sync() -> Bool {
+        do {
+            if let velas = shared {
+                try velas.sync()
+                return true
+            }
+        }
+        catch {
+            NSLog("velas could not sync")
+        }
+        return false
+    }
+    
     /// Make a request to LAPP to create a channel
-    public static func OpenChannel(amt:Int) -> Bool {
+    public static func OpenChannel(amt:Int, target_conf:Int=1, min_confs:Int=1) -> OpenChannelResponse? {
         if let velas = shared {
             do {
                 if try velas.listPeers().count > 0 {
                     if let lapp = LAPP.shared {
-                        let res = try lapp.openChannel(nodeId: velas.getNodeId(), amt: amt, target_conf:1, min_confs:1, privChan: true)
+                        let res = try lapp.openChannel(nodeId: velas.getNodeId(), amt: amt, target_conf:target_conf, min_confs:min_confs, privChan: true)
                         
-                        if let _ = res {
-                            return true
+                        if let res = res {
+                            return res
                         }
                         else {
-                            return false
+                            return nil
                         }
                     }
                 }
@@ -144,30 +177,56 @@ public class Velas {
                 NSLog("velas: problem with getting peers")
             }
         }
-        return false
+        return nil
     }
     
-    /// Create a bolt11 and make request to LAPP to pay it.
-    public static func RequestPayment(amt:Int, description:String) -> Bool {
+    public static func ListChannels(usable:Bool=false) -> [[String:Any]]{
         if let velas = shared {
             do {
-                let bolt11 = try velas.createInvoice(
-                    amtMsat: amt,
-                    description: description)
-                
-                if let res = LAPP.PayInvoice(bolt11: bolt11) {
-                    return res.payment_error.isEmpty && !res.payment_hash.isEmpty
+                if usable == true {
+                    let channels = try velas.listUsableChannelsDict()
+                    return channels
                 }
                 else {
-                    return false
+                    let channels = try velas.listChannelsDict()
+                    return channels
+                }
+            }
+            catch {
+                NSLog("problem with listing channels: \(error)")
+            }
+        }
+        return []
+    }
+    /// Create a bolt11 and make request to LAPP to pay it.
+    public static func PaymentRequest(amt:Int, description:String) -> (String,PayInvoicResponse?) {
+        if let velas = shared {
+            do {
+                let channels = try velas.listUsableChannelsDict()
+                if channels.count > 0 {
+                    let bolt11 = try velas.createInvoice(
+                        amtMsat: amt,
+                        description: description)
+                    
+                    return (bolt11, nil)
+                    
+//                    let res = LAPP.PayInvoice(bolt11: bolt11)
+//
+//                    return (bolt11, res)
+//                    if let res = LAPP.PayInvoice(bolt11: bolt11) {
+////                        return (bolt11, res.payment_error.isEmpty && !res.payment_hash.isEmpty)
+//                        return (bolt11, res)
+//                    }
+//                    else {
+//                        return (bolt11, nil)
+//                    }
                 }
             }
             catch {
                 NSLog("velas: \(error)")
             }
-            return false
         }
-        return false
+        return ("", nil)
     }
     
     

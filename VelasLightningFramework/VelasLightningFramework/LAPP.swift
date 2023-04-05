@@ -64,9 +64,9 @@ public class LAPP: NSObject, URLSessionDelegate {
     
     public static var shared:LAPP? = nil
     
-    public static var info:GetInfoResponse? = nil
+    public static var Info:GetInfoResponse? = nil
     
-    public static var nodeId:GetNodeIdResponse? = nil
+    public static var NodeId:GetNodeIdResponse? = nil
     
     private var baseUrl:String?
     
@@ -79,9 +79,9 @@ public class LAPP: NSObject, URLSessionDelegate {
         let res = try lapp.login(username: username, password: password)
         lapp.jwt = res?.token
         
-        let _nodeId = try lapp.getNodeId()
+        let nodeId = try lapp.getNodeId()
         
-        nodeId = _nodeId
+        NodeId = nodeId
         
         shared = lapp
     }
@@ -102,7 +102,7 @@ public class LAPP: NSObject, URLSessionDelegate {
         lapp.jwt = jwt
         
         let info = try lapp.getinfo()
-        LAPP.info = info
+        LAPP.Info = info
         
         shared = lapp
     }

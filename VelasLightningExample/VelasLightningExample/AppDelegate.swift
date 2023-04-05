@@ -20,56 +20,8 @@ import VelasLightningFramework
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
     
-//    var velas: Velas!
-
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
-        
-        
-        
-//        let plist = FileMgr.getPlist("velas")
-//        LAPPIp = plist["ip"] as? String
-//        LAPPJwt = plist["jwt"] as? String
-//        LAPPPort = plist["port"] as? NSNumber
-//
-//        lapp = LAPP(baseUrl: "https://\(String(describing: LAPPIp!))",
-//                         jwt: LAPPJwt);
-//
-//        do {
-//            let info = try lapp.getinfo()
-//            if let info = info {
-//                if FileMgr.fileExists(path: "mnemonic") {
-//                    let mnemonic = try FileMgr.readString(path: "mnemonic")
-//                    print("mnemonic: \(mnemonic)")
-//                    velas = try Velas(mnemonic: mnemonic)
-//                }
-//                else {
-//                    velas = try Velas()
-//                    let mnemonic = velas.getMnemonic()
-//                    print("mnemonic: \(mnemonic)")
-//                    try FileMgr.writeString(string: mnemonic, path: "mnemonic")
-//                }
-//
-//                LAPPNodeId = info.identity_pubkey
-//                velasNodeId = try velas.getNodeId()
-//                let res = try velas.connectToPeer(nodeId: LAPPNodeId, address: LAPPIp, port: LAPPPort)
-//                print("connect: \(res)")
-//            }
-//            else {
-//                NSLog("could not connect")
-//            }
-//        }
-//        catch VelasError.Electrum(let msg){
-//            NSLog("problem with electrum: \(msg)")
-//        }
-//        catch VelasError.Error(let msg){
-//            NSLog("problem with velas: \(msg)")
-//        }
-//        catch {
-//            NSLog("error: \(error)")
-//        }
-        
-
         
         return true
     }

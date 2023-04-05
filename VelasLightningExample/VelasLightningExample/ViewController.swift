@@ -101,98 +101,72 @@ class ViewController: UIViewController {
 
     
     @IBAction func connectClick(_ sender: Any) {
-        print("connect to a peer")
-
-//        do {
-//
-//            let res = try velas.connectToPeer(nodeId: LAPPNodeId, address: LAPPIp, port: LAPPPort)
-//            print("connect: \(res)")
-//            alert(title: "Peer Connect", message: "\(res)")
-//
-//        }
-//        catch {
-//            alert(title: "Peer Connect", message: "could not make connection")
-//            NSLog("there was a problem: \(error)")
-//        }
+        let connected = Velas.Connect()
+        print("connect to a peer: \(connected)")
+        self.alert(title: "Connect", message: "\(connected)")
     }
     
     @IBAction func syncClick(_ sender: Any) {
-        print("syncing")
-
-//        do {
-//            try velas.sync()
-//            self.alert(title: "Sync", message: "success")
-//        }
-//        catch {
-//            NSLog("there was a problem: \(error)")
-//        }
+        let res = Velas.Sync()
+        
+        if res {
+            self.alert(title: "Sync", message: "success")
+        }
+        else {
+            self.alert(title: "Sync", message: "could not sync")
+            NSLog("could not sync")
+        }
     }
     
     @IBAction func showPeerList(_ sender: Any) {
-        print("show peer list")
-//        do {
-//            let res = try velas.listPeers()
-//            print("peers: \(res)")
-//            alert(title: "Peer List", message: "\(res)")
-//        }
-//        catch {
-//            NSLog("problem with showPeerList \(error)")
-//        }
-
+        let peers = Velas.Peers()
+        print("show peer list: \(peers)")
+        self.alert(title: "Peers", message: "\(peers)")
     }
     
     @IBAction func openChannel(_ sender: Any) {
-//        do {
-//            let peers = try velas.listPeers()
-//
-//            if(peers.count > 0){
-//
-//                self.alert(title:"Create Channel", message:"Please enter amount in milisats", text:"amount:", onSumbit: {(amt) in
-//                    let res = lapp.openChannel(nodeId: velasNodeId, amt: Int(amt) ?? 20000, target_conf:1, min_confs:1, privChan: true)
-//
-//                    if let res = res {
-//                        print(res)
-//                        self.alert(title: "Channel created", message: "channel: \(res)")
-//                    }
-//                    else {
-//                        print("there was a problem creating a channel")
-//                    }
-//                })
-//
-//            }
-//            else {
-//                self.alert(title: "Create Channel", message: "No peers were connected")
-//            }
-//
-//        }
-//        catch {
-//            NSLog("problem with showPeerList \(error)")
-//        }
+        
+        let res = Velas.OpenChannel(amt: 20000)
+        if let res = res {
+            print(res)
+            self.alert(title: "Channel created", message: "channel: \(res)")
+        }
+        else {
+            print("there was a problem creating a channel")
+            self.alert(title: "Channel created", message: "problem creating channel")
+        }
     }
     
     @IBAction func listChannels(_ sender: Any) {
-//        do {
-//            let channels = try velas.listChannelsDict()
-//            print("channels: \(channels)")
-//            self.alert(title: "List All Channels", message: "channels: \(channels)")
-//        }
-//        catch {
-//            NSLog("problem with listing channels: \(error)")
-//        }
+        let channels = Velas.ListChannels()
+        print("channels: \(channels)")
+        self.alert(title: "Channels", message: "channels: \(channels)")
     }
     
     @IBAction func listChannelsUsable(_ sender: Any) {
-//        do {
-//            let channels = try velas.listUsableChannelsDict()
-//            print("channels: \(channels)")
-//            self.alert(title: "List Usable Channels", message: "channels: \(channels)")
-//        }
-//        catch {
-//            NSLog("problem with listing channels: \(error)")
-//        }
+        let channels = Velas.ListChannels(usable: true)
+        print("usable channels: \(channels)")
+        self.alert(title: "Usable Channels", message: "channels: \(channels)")
     }
     
     @IBAction func submitBolt11(_ sender: Any) {
+       
+        self.alert(title:"Submit bolt11", message:"Please enter amount in milisats", text:"amount:", onSumbit: {(amt) in
+            let res = Velas.PaymentRequest(amt: Int(amt)!, description: "this s a test from velas lighting")
+            
+            let (bolt11, result) = res
+
+            if let result = result {
+                print("\(bolt11) : \(result)")
+                self.alert(title: "PaymentRequest", message: "\(bolt11) : \(result)")
+            }
+            else {
+                print("\(bolt11) : nil")
+                self.alert(title: "PaymentRequest", message: "\(bolt11) : did not go through")
+            }
+            
+        })
+        
 //        do {
 //            let channels = try velas.listUsableChannelsDict()
 //            let ready = channels.count > 0 ? true : false
