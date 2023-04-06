@@ -15,18 +15,18 @@ class ViewController: UIViewController {
         super.viewDidLoad()
 
         if Velas.Check(){
-            Velas.Load()
+            Velas.Load(plist: "velas")
         }
         else {
-            Velas.Setup()
+            Velas.Setup(plist: "velas")
         }
         
-        do {
-            try LAPP.Setup(plist: "velas")
-        }
-        catch {
-            NSLog("velas: \(error)")
-        }
+//        do {
+//            try LAPP.Setup(plist: "velas")
+//        }
+//        catch {
+//            NSLog("velas: \(error)")
+//        }
         
     }
     
@@ -147,6 +147,12 @@ class ViewController: UIViewController {
         let channels = Velas.ListChannels(usable: true)
         print("usable channels: \(channels)")
         self.alert(title: "Usable Channels", message: "channels: \(channels)")
+    }
+    
+    @IBAction func listChannelsLapp(_ sender: Any) {
+        let channels = Velas.ListChannels(lapp: true)
+        print("channels: \(channels)")
+        self.alert(title: "LAPP Channels", message: "channels: \(channels)")
     }
     
     @IBAction func submitBolt11(_ sender: Any) {

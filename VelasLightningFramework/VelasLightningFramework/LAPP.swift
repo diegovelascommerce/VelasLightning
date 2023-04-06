@@ -60,6 +60,18 @@ public struct PayInvoicResponse: Codable {
     public let payment_preimage: String
 }
 
+public struct ListChannelsResponse: Codable {
+    public struct Channel: Codable {
+        public let active: Bool
+        public let remote_pubkey: String
+        public let channel_point: String
+        public let capacity: Int
+        public let local_balance: Int
+        public let remote_balance: Int
+    }
+    public let channels: [Channel]
+}
+
 public class LAPP: NSObject, URLSessionDelegate {
     
     public static var shared:LAPP? = nil
@@ -344,6 +356,75 @@ public class LAPP: NSObject, URLSessionDelegate {
             return nil
         }
        
+        return res
+    }
+    
+    public static func ListChannels(peer:String="") ->  [[String:Any]] {
+        if let lapp = shared {
+            do {
+                let res = try lapp.listChannels(peer:peer)
+                if let res = res {
+                    let result = res.channels.map {[
+                        "active":$0.active,
+                        "remote_pubkey":$0.remote_pubkey,
+                        "channel_point":$0.channel_point,
+                        "capacity":$0.capacity,
+                        "local_balance":$0.local_balance,
+                        "remote_balance":$0.remote_balance,
+                    ]}
+                    return result
+                }
+            }
+            catch {
+                NSLog("could not list channels")
+            }
+        }
+        return []
+    }
+    
+    public func listChannels(peer:String="", active_only:Int=0, inactive_only:Int=0, public_only:Int=0, private_only:Int=0) throws -> ListChannelsResponse? {
+        let req = "\(self.baseUrl!)/listchannels"
+        let url = URL(string: req)
+        var urlRequest = URLRequest(url: url!)
+        urlRequest.setValue("Bearer \(self.jwt!)", forHTTPHeaderField: "Authorization")
+        urlRequest.setValue("application/json", forHTTPHeaderField: "content-type")
+        urlRequest.httpMethod = "POST"
+        
+        let parameters:[String:Any] = ["peer": peer, "active_only": active_only, "inactive_only": inactive_only, "public_only":public_only, "private_only":private_only ]
+        
+        do {
+            urlRequest.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted) // pass dictionary to data object and set it as request body
+        } catch let error {
+            print(error.localizedDescription)
+        }
+        
+        let session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: nil)
+        
+        var data:Data?
+        let sem = DispatchSemaphore.init(value: 0)
+        let task = session.dataTask(with: urlRequest) { _data, response, error in
+            defer { sem.signal() }
+            if let error = error {
+                print(error)
+            }
+            if let _data = _data {
+                data = _data
+                print(data!)
+            }
+        }
+        task.resume()
+        sem.wait()
+        
+        var res:ListChannelsResponse? = nil
+        if let data {
+            do {
+                res = try JSONDecoder().decode(ListChannelsResponse.self, from: data)
+            }
+            catch {
+                throw LAPPError.JSONDecoder(msg: "listchannels: \(error)")
+            }
+        }
+        
         return res
     }
     

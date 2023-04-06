@@ -36,7 +36,7 @@ public class Velas {
     }
     
     /// load velas
-    public static func Load() {
+    public static func Load(plist:String?=nil) {
         do {
             if FileMgr.fileExists(path: "key") {
                 let mnemonicData = try FileMgr.readData(path: "mnemonic")
@@ -50,7 +50,9 @@ public class Velas {
                 let mnemonic = try FileMgr.readString(path: "mnemonic")
                 shared = try Velas(mnemonic: mnemonic)
             }
-            
+            if let plist = plist {
+                try LAPP.Setup(plist: plist)
+            }
         }
         catch VelasError.Electrum(let msg){
             NSLog("problem with Electrum: \(msg)")
@@ -70,7 +72,7 @@ public class Velas {
     }
     
     /// setup velas
-    public static func Setup() {
+    public static func Setup(plist:String?=nil) {
         do {
             shared = try Velas()
             if let velas = shared {
@@ -81,6 +83,10 @@ public class Velas {
                     try FileMgr.writeData(data: cipherData, path: "mnemonic")
                 }
             }
+            if let plist = plist {
+                try LAPP.Setup(plist: plist)
+            }
+            
         }
         catch VelasError.Electrum(let msg){
             NSLog("problem with Electrum: \(msg)")
@@ -180,15 +186,22 @@ public class Velas {
         return nil
     }
     
-    public static func ListChannels(usable:Bool=false) -> [[String:Any]]{
+    public static func ListChannels(usable:Bool=false, lapp:Bool=false) -> [[String:Any]] {
         if let velas = shared {
             do {
-                if usable == true {
-                    let channels = try velas.listUsableChannelsDict()
-                    return channels
+                if lapp == false {
+                    if usable == true {
+                        let channels = try velas.listUsableChannelsDict()
+                        return channels
+                    }
+                    else {
+                        let channels = try velas.listChannelsDict()
+                        return channels
+                    }
                 }
                 else {
-                    let channels = try velas.listChannelsDict()
+                    let peer = try velas.getNodeId()
+                    let channels = velas.listChannelsLapp(peer:peer)
                     return channels
                 }
             }
@@ -351,6 +364,11 @@ public class Velas {
     ///     list of channels
     public func listChannelsDict() throws -> [[String:Any]] {
         let res = try ln.listChannelsDict()
+        return res
+    }
+    
+    public func listChannelsLapp(peer:String) -> [[String:Any]] {
+        let res = LAPP.ListChannels(peer:peer)
         return res
     }
     
