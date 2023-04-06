@@ -151,14 +151,15 @@ class ViewController: UIViewController {
     
     @IBAction func submitBolt11(_ sender: Any) {
        
-        self.alert(title:"Submit bolt11", message:"Please enter amount in milisats", text:"amount:", onSumbit: {(amt) in
+        self.alert(title:"Submit bolt11", message:"Please enter amount", text:"amount:", onSumbit: {(amt) in
+            
             let res = Velas.PaymentRequest(amt: Int(amt)!, description: "this s a test from velas lighting")
             
             let (bolt11, result) = res
 
             if let result = result {
                 print("\(bolt11) : \(result)")
-                self.alert(title: "PaymentRequest", message: "\(bolt11) : \(result)")
+                self.alert(title: "PaymentRequest", message: "\(bolt11) :\n \(result)")
             }
             else {
                 print("\(bolt11) : nil")
@@ -205,19 +206,20 @@ class ViewController: UIViewController {
     
     
     @IBAction func closeChannelCooperatively(_ sender: Any) {
-//        do {
-//            try velas.closeChannelsCooperatively()
-//        } catch {
-//            NSLog("problem clossing channels cooperatively: \(error)")
-//        }
+        let res = Velas.CloseChannels()
+        
+        if !res {
+            NSLog("problem clossing channels")
+        }
     }
     
     @IBAction func closeChannelForcefully(_ sender: Any) {
-//        do {
-//            try velas.closeChannelsForcefully()
-//        } catch {
-//            NSLog("problem clossing channels forcefuly: \(error)")
-//        }
+        let res = Velas.CloseChannels(force: true)
+        
+        if !res {
+            NSLog("problem clossing channels")
+        }
+
     }
     
 }

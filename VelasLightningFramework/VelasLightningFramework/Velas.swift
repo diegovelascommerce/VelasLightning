@@ -204,15 +204,16 @@ public class Velas {
             do {
                 let channels = try velas.listUsableChannelsDict()
                 if channels.count > 0 {
+                    let amtMsat = amt * 1000
                     let bolt11 = try velas.createInvoice(
-                        amtMsat: amt,
+                        amtMsat: amtMsat,
                         description: description)
                     
-                    return (bolt11, nil)
+//                    return (bolt11, nil)
                     
-//                    let res = LAPP.PayInvoice(bolt11: bolt11)
-//
-//                    return (bolt11, res)
+                    let res = LAPP.PayInvoice(bolt11: bolt11)
+
+                    return (bolt11, res)
 //                    if let res = LAPP.PayInvoice(bolt11: bolt11) {
 ////                        return (bolt11, res.payment_error.isEmpty && !res.payment_hash.isEmpty)
 //                        return (bolt11, res)
@@ -227,6 +228,24 @@ public class Velas {
             }
         }
         return ("", nil)
+    }
+    
+    public static func CloseChannels(force:Bool = false) -> Bool {
+        do {
+            if let velas = shared {
+                if force {
+                    try velas.closeChannelsCooperatively()
+                    return true
+                } else {
+                    try velas.closeChannelsCooperatively()
+                    return true
+                }
+            }
+        }
+        catch {
+            print("velas: could not close channels")
+        }
+        return false
     }
     
     
