@@ -43,7 +43,7 @@ public struct GetInfoResponse: Codable {
 }
 
 public struct GetNodeIdResponse: Codable {
-    public let success: Bool
+    public let status: Bool
     public let message: String?
     public let node_id: String?
     public let public_url: String?
@@ -51,6 +51,13 @@ public struct GetNodeIdResponse: Codable {
 
 public struct OpenChannelResponse: Codable {
     public let txid: String
+    public let vout: Int
+}
+
+public struct OpenChannelWorkitResponse: Codable {
+    public let status: Bool
+    public let message: String
+    public let channel_id: String
     public let vout: Int
 }
 
@@ -70,6 +77,22 @@ public struct ListChannelsResponse: Codable {
         public let remote_balance: Int
     }
     public let channels: [Channel]
+}
+
+public struct ListChannelsWorkitResponse: Codable {
+    public let status: Bool
+    public struct Message: Codable {
+        public struct Channel: Codable {
+            public let active: Bool
+            public let remote_pubkey: String
+            public let channel_point: String
+            public let capacity: Int
+            public let local_balance: Int
+            public let remote_balance: Int
+        }
+        public let channels: [Channel]
+    }
+    public let message: Message
 }
 
 public class LAPP: NSObject, URLSessionDelegate {
@@ -305,6 +328,8 @@ public class LAPP: NSObject, URLSessionDelegate {
                 res = try JSONDecoder().decode(GetNodeIdResponse.self, from: data)
             }
             catch {
+                let res = String(decoding: data, as: UTF8.self)
+                print(res)
                 throw LAPPError.JSONDecoder(msg: "getinfo: \(error)")
             }
         }
@@ -359,27 +384,138 @@ public class LAPP: NSObject, URLSessionDelegate {
         return res
     }
     
-    public static func ListChannels(peer:String="") ->  [[String:Any]] {
+    // openchannel for workit
+    public func openChannel(nodeId:String, amt:Int, userId:Int) -> OpenChannelWorkitResponse? {
+        let req = "\(self.baseUrl!)/lapp/open_channel"
+        let url = URL(string: req)
+        var urlRequest = URLRequest(url: url!)
+        
+        urlRequest.setValue("Bearer \(self.jwt!)", forHTTPHeaderField: "Authorization")
+        urlRequest.setValue("application/json", forHTTPHeaderField: "content-type")
+        urlRequest.httpMethod = "POST"
+        
+        let parameters:[String:Any] = [ "node_id": nodeId, "user_id": userId, "amount": amt ]
+        
+        do {
+            urlRequest.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted) // pass dictionary to data object and set it as request body
+        } catch let error {
+            print(error.localizedDescription)
+        }
+        
+        let session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: nil)
+        
+        var data:Data?
+        let sem = DispatchSemaphore.init(value: 0)
+        let task = session.dataTask(with: urlRequest) { _data, response, error in
+            defer { sem.signal() }
+            if let error = error {
+                print(error)
+            }
+            if let _data = _data {
+                data = _data
+                print(data!)
+            }
+        }
+        task.resume()
+        sem.wait()
+        
+        var res:OpenChannelWorkitResponse?
+        do {
+            res = try JSONDecoder().decode(OpenChannelWorkitResponse.self, from: data!)
+        }
+        catch {
+            let res = String(decoding: data!, as: UTF8.self)
+            print(res)
+            return nil
+        }
+       
+        return res
+    }
+    
+    public static func ListChannels(peer:String="",workIt:Bool=false) ->  [[String:Any]] {
         if let lapp = shared {
             do {
-                let res = try lapp.listChannels(peer:peer)
-                if let res = res {
-                    let result = res.channels.map {[
-                        "active":$0.active,
-                        "remote_pubkey":$0.remote_pubkey,
-                        "channel_point":$0.channel_point,
-                        "capacity":$0.capacity,
-                        "local_balance":$0.local_balance,
-                        "remote_balance":$0.remote_balance,
-                    ]}
-                    return result
+                if workIt {
+                    let res = try lapp.listChannelsWorkit(peer:peer)
+                    if let res = res {
+                        let result = res.message.channels.map {[
+                            "active":$0.active,
+                            "remote_pubkey":$0.remote_pubkey,
+                            "channel_point":$0.channel_point,
+                            "capacity":$0.capacity,
+                            "local_balance":$0.local_balance,
+                            "remote_balance":$0.remote_balance,
+                        ]}
+                        return result
+                    }
                 }
+                else {
+                    let res = try lapp.listChannels(peer:peer)
+                    if let res = res {
+                        let result = res.channels.map {[
+                            "active":$0.active,
+                            "remote_pubkey":$0.remote_pubkey,
+                            "channel_point":$0.channel_point,
+                            "capacity":$0.capacity,
+                            "local_balance":$0.local_balance,
+                            "remote_balance":$0.remote_balance,
+                        ]}
+                        return result
+                    }
+                }
+                
             }
             catch {
                 NSLog("could not list channels")
             }
         }
         return []
+    }
+    
+    public func listChannelsWorkit(peer:String="") throws -> ListChannelsWorkitResponse? {
+        let req = "\(self.baseUrl!)/lapp/list_channels"
+        let url = URL(string: req)
+        var urlRequest = URLRequest(url: url!)
+        urlRequest.setValue("Bearer \(self.jwt!)", forHTTPHeaderField: "Authorization")
+        urlRequest.setValue("application/json", forHTTPHeaderField: "content-type")
+        urlRequest.httpMethod = "POST"
+        
+        let parameters:[String:Any] = ["peer": peer]
+        
+        do {
+            urlRequest.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted) // pass dictionary to data object and set it as request body
+        } catch let error {
+            print(error.localizedDescription)
+        }
+        
+        let session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: nil)
+        
+        var data:Data?
+        let sem = DispatchSemaphore.init(value: 0)
+        let task = session.dataTask(with: urlRequest) { _data, response, error in
+            defer { sem.signal() }
+            if let error = error {
+                print(error)
+            }
+            if let _data = _data {
+                data = _data
+                print(data!)
+            }
+        }
+        task.resume()
+        sem.wait()
+        
+        var res:ListChannelsWorkitResponse? = nil
+        if let data {
+            do {
+                res = try JSONDecoder().decode(ListChannelsWorkitResponse.self, from: data)
+            }
+            catch {
+                throw LAPPError.JSONDecoder(msg: "listchannels: \(error)")
+            }
+        }
+        
+        return res
     }
     
     public func listChannels(peer:String="", active_only:Int=0, inactive_only:Int=0, public_only:Int=0, private_only:Int=0) throws -> ListChannelsResponse? {

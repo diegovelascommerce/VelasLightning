@@ -136,6 +136,26 @@ public class Velas {
         return false
     }
     
+    /// is velas connected?
+    public static func Connected() -> Bool {
+        if let velas = Velas.shared {
+            do {
+                if try velas.listPeers().count > 0 {
+                    return true
+                }
+                else {
+                    let res = Velas.Connect()
+                    return res
+                }
+            }
+            catch {
+                print("problem connected")
+            }
+        }
+        let res = Velas.Connect()
+        return res
+    }
+    
     public static func Peers() -> [String] {
         do {
             if let velas = shared {
@@ -186,10 +206,46 @@ public class Velas {
         return nil
     }
     
-    public static func ListChannels(usable:Bool=false, lapp:Bool=false) -> [[String:Any]] {
+    /// Make a request to LAPP to create a channel for workit
+    public static func OpenChannel(amt:Int, userId:Int) -> OpenChannelWorkitResponse? {
+        if let velas = shared, let lapp = LAPP.shared {
+            do {
+                if Velas.Connected() {
+                    
+                    let res = try lapp.openChannel(nodeId: velas.getNodeId(), amt: amt, userId: userId)
+
+                    if let res = res {
+                        return res
+                    }
+                    else {
+                        return nil
+                    }
+                }
+                else {
+                    
+                }
+            }
+            catch {
+                NSLog("velas: problem with getting peers")
+            }
+        }
+        return nil
+    }
+    
+    public static func ListChannels(usable:Bool=false, lapp:Bool=false, workit:Bool=false) -> [[String:Any]] {
         if let velas = shared {
             do {
-                if lapp == false {
+                if lapp {
+                    let peer = try velas.getNodeId()
+                    let channels = velas.listChannelsLapp(peer:peer)
+                    return channels
+                }
+                else if workit {
+                    let peer = try velas.getNodeId()
+                    let channels = velas.listChannelsWorkit(peer:peer)
+                    return channels
+                }
+                else {
                     if usable == true {
                         let channels = try velas.listUsableChannelsDict()
                         return channels
@@ -198,11 +254,6 @@ public class Velas {
                         let channels = try velas.listChannelsDict()
                         return channels
                     }
-                }
-                else {
-                    let peer = try velas.getNodeId()
-                    let channels = velas.listChannelsLapp(peer:peer)
-                    return channels
                 }
             }
             catch {
@@ -247,7 +298,7 @@ public class Velas {
         do {
             if let velas = shared {
                 if force {
-                    try velas.closeChannelsCooperatively()
+                    try velas.closeChannelsForcefully()
                     return true
                 } else {
                     try velas.closeChannelsCooperatively()
@@ -358,6 +409,7 @@ public class Velas {
         return try ln.listPeers()
     }
     
+    
     /// Get all the channels that this node is setup for.
     ///
     /// return:
@@ -369,6 +421,11 @@ public class Velas {
     
     public func listChannelsLapp(peer:String) -> [[String:Any]] {
         let res = LAPP.ListChannels(peer:peer)
+        return res
+    }
+    
+    public func listChannelsWorkit(peer:String) -> [[String:Any]] {
+        let res = LAPP.ListChannels(peer:peer, workIt:true)
         return res
     }
     
