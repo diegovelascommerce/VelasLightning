@@ -67,6 +67,16 @@ public struct PayInvoicResponse: Codable {
     public let payment_preimage: String
 }
 
+public struct PayInvoicWorkitResponse: Codable {
+    public let status: Bool
+    public struct Message: Codable {
+        public let payment_error: String
+        public let payment_hash: String
+        public let payment_preimage: String
+    }
+    public let message: Message
+}
+
 public struct ListChannelsResponse: Codable {
     public struct Channel: Codable {
         public let active: Bool
@@ -385,7 +395,7 @@ public class LAPP: NSObject, URLSessionDelegate {
     }
     
     // openchannel for workit
-    public func openChannel(nodeId:String, amt:Int, userId:Int) -> OpenChannelWorkitResponse? {
+    public func openChannelWorkit(nodeId:String, amt:Int, userId:Int) -> OpenChannelWorkitResponse? {
         let req = "\(self.baseUrl!)/lapp/open_channel"
         let url = URL(string: req)
         var urlRequest = URLRequest(url: url!)
@@ -565,10 +575,22 @@ public class LAPP: NSObject, URLSessionDelegate {
     }
     
     /// Make a request to LAPP to pay invoice.
-    public static func PayInvoice(bolt11:String) -> PayInvoicResponse? {
+    public static func PayInvoice(bolt11:String, workit:Bool=false, userId:Int?=nil) -> PayInvoicResponse? {
         if let lapp = shared {
-            let res = lapp.payInvoice(bolt11: bolt11)
-            return res
+            if let userId = userId, workit {
+                let res = lapp.payInvoiceWorkit(bolt11: bolt11, userId: userId)
+                if let res = res, res.status {
+                    let message = res.message
+                    let result:PayInvoicResponse = PayInvoicResponse(payment_error: message.payment_error, payment_hash: message.payment_hash, payment_preimage: message.payment_preimage)
+                    
+                    return result
+                }
+                return nil
+            }
+            else {
+                let res = lapp.payInvoice(bolt11: bolt11)
+                return res
+            }
         }
         return nil
     }
@@ -611,6 +633,55 @@ public class LAPP: NSObject, URLSessionDelegate {
         if let data = data {
             do {
                 res = try JSONDecoder().decode(PayInvoicResponse.self, from: data)
+            }
+            catch {
+                let res = String(decoding: data, as: UTF8.self)
+                print(res)
+                return nil
+            }
+        }
+       
+        return res
+    }
+    
+    public func payInvoiceWorkit(bolt11:String, userId:Int) -> PayInvoicWorkitResponse? {
+        let req = "\(self.baseUrl!)/lapp/pay_invoice"
+        let url = URL(string: req)
+        var urlRequest = URLRequest(url: url!)
+        
+        urlRequest.setValue("Bearer \(self.jwt!)", forHTTPHeaderField: "Authorization")
+        urlRequest.setValue("application/json", forHTTPHeaderField: "content-type")
+        urlRequest.httpMethod = "POST"
+        
+        let parameters:[String:Any] = ["user_id": userId, "bolt11": bolt11]
+        
+        do {
+            urlRequest.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted) // pass dictionary to data object and set it as request body
+        } catch let error {
+            print(error.localizedDescription)
+        }
+        
+        let session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: nil)
+        
+        var data:Data?
+        let sem = DispatchSemaphore.init(value: 0)
+        let task = session.dataTask(with: urlRequest) { _data, response, error in
+            defer { sem.signal() }
+            if let error = error {
+                print(error)
+            }
+            if let _data = _data {
+                data = _data
+                print(data!)
+            }
+        }
+        task.resume()
+        sem.wait()
+        
+        var res:PayInvoicWorkitResponse?
+        if let data = data {
+            do {
+                res = try JSONDecoder().decode(PayInvoicWorkitResponse.self, from: data)
             }
             catch {
                 let res = String(decoding: data, as: UTF8.self)

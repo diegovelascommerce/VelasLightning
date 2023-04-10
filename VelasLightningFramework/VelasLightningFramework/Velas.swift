@@ -17,7 +17,7 @@ public class Velas {
             
             if Velas.Check() {
                 Velas.Load()
-                let connected = Velas.Connect()
+                let connected = Velas.Connect(workit: true)
                 print("velas connected: \(connected)")
             }
         }
@@ -105,34 +105,44 @@ public class Velas {
         }
     }
     
-    public static func Connect() -> Bool {
-        do {
-            if let velas = shared {
-                if let nodeInfo = LAPP.NodeId {
-                    let connected = try velas.connectToPeer(nodeId: nodeInfo.node_id!, address: nodeInfo.public_url!, port: 9735)
-                    return connected
-                }
-                if let info = LAPP.Info {
-                    let connected = try velas.connectToPeer(nodeId: info.identity_pubkey, address: info.urls.publicIP, port: 9735)
-                    return connected
+    public static func Connect(workit:Bool=false) -> Bool {
+        if Velas.Connected() {
+            return true
+        }
+        else {
+            do {
+                if let velas = shared {
+                    if(workit){
+                        if let nodeInfo = LAPP.NodeId {
+                            let connected = try velas.connectToPeer(nodeId: nodeInfo.node_id!, address: nodeInfo.public_url!, port: 9735)
+                            return connected
+                        }
+                    }
+                    else {
+                        if let info = LAPP.Info {
+                            let connected = try velas.connectToPeer(nodeId: info.identity_pubkey, address: info.urls.publicIP, port: 9735)
+                            return connected
+                        }
+                    }
                 }
             }
+            catch VelasError.Electrum(let msg){
+                NSLog("problem with Electrum: \(msg)")
+            }
+            catch VelasError.Error(let msg){
+                NSLog("problem with Velas: \(msg)")
+            }
+            catch LAPPError.JSONDecoder(let msg) {
+                NSLog("problem with JSONDecoder: \(msg)")
+            }
+            catch LAPPError.Error(let msg) {
+                NSLog("problem with lapp: \(msg)")
+            }
+            catch {
+                NSLog("velas error: \(error)")
+            }
         }
-        catch VelasError.Electrum(let msg){
-            NSLog("problem with Electrum: \(msg)")
-        }
-        catch VelasError.Error(let msg){
-            NSLog("problem with Velas: \(msg)")
-        }
-        catch LAPPError.JSONDecoder(let msg) {
-            NSLog("problem with JSONDecoder: \(msg)")
-        }
-        catch LAPPError.Error(let msg) {
-            NSLog("problem with lapp: \(msg)")
-        }
-        catch {
-            NSLog("velas error: \(error)")
-        }
+        
         return false
     }
     
@@ -144,16 +154,14 @@ public class Velas {
                     return true
                 }
                 else {
-                    let res = Velas.Connect()
-                    return res
+                    return false
                 }
             }
             catch {
                 print("problem connected")
             }
         }
-        let res = Velas.Connect()
-        return res
+        return false
     }
     
     public static func Peers() -> [String] {
@@ -207,22 +215,17 @@ public class Velas {
     }
     
     /// Make a request to LAPP to create a channel for workit
-    public static func OpenChannel(amt:Int, userId:Int) -> OpenChannelWorkitResponse? {
+    public static func OpenChannelWorkit(amt:Int, userId:Int) -> OpenChannelWorkitResponse? {
+        
         if let velas = shared, let lapp = LAPP.shared {
             do {
-                if Velas.Connected() {
-                    
-                    let res = try lapp.openChannel(nodeId: velas.getNodeId(), amt: amt, userId: userId)
+                let res = try lapp.openChannelWorkit(nodeId: velas.getNodeId(), amt: amt, userId: userId)
 
-                    if let res = res {
-                        return res
-                    }
-                    else {
-                        return nil
-                    }
+                if let res = res {
+                    return res
                 }
                 else {
-                    
+                    return nil
                 }
             }
             catch {
@@ -233,6 +236,7 @@ public class Velas {
     }
     
     public static func ListChannels(usable:Bool=false, lapp:Bool=false, workit:Bool=false) -> [[String:Any]] {
+        
         if let velas = shared {
             do {
                 if lapp {
@@ -263,7 +267,7 @@ public class Velas {
         return []
     }
     /// Create a bolt11 and make request to LAPP to pay it.
-    public static func PaymentRequest(amt:Int, description:String) -> (String,PayInvoicResponse?) {
+    public static func PaymentRequest(amt:Int, description:String, workit:Bool=false, userId:Int?=nil) -> (String,PayInvoicResponse?) {
         if let velas = shared {
             do {
                 let channels = try velas.listUsableChannelsDict()
@@ -273,18 +277,9 @@ public class Velas {
                         amtMsat: amtMsat,
                         description: description)
                     
-//                    return (bolt11, nil)
+                    let res = LAPP.PayInvoice(bolt11: bolt11, workit:workit, userId: userId)
                     
-                    let res = LAPP.PayInvoice(bolt11: bolt11)
-
                     return (bolt11, res)
-//                    if let res = LAPP.PayInvoice(bolt11: bolt11) {
-////                        return (bolt11, res.payment_error.isEmpty && !res.payment_hash.isEmpty)
-//                        return (bolt11, res)
-//                    }
-//                    else {
-//                        return (bolt11, nil)
-//                    }
                 }
             }
             catch {
@@ -295,6 +290,9 @@ public class Velas {
     }
     
     public static func CloseChannels(force:Bool = false) -> Bool {
+        
+        
+        
         do {
             if let velas = shared {
                 if force {
