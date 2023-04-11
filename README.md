@@ -30,108 +30,90 @@ here are some videos demoing how the Velas Lightning Example Project works
 - here is an illustration of the ideal way to have the client communicate with the REST API/LAPP
 ![](client_to_backend_to_lapp.png)
 
-## [Velas Class](https://github.com/diegovelascommerce/VelasLightning/blob/main/VelasLightningFramework/VelasLightningFramework/Velas.swift):
+# [Velas Class](https://github.com/diegovelascommerce/VelasLightning/blob/main/VelasLightningFramework/VelasLightningFramework/Velas.swift):
 
 the client will be interacting with the lighting network through a class called [Velas](https://github.com/diegovelascommerce/VelasLightning/blob/7cec361affe799d883b0ac9afa6ad4f93c2701ed/VelasLightningFramework/VelasLightningFramework/Velas.swift#L7).
 
-this must be initialized and synced with the lighting network before you can begin to use it.
-- [here is an example on how to do that](https://github.com/diegovelascommerce/VelasLightning/blob/7cec361affe799d883b0ac9afa6ad4f93c2701ed/VelasLightningExample/VelasLightningExample/AppDelegate.swift#L22)
-
 Since starting up a lightning node does take sometime because the state of the channels, peers and transactions must be synced and verified,  it is recommended to initialize the Velas class in the same startup method as your application. For example, in the AppDelegate of an iOS project.
 
-however, you can start the Velas Class anywhere you like just keep in mind that it take a while to sync and it would be a good idea to keep the instance of the Velas class as a global static variable, that way you only have to initialize it once during the lifetime of the application.  If you are using a dependency injection framework then try to keep the velas object in a statically scope object.  otherwise you will have to restart and resync the velas object each time before using it.
+## [Velas.Login](https://github.com/diegovelascommerce/VelasLightning/blob/70b67d025a7723794f181c100bca5338816b3fca/VelasLightningFramework/VelasLightningFramework/Velas.swift#L23)
 
-## Velas Class Methods:
+login to the workit backend and load the bitcoin wallet and lighting node if created earlier.  
 
-### `init(network: Network = Network.testnet, mnemonic: String? = nil) throws`
+### params
+- url : url to the workit server.
+- username : username to account in workit
+- password : password to workit account
 
-this is the initializer for the Velas Class.  
-  
-a mnemonic is passed over to the BDK which creates the private/public keys for your wallet.  The private key is then passed to the LDK so that it can create a node associated with your key and sign transactions with that it.
-  
-- [here is an example of how to initialize the Velas Class in the appDelegate.](https://github.com/diegovelascommerce/VelasLightning/blob/9fe0f7e9275c5ffad363829773bd2bceb091cd3d/VelasLightningExample/VelasLightningExample/AppDelegate.swift#L22)
-    - notice that the Velas object is saved to a global variable of the project.
-you don't have to do it this way.  if you are using a dependency management framework you can setup it up as a static scoped object.
+## [Velas.Setup](https://github.com/diegovelascommerce/VelasLightning/blob/70b67d025a7723794f181c100bca5338816b3fca/VelasLightningFramework/VelasLightningFramework/Velas.swift#L89)
 
-#### parameters:
-*@network:* the blockchain network that you want the Velas object to work with.
-  - by default it is set to testnet, which is just a testing network.  No real money is used.
+This is a static function that will setup velas for the first time.
 
-*@mnemonic:* this is the mnemonic phrase used to create both the public and private keys for your bitcoin wallet.
+### params
+- plist:String? : path to a plist which contains information needed to communicate with the LAPP server.
 
-- this should be saved on the users device. Also there needs to be a screen where the user can see this mnemonic and write it down somewhere so they they can recreate the public/private keys in another bitcoin wallet to reclaim their funds, incase they lose or their phone.
+## [Velsa.Load](https://github.com/diegovelascommerce/VelasLightning/blob/70b67d025a7723794f181c100bca5338816b3fca/VelasLightningFramework/VelasLightningFramework/Velas.swift#L53)
 
+This function load the bitcoin wallet and lightning load if it was already setup
 
-### `getNodeId() throws -> String`
-
-this method returns the lightning network nodeId of the client.
-
-- this information is important when making a request to the LAPP to create an outbound channel with your clients node. 
-  
-- this should be saved in the backend of your application and associated with the client account information. 
-- if you want to see the channels associated with your client you will need this nodeId.
-
-#### returns -> String:
- 
-- this is the nodeId of the lightweight Lightning Client that was created on the phone.
-
-### `connectToPeer(nodeId: String, address: String, port: NSNumber) throws -> Bool`
-
-this method connects the client to another lightning node.
-  - before you can create channels and submit invoices with another lighting node you have to connect to it.
-  - to make a connection you will need the nodeId, address, and port of the other lighting node you the client to connect to.
-
-#### parameters:
-@nodeId: nodeId of the node you want the client to connect with in the lighting network.
-
-@address:  ip address of the remote node you want to connect to
-
-@port: the port in which the remote node is setup to listen for peer requests
-
-#### returns -> Bool : 
-- returns true if connection was a successful, false if connection did not go through.
-
-#### `listPeers() throws -> [String]`
-
-lists the peers that client is connected to
-- you need to be actively connected to a peer if you want to do anything in the lightning network
-
-#### returns -> [String] 
-- returns an array of strings representing peers that client is connected to.
-
-### `listChannelsDict() throws -> [[String:Any]] `
-
-list channels that client has setup.
-- note:  the client does not have the ability to create outbound channels yet.  Since, the client has no liquidity/funds when they first start they can not create a channel.  It can only request that the LAPP create an outbound channel with it.
-
-#### returns -> [[String:Any]]
-- returns an array of dictionaries that have information on each channel that you have setup.
-
-### `createInvoice(amtMsat: Int, description: String) throws -> String`
-
-this creates an bolt11 invoice that you will need to submit to the REST/LAPP in order to receive rewards
-- a bolt11 looks something like this: 
-    lnbc2500u1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdq5xysxxatsyp3k7enxv4jsxqzpuaztrnwngzn3kdzw5hydlzf03qdgm2hdq27cqv3agm2awhz5se903vruatfhq77w3ls4evs3ch9zw97j25emudupq63nyw24cg27h2rspfj9srp
- 
-#### parameters:
-  
-@amtMsat:  amount you want to be paid in milisatoshis(1000 of a a satoshi)
-
-@description: a description you would like to attach to this invoice.
-
-#### returns -> String
-- returns the bolt11 string
-
-### `closeChannelsCooperatively() throws`
-
-- this allows you to close all the channels cooperatively, this mean you were able to negotiate with the other peer you are connected with and you can both get your share of the channel near instantly.
-
-### `closeChannelsForcefully() throws`
-
-- this allows you to close all your channels forcefully, this usually is because the other peer was not online to negotiate when to close the channel.
-- this is usual considered the bad way to close a channel because sometimes you have to wait 2016 block on the blockchain before you can get your money.
+### params
+- plist:String? : path to a plist which contains information needed to communicate with the LAPP server.
 
 
+## [Velas.Check](https://github.com/diegovelascommerce/VelasLightning/blob/70b67d025a7723794f181c100bca5338816b3fca/VelasLightningFramework/VelasLightningFramework/Velas.swift#L47)
+
+Checks if a bitcoin wallet was already setup yet
+
+
+## [Velas.Connect](https://github.com/diegovelascommerce/VelasLightning/blob/70b67d025a7723794f181c100bca5338816b3fca/VelasLightningFramework/VelasLightningFramework/Velas.swift#L123)
+
+This connects to the LAPP lightning server.
+
+## [Velas.Connected](https://github.com/diegovelascommerce/VelasLightning/blob/70b67d025a7723794f181c100bca5338816b3fca/VelasLightningFramework/VelasLightningFramework/Velas.swift#L165)
+
+Checks to see if Velas Lighting client is currently connected to another lighting node.
+
+## [Velas.Peers](https://github.com/diegovelascommerce/VelasLightning/blob/70b67d025a7723794f181c100bca5338816b3fca/VelasLightningFramework/VelasLightningFramework/Velas.swift#L183)
+
+Shows peers that the lighting node on the client side is connected to.
+
+## [Velas.Sync](https://github.com/diegovelascommerce/VelasLightning/blob/70b67d025a7723794f181c100bca5338816b3fca/VelasLightningFramework/VelasLightningFramework/Velas.swift#L197)
+
+update the lighting node to with the latest bitcoin block so that communications between channels go smoothly.
+
+## [Velas.OpenChannel](https://github.com/diegovelascommerce/VelasLightning/blob/70b67d025a7723794f181c100bca5338816b3fca/VelasLightningFramework/VelasLightningFramework/Velas.swift#L211)
+
+make a request to the LAPP to open a channel between the lighting node on the velas side and the lighting node on the LAPP side.
+
+### params
+- amt  :  amount of sats the channels should hold
+- target_conf:  amount target confirmations 
+- min_confs:  minimum confirmations
+
+## [Velas.ListChannels](https://github.com/diegovelascommerce/VelasLightning/blob/70b67d025a7723794f181c100bca5338816b3fca/VelasLightningFramework/VelasLightningFramework/Velas.swift#L256) 
+
+list channels that were setup between the velas lighting node and the LAPP lighting node.
+
+### params
+- usable : list only the channels that are usable.
+- lapp: get the list of channels from the lapp.
+- workit: get list of channels from workit backend.
+
+
+## [Velas.PaymentRequest](https://github.com/diegovelascommerce/VelasLightning/blob/70b67d025a7723794f181c100bca5338816b3fca/VelasLightningFramework/VelasLightningFramework/Velas.swift#L289) 
+
+### params
+- amt :  amount you would like to be paid.
+- description : memo you would like associated with your invoice
+- workit : make the request to the workit server.
+- userId : id of the user, this is used when communicating with the workit server
+
+## [Velas.CloseChannels](https://github.com/diegovelascommerce/VelasLightning/blob/70b67d025a7723794f181c100bca5338816b3fca/VelasLightningFramework/VelasLightningFramework/Velas.swift#L315)
+
+close all channels
+
+### params
+- force : force close channels even if one of the nodes are down
 
 
 # REST API / LAPP
