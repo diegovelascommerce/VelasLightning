@@ -117,34 +117,38 @@ public class LAPP: NSObject, URLSessionDelegate {
     
     private var jwt:String?
     
+    /// Login through workit backend
+    ///
+    /// params
+    ///     url:  url to the backend we are login in to
+    ///     username: username to login with
+    ///     password: pasword to account
     public static func Login(url:String, username:String, password:String) throws {
         
         let lapp = LAPP(baseUrl: url);
         
+        // login to workit backend
         let res = try lapp.login(username: username, password: password)
+        
+        // setup jwt token
         lapp.jwt = res?.token
         
+        // save node information
         let nodeId = try lapp.getNodeId()
-        
         NodeId = nodeId
         
         shared = lapp
     }
     
-//    public func getNodeId() throws {
-//        if let lapp = shared {
-//            let nodeId = try lapp.getNodeId()
-//            LAPP.nodeId = nodeId
-//        }
-//    }
-    
+
+    /// Setup Velas throught plist
     public static func Setup(plist:String) throws {
         let plist = FileMgr.getPlist(plist)
         let url = plist["url"] as! String
         let jwt = plist["jwt"] as! String
         
-        let lapp = LAPP(baseUrl: url);
-        lapp.jwt = jwt
+        let lapp = LAPP(baseUrl: url, jwt: jwt);
+//        lapp.jwt = jwt
         
         let info = try lapp.getinfo()
         LAPP.Info = info
@@ -152,13 +156,13 @@ public class LAPP: NSObject, URLSessionDelegate {
         shared = lapp
     }
     
-    
-    
+    /// Setup baseurl and jwt if passed in.
     public init(baseUrl:String, jwt:String? = nil) {
         self.baseUrl = baseUrl
         self.jwt = jwt
     }
     
+    /// allow the request of https
     public func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
             if challenge.protectionSpace.serverTrust == nil {
                 if challenge.protectionSpace.host == "192.168.0.10" {
@@ -174,6 +178,7 @@ public class LAPP: NSObject, URLSessionDelegate {
             }
         }
     
+    /// just for testing if node is up
     public func helloVelas() -> String? {
         let req = "\(self.baseUrl!)/"
         let url = URL(string: req)
@@ -203,6 +208,14 @@ public class LAPP: NSObject, URLSessionDelegate {
         return res;
     }
     
+    /// Login into workit backend
+    ///
+    /// params
+    ///     username: username to workit account
+    ///     password: password to the workit account
+    ///
+    /// returns
+    ///     LoginResponse
     public func login(username:String, password:String) throws -> LoginResponse? {
         let req = "\(self.baseUrl!)/auth/login"
         let url = URL(string: req)
@@ -214,7 +227,6 @@ public class LAPP: NSObject, URLSessionDelegate {
         
         let parameters:[String:Any] = ["username": username, "password": password]
         
-//        urlRequest.httpBody = "username=1@1.com&password=123456".data(using:.utf8)
         do {
             urlRequest.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted)
 
@@ -260,6 +272,7 @@ public class LAPP: NSObject, URLSessionDelegate {
         return nil;
     }
     
+    /// Get node info from LAPP
     public func getinfo() throws -> GetInfoResponse? {
         let req = "\(self.baseUrl!)/getinfo"
         let url = URL(string: req)
@@ -303,6 +316,7 @@ public class LAPP: NSObject, URLSessionDelegate {
         return res;
     }
     
+    /// Get node information through workit backend
     public func getNodeId() throws -> GetNodeIdResponse? {
         let req = "\(self.baseUrl!)/lapp/get_node_id"
         let url = URL(string: req)
@@ -347,6 +361,7 @@ public class LAPP: NSObject, URLSessionDelegate {
         return res;
     }
     
+    /// request to openchannel through LAPP
     public func openChannel(nodeId:String, amt:Int, target_conf:Int, min_confs:Int, privChan:Bool) -> OpenChannelResponse? {
         let req = "\(self.baseUrl!)/openchannel"
         let url = URL(string: req)
@@ -394,7 +409,7 @@ public class LAPP: NSObject, URLSessionDelegate {
         return res
     }
     
-    // openchannel for workit
+    /// request to open a channel through workit
     public func openChannelWorkit(nodeId:String, amt:Int, userId:Int) -> OpenChannelWorkitResponse? {
         let req = "\(self.baseUrl!)/lapp/open_channel"
         let url = URL(string: req)
@@ -442,6 +457,7 @@ public class LAPP: NSObject, URLSessionDelegate {
         return res
     }
     
+    /// List channels from LAPP or workit
     public static func ListChannels(peer:String="",workIt:Bool=false) ->  [[String:Any]] {
         if let lapp = shared {
             do {
@@ -482,6 +498,8 @@ public class LAPP: NSObject, URLSessionDelegate {
         return []
     }
     
+    
+    /// List channels with workit
     public func listChannelsWorkit(peer:String="") throws -> ListChannelsWorkitResponse? {
         let req = "\(self.baseUrl!)/lapp/list_channels"
         let url = URL(string: req)
@@ -528,6 +546,7 @@ public class LAPP: NSObject, URLSessionDelegate {
         return res
     }
     
+    /// return list of channel from LAPP
     public func listChannels(peer:String="", active_only:Int=0, inactive_only:Int=0, public_only:Int=0, private_only:Int=0) throws -> ListChannelsResponse? {
         let req = "\(self.baseUrl!)/listchannels"
         let url = URL(string: req)
@@ -574,7 +593,7 @@ public class LAPP: NSObject, URLSessionDelegate {
         return res
     }
     
-    /// Make a request to LAPP to pay invoice.
+    /// Make a request to LAPP to pay a invoice.
     public static func PayInvoice(bolt11:String, workit:Bool=false, userId:Int?=nil) -> PayInvoicResponse? {
         if let lapp = shared {
             if let userId = userId, workit {
@@ -595,6 +614,7 @@ public class LAPP: NSObject, URLSessionDelegate {
         return nil
     }
     
+    /// make request to pay invoice through LAPP
     public func payInvoice(bolt11:String) -> PayInvoicResponse? {
         let req = "\(self.baseUrl!)/payinvoice"
         let url = URL(string: req)
@@ -644,6 +664,7 @@ public class LAPP: NSObject, URLSessionDelegate {
         return res
     }
     
+    /// make a request to pay invoice through workit backend
     public func payInvoiceWorkit(bolt11:String, userId:Int) -> PayInvoicWorkitResponse? {
         let req = "\(self.baseUrl!)/lapp/pay_invoice"
         let url = URL(string: req)

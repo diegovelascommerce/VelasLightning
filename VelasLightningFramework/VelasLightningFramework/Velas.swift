@@ -1,6 +1,8 @@
 import Foundation
 import BitcoinDevKit
 
+
+/// Errors that the Velas object can throw
 public enum VelasError: Error {
     case Electrum(msg:String)
     case Error(msg:String)
@@ -9,14 +11,26 @@ public enum VelasError: Error {
 /// Main Class that projects will use to interact with Bitcoin and Lightning
 public class Velas {
     
+    // shared static object that can be accessed globaly
     public static var shared:Velas?
     
+    /// Login to Workit backend and load the global Velas object if available.
+    ///
+    /// params
+    ///     url: url to the workit backend
+    ///     username: username to workit account
+    ///     password: password to workit account
     public static func Login(url:String, username:String, password:String){
         do {
+            // login to workit backend
             try LAPP.Login(url: url, username: username, password: password)
             
+            // check if a velas object is ready to be load
             if Velas.Check() {
+                // load a previouly created velas object
                 Velas.Load()
+                
+                // connect to the workit server
                 let connected = Velas.Connect(workit: true)
                 print("velas connected: \(connected)")
             }
@@ -105,6 +119,7 @@ public class Velas {
         }
     }
     
+    /// connect to a lighting node
     public static func Connect(workit:Bool=false) -> Bool {
         if Velas.Connected() {
             return true
@@ -146,7 +161,7 @@ public class Velas {
         return false
     }
     
-    /// is velas connected?
+    /// check to see if Velas is connected to another lightning node
     public static func Connected() -> Bool {
         if let velas = Velas.shared {
             do {
@@ -164,6 +179,7 @@ public class Velas {
         return false
     }
     
+    /// List the peers that Velas is connected to.
     public static func Peers() -> [String] {
         do {
             if let velas = shared {
@@ -177,6 +193,7 @@ public class Velas {
         return []
     }
     
+    /// Sync the lightingin node
     public static func Sync() -> Bool {
         do {
             if let velas = shared {
@@ -214,7 +231,7 @@ public class Velas {
         return nil
     }
     
-    /// Make a request to LAPP to create a channel for workit
+    /// Make a request through the Workit backend to create a channel
     public static func OpenChannelWorkit(amt:Int, userId:Int) -> OpenChannelWorkitResponse? {
         
         if let velas = shared, let lapp = LAPP.shared {
@@ -235,6 +252,7 @@ public class Velas {
         return nil
     }
     
+    /// List channels that are associated with velas
     public static func ListChannels(usable:Bool=false, lapp:Bool=false, workit:Bool=false) -> [[String:Any]] {
         
         if let velas = shared {
@@ -266,17 +284,22 @@ public class Velas {
         }
         return []
     }
+    
     /// Create a bolt11 and make request to LAPP to pay it.
     public static func PaymentRequest(amt:Int, description:String, workit:Bool=false, userId:Int?=nil) -> (String,PayInvoicResponse?) {
         if let velas = shared {
             do {
+                // must have at least one usable channel
                 let channels = try velas.listUsableChannelsDict()
                 if channels.count > 0 {
+                    
+                    // create a bolt11
                     let amtMsat = amt * 1000
                     let bolt11 = try velas.createInvoice(
                         amtMsat: amtMsat,
                         description: description)
                     
+                    // make a request to pay this invoice
                     let res = LAPP.PayInvoice(bolt11: bolt11, workit:workit, userId: userId)
                     
                     return (bolt11, res)
