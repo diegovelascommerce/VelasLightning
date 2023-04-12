@@ -11,6 +11,8 @@ public enum LightningError: Error {
     case connectPeer(msg:String)
     case Invoice(msg:String)
     case payInvoice(msg:String)
+    case chainMonitor(msg:String)
+    case probabilisticScorer(msg:String)
 }
 
 public struct PayInvoiceResult {
@@ -141,23 +143,32 @@ public class Lightning {
 
         // load probabilistic scorer
         if FileMgr.fileExists(path: "probabilistic_scorer") {
-            let file = try FileMgr.readData(path: "probabilistic_scorer")
-            let scoringParams = ProbabilisticScoringParameters.initWithDefault()
-            let scorerReadResult = ProbabilisticScorer.read(ser: [UInt8](file), argA: scoringParams, argB: netGraph!, argC: logger)
-
-            if let readResult = scorerReadResult.getValue() {
-                print("scorer loaded")
-                let probabilisticScorer = readResult
-                let score = probabilisticScorer.asScore()
-                self.scorer = MultiThreadedLockableScore(score: score)
-            } else {
-                print("scorer failed to load")
+            guard let netGraph = netGraph else {
+                throw LightningError.networkGraph(msg: "network graph not available")
             }
+            let file = try FileMgr.readData(path: "probabilistic_scorer")
+            
+            let scoringParams = ProbabilisticScoringParameters.initWithDefault()
+            let scorerReadResult = ProbabilisticScorer.read(ser: [UInt8](file), argA: scoringParams, argB: netGraph, argC: logger)
+            
+            guard let readResult = scorerReadResult.getValue() else {
+                throw LightningError.probabilisticScorer(msg: "failed to load probabilsticScorer")
+            }
+
+            print("scorer loaded")
+            
+            let probabilisticScorer = readResult
+            let score = probabilisticScorer.asScore()
+            self.scorer = MultiThreadedLockableScore(score: score)
+            
         }
         // create new probabilitic scorer
         else {
+            guard let netGraph = netGraph else {
+                throw LightningError.networkGraph(msg: "network graph not available")
+            }
             let scoringParams = ProbabilisticScoringParameters.initWithDefault()
-            let probabilisticScorer = ProbabilisticScorer(params: scoringParams, networkGraph: netGraph!, logger: logger)
+            let probabilisticScorer = ProbabilisticScorer(params: scoringParams, networkGraph: netGraph, logger: logger)
             let score = probabilisticScorer.asScore()
             self.scorer = MultiThreadedLockableScore(score: score)
         }
@@ -200,13 +211,20 @@ public class Lightning {
         userConfig.setChannelHandshakeLimits(val: handshakeLimits)
         userConfig.setAcceptInboundChannels(val: true)
         
+        guard let keysManager = keysManager else {
+            throw LightningError.networkGraph(msg: "keysManager not available")
+        }
+        guard let chainMonitor = chainMonitor else {
+            throw LightningError.chainMonitor(msg: "keysManager not available")
+        }
+        
         let constructionParameters = ChannelManagerConstructionParameters(
             config: userConfig,
-            entropySource: keysManager!.asEntropySource(),
-            nodeSigner: keysManager!.asNodeSigner(),
-            signerProvider: keysManager!.asSignerProvider(),
+            entropySource: keysManager.asEntropySource(),
+            nodeSigner: keysManager.asNodeSigner(),
+            signerProvider: keysManager.asSignerProvider(),
             feeEstimator: feeEstimator,
-            chainMonitor: chainMonitor!,
+            chainMonitor: chainMonitor,
             txBroadcaster: broadcaster,
             logger: logger,
             enableP2PGossip: true,
@@ -772,13 +790,13 @@ public class Lightning {
     func payInvoice(bolt11: String) throws -> PayInvoiceResult? {
 
         let invoiceResult = Invoice.fromStr(s: bolt11)
-        guard let invoice = invoiceResult.getValue() else {
+        guard let invoice = invoiceResult.getValue(), let channelManager = self.channelManager else {
             throw LightningError.Invoice(msg: "couldn't parse bolt11")
         }
         
         let invoicePaymentResult = Bindings.payInvoice(invoice: invoice,
                                                        retryStrategy: Bindings.Retry.initWithAttempts(a: 3),
-                                                       channelmanager: channelManagerConstructor!.channelManager)
+                                                       channelmanager: channelManager)
         if invoicePaymentResult.isOk() {
             let deserializedBolt11 = try deserializeBolt11(bolt11: bolt11)
             return PayInvoiceResult(bolt11: deserializedBolt11.1, memo: deserializedBolt11.2, amt: deserializedBolt11.3)
