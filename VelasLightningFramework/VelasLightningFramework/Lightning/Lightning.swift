@@ -29,7 +29,7 @@ public class Lightning {
     var filter: MyFilter? = nil
     
     // graph of routes
-    var networkGraph: NetworkGraph? = nil
+    var router: NetworkGraph? = nil
     
     // scores routes
     var scorer: MultiThreadedLockableScore? = nil
@@ -111,56 +111,57 @@ public class Lightning {
         let timestamp_seconds = UInt64(NSDate().timeIntervalSince1970)
         let timestamp_nanos = UInt32.init(truncating: NSNumber(value: timestamp_seconds * 1000 * 1000))
         keysManager = KeysManager(seed: seed, startingTimeSecs: timestamp_seconds, startingTimeNanos: timestamp_nanos)
-//        let keysInterface = keysManager!.asKeysInterface()
         
         /// Step 8.  Initialize the NetworkGraph
         
         // check if network graph was backed up
+        var netGraph:NetworkGraph?
         if FileMgr.fileExists(path: "network_graph") {
             let file = try FileMgr.readData(path: "network_graph")
             let readResult = NetworkGraph.read(ser: [UInt8](file), arg: logger)
-            
+
             // loaded backedup networkGraph
             if readResult.isOk() {
-                networkGraph = readResult.getValue()
+                netGraph = readResult.getValue()
                 print("Lightning: loaded network graph ok")
-                
-            // create new NetworkGraph
+
+            // create a new NetworkGraph
             } else {
                 print("Lighting: network graph failed to load, create one from scratch")
                 print(String(describing: readResult.getError()))
-//                let genesisHash = try btc.getGenesisHash()
-                
-//                networkGraph = NetworkGraph(genesisHash: Utils.hexStringToByteArray(try btc.getGenesisHash()).reversed(), logger: logger)
-                networkGraph = NetworkGraph(network: self.network, logger: logger)
+                netGraph = NetworkGraph(network: self.network, logger: logger)
             }
             
-        // create new NetworkGraph
+        // create a new NetworkGraph
         } else {
-//            networkGraph = NetworkGraph(genesisHash: Utils.hexStringToByteArray(try btc.getGenesisHash()).reversed(), logger: logger)
-//            let genesisHash = try btc.getGenesisHash()
-//            networkGraph = NetworkGraph(genesisHash: Utils.hexStringToByteArray(genesisHash), logger: logger)
-            networkGraph = NetworkGraph(network: self.network, logger: logger)
+            netGraph = NetworkGraph(network: self.network, logger: logger)
         }
         
         /// Step 8.5  Setup probability scorer for graph
-        
-        var probabilisticScorer = ProbabilisticScorer(params: ProbabilisticScoringParameters.initWithDefault(), networkGraph: networkGraph!, logger: logger)
-        
+
+        // load probabilistic scorer
         if FileMgr.fileExists(path: "probabilistic_scorer") {
             let file = try FileMgr.readData(path: "probabilistic_scorer")
-            let scorerReadResult = ProbabilisticScorer.read(ser: [UInt8](file), argA: ProbabilisticScoringParameters.initWithDefault(), argB: networkGraph!, argC: logger)
-            
+            let scoringParams = ProbabilisticScoringParameters.initWithDefault()
+            let scorerReadResult = ProbabilisticScorer.read(ser: [UInt8](file), argA: scoringParams, argB: netGraph!, argC: logger)
+
             if let readResult = scorerReadResult.getValue() {
                 print("scorer loaded")
-                probabilisticScorer = readResult
+                let probabilisticScorer = readResult
+                let score = probabilisticScorer.asScore()
+                self.scorer = MultiThreadedLockableScore(score: score)
             } else {
                 print("scorer failed to load")
             }
         }
-        
-        scorer = MultiThreadedLockableScore(score: probabilisticScorer.asScore())
-        
+        // create new probabilitic scorer
+        else {
+            let scoringParams = ProbabilisticScoringParameters.initWithDefault()
+            let probabilisticScorer = ProbabilisticScorer(params: scoringParams, networkGraph: netGraph!, logger: logger)
+            let score = probabilisticScorer.asScore()
+            self.scorer = MultiThreadedLockableScore(score: score)
+        }
+                
         /// Step 9. Read ChannelManager and ChannelMonitors from disk
         
         /// check if the channel manager was saved
@@ -208,60 +209,46 @@ public class Lightning {
             chainMonitor: chainMonitor!,
             txBroadcaster: broadcaster,
             logger: logger,
+            enableP2PGossip: true,
             scorer: scorer
         )
         
-        // if there was a backed up
-        if let netGraphSerialized = networkGraph?.write(), !channelManagerSerialized.isEmpty {
+        // if there are channel previously created
+        if let netGraphSerialized = netGraph?.write(), !channelManagerSerialized.isEmpty {
             channelManagerConstructor = try ChannelManagerConstructor(
                 channelManagerSerialized: channelManagerSerialized,
                 channelMonitorsSerialized: channelMonitorsSerialized,
-//                keysInterface: keysInterface,
-//                feeEstimator: feeEstimator,
-//                chainMonitor: chainMonitor!,
                 netGraphSerialized: netGraphSerialized,
                 filter: filter,
-//                txBroadcaster: broadcaster,
-//                logger: logger
                 params: constructionParameters
-                
             )
         }
         // else create the channel manager constructor from scratch
         else {
 
             // get the latest block hash and height
-            //let latestBlockHash = [UInt8](Data(base64Encoded: try btc.getBlockHash())!)
             let latestBlockHash = Utils.hexStringToByteArray(try btc.getBlockHash())
             let latestBlockHeight = try btc.getBlockHeight()
             
-
             channelManagerConstructor = ChannelManagerConstructor(
                 network: network,
-//                config: userConfig,
                 currentBlockchainTipHash: latestBlockHash,
                 currentBlockchainTipHeight: latestBlockHeight,
-//                keysInterface: keysInterface,
-//                feeEstimator: feeEstimator,
-//                chainMonitor: chainMonitor!,
-                netGraph: networkGraph,
-//                txBroadcaster: broadcaster,
-//                logger: logger
+                netGraph: netGraph,
                 params: constructionParameters
             )
         }
 
         // get the channel manager
         channelManager = channelManagerConstructor?.channelManager
-
+        
         // set the persister for the channel manager
         channelManagerPersister = MyChannelManagerPersister()
-
+        
         /// Step 12. Sync ChannelManager and ChainMonitor to chain tip
         try self.sync()
-
-        // hookup the persister and scorer to the the channel manager
-//        channelManagerConstructor?.chainSyncCompleted(persister: channelManagerPersister!, scorer: scorer)
+        
+        // hookup the persister to the the channel manager
         channelManagerConstructor?.chainSyncCompleted(persister: channelManagerPersister!)
 
         // get the peer manager
@@ -270,10 +257,10 @@ public class Lightning {
         // get the peer handler
         peerHandler = channelManagerConstructor?.getTCPPeerHandler()
 
-        networkGraph = channelManagerConstructor?.netGraph
+        router = channelManagerConstructor?.netGraph
 
         channelManagerPersister?.lightning = self
-                
+        
         print("---- End LDK setup -----")
     }
     
@@ -734,14 +721,6 @@ public class Lightning {
             throw LightningError.channelManager(msg: "createInvoice")
         }
         
-//        let invoiceResult = Bindings.swiftCreateInvoiceFromChannelmanager(
-//            channelmanager: channel_manager,
-//            keysManager: keysManager.asKeysInterface(),
-//            logger: logger,
-//            network: currency,
-//            amtMsat: UInt64(exactly: amtMsat),
-//            description: description,
-//            invoiceExpiryDeltaSecs: 24 * 3600)
         let invoiceResult = Bindings.createInvoiceFromChannelmanager(
             channelmanager: channelManager,
             nodeSigner: keysManager.asNodeSigner(),
@@ -792,37 +771,28 @@ public class Lightning {
     ///     true is payment when through
     func payInvoice(bolt11: String) throws -> PayInvoiceResult? {
 
-//        guard let payer = channelManagerConstructor?.payer else {
-//            throw LightningError.channelManager(msg: "payInvoice")
-//        }
-        
-//        let invoice = try deserializeBolt11(bolt11: bolt11)
         let invoiceResult = Invoice.fromStr(s: bolt11)
         guard let invoice = invoiceResult.getValue() else {
             throw LightningError.Invoice(msg: "couldn't parse bolt11")
         }
-        let deserializedBolt11 = try deserializeBolt11(bolt11: bolt11)
         
         let invoicePaymentResult = Bindings.payInvoice(invoice: invoice,
                                                        retryStrategy: Bindings.Retry.initWithAttempts(a: 3),
                                                        channelmanager: channelManagerConstructor!.channelManager)
         if invoicePaymentResult.isOk() {
+            let deserializedBolt11 = try deserializeBolt11(bolt11: bolt11)
             return PayInvoiceResult(bolt11: deserializedBolt11.1, memo: deserializedBolt11.2, amt: deserializedBolt11.3)
         } else {
+            let deserializedBolt11 = try deserializeBolt11(bolt11: bolt11)
+            print("\(deserializedBolt11)")
             let error = invoicePaymentResult.getError()
+            print("payInvoice error: \(String(describing: error))")
+            print("payInvoice error: \(String(describing: error?.getValueAsInvoice()))")
+            print("payInvoice error: \(String(describing: error?.getValueAsSending()))")
             print("payInvoice error: \(String(describing: error?.getValueType()))")
             throw LightningError.payInvoice(msg: "payInvoice error: \(String(describing: error?.getValueType()))")
         }
         
-//        let sendRes = payer.payInvoice(invoice: invoiceDeserialized.0)
-//        let sendRes = Bindings.payInvoice(invoice: invoice, retryStrategy: <#T##Bindings.Retry#>, channelmanager: <#T##Bindings.ChannelManager#>)
-//        if sendRes.isOk() {
-//            return PayInvoiceResult(bolt11: invoiceDeserialized.1, memo: invoiceDeserialized.2, amt: invoiceDeserialized.3)
-//        } else {
-//            let error = sendRes.getError()
-//            print("payInvoice error: \(String(describing: error?.getValueType()))")
-//            throw LightningError.payInvoice(msg: "payInvoice error: \(String(describing: error?.getValueType()))")
-//        }
     }
 
 }

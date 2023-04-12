@@ -74,29 +74,23 @@ class ViewController: UIViewController {
     
     
     @IBAction func payInvoiceClick(_ sender: Any) {
-//        do {
-//            let channels = try velas.listUsableChannelsDict()
-//            if(channels.count > 0){
-//                self.alert(title: "Pay Invoice", message: "Past bolt11 here", text: "bolt11:", onSumbit: {(bolt11)  in
-//                    do {
-//                        let res = try velas.payInvoice(bolt11: bolt11)
-//                        if let res = res {
-//                            self.alert(title: "Pay Invoice", message: "Success(\(res))")
-//                        }
-//                    }
-//                    catch {
-//                        self.alert(title: "Pay Invoice", message: "error(\(error))")
-//                        NSLog("\(error)")
-//                    }
-//                })
-//            }
-//            else {
-//                self.alert(title: "Pay Invoice", message: "None of the channels are ready")
-//            }
-//        }
-//        catch {
-//            NSLog("there was a problem: \(error)")
-//        }
+       
+        let channels = Velas.ListChannels(usable: true)
+        if(channels.count > 0){
+            self.alert(title: "Pay Invoice", message: "Past bolt11 here", text: "bolt11:", onSumbit: {(bolt11)  in
+                let res = Velas.PayInvoice(bolt11)
+                if let res = res {
+                    self.alert(title: "Pay Invoice", message: "\(res)")
+                }
+                else {
+                    self.alert(title: "Pay Invoice", message: "payment did not go through")
+                }
+            })
+        }
+        else {
+            self.alert(title: "Pay Invoice", message: "None of the channels are ready")
+        }
+       
     }
 
     

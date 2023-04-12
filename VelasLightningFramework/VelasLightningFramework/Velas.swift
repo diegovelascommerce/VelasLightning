@@ -385,6 +385,20 @@ public class Velas {
         return res
     }
     
+    /// Create a bolt11 and make request to LAPP to pay it.
+    public static func PayInvoice(_ bolt11:String) -> PayInvoiceResult? {
+        if let velas = shared {
+            do {
+                let res = try velas.ln.payInvoice(bolt11:bolt11)
+                return res
+            }
+            catch {
+                NSLog("velas: \(error)")
+            }
+        }
+        return nil
+    }
+    
     
     /// Pay invoice.
     ///
