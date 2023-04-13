@@ -125,11 +125,11 @@ public class Lightning {
             // loaded backedup networkGraph
             if readResult.isOk() {
                 netGraph = readResult.getValue()
-                print("Lightning: loaded network graph ok")
+                print("Velas/Lightning: loaded network graph ok")
 
             // create a new NetworkGraph
             } else {
-                print("Lighting: network graph failed to load, create one from scratch")
+                print("Velas/Lighting: network graph failed to load, create one from scratch")
                 print(String(describing: readResult.getError()))
                 netGraph = NetworkGraph(network: self.network, logger: logger)
             }
@@ -137,6 +137,7 @@ public class Lightning {
         // create a new NetworkGraph
         } else {
             netGraph = NetworkGraph(network: self.network, logger: logger)
+            print("Velas/Lightning: network graph created")
         }
         
         /// Step 8.5  Setup probability scorer for graph
@@ -155,12 +156,10 @@ public class Lightning {
                 throw LightningError.probabilisticScorer(msg: "failed to load probabilsticScorer")
             }
 
-            print("scorer loaded")
-            
             let probabilisticScorer = readResult
             let score = probabilisticScorer.asScore()
             self.scorer = MultiThreadedLockableScore(score: score)
-            
+            print("Velas/Lightning: scorer loaded and running")
         }
         // create new probabilitic scorer
         else {
@@ -171,6 +170,7 @@ public class Lightning {
             let probabilisticScorer = ProbabilisticScorer(params: scoringParams, networkGraph: netGraph, logger: logger)
             let score = probabilisticScorer.asScore()
             self.scorer = MultiThreadedLockableScore(score: score)
+            print("Velas/Lightning: scorer created and running")
         }
                 
         /// Step 9. Read ChannelManager and ChannelMonitors from disk
@@ -182,6 +182,7 @@ public class Lightning {
         if FileMgr.fileExists(path: "channel_manager") {
             let channelManagerData = try FileMgr.readData(path: "channel_manager")
             channelManagerSerialized = [UInt8](channelManagerData)
+            print("Velas/Lightning: serialized channelManager loaded")
         }
         
         /// check if any channels were saved
@@ -195,6 +196,7 @@ public class Lightning {
                 let channelBytes = [UInt8](channelData)
                 channelMonitorsSerialized.append(channelBytes)
             }
+            print("Velas/Lightning: serialized channelMonitors loaded")
         }
         
         /// Step 10.  Initialize the ChannelManager
@@ -202,7 +204,7 @@ public class Lightning {
         let handshakeConfig = ChannelHandshakeConfig.initWithDefault()
         handshakeConfig.setMinimumDepth(val: 1)
         handshakeConfig.setAnnouncedChannel(val: false)
-        
+
         let handshakeLimits = ChannelHandshakeLimits.initWithDefault()
         handshakeLimits.setForceAnnouncedChannelPreference(val: false)
         
@@ -240,6 +242,7 @@ public class Lightning {
                 filter: filter,
                 params: constructionParameters
             )
+            print("Velas/Lightning: channelManagerConstructor loaded")
         }
         // else create the channel manager constructor from scratch
         else {
@@ -255,11 +258,12 @@ public class Lightning {
                 netGraph: netGraph,
                 params: constructionParameters
             )
+            print("Velas/Lightning: channelManagerConstructor created")
         }
 
         // get the channel manager
         channelManager = channelManagerConstructor?.channelManager
-        
+                
         // set the persister for the channel manager
         channelManagerPersister = MyChannelManagerPersister()
         
@@ -454,12 +458,15 @@ public class Lightning {
     /// return:
     ///     the nodeId of our lightning node
     func getNodeId() throws -> String {
-        if let nodeId = channelManager?.getOurNodeId() {
-            let res = Utils.bytesToHex(bytes: nodeId)
-            return res
-        } else {
+        guard let channelManager = channelManager else {
             throw LightningError.nodeId(msg:"failed to get nodeID")
         }
+        
+        let nodeId = channelManager.getOurNodeId()
+        
+        let res = Utils.bytesToHex(bytes: nodeId)
+        
+        return res
     }
     
     /// Bind node to an IP address and port.
@@ -612,6 +619,7 @@ public class Lightning {
         channelsDict["channel_value_satoshis"] = String(it.getChannelValueSatoshis())
         channelsDict["inbound_capacity_msat"] = String(it.getInboundCapacityMsat())
         channelsDict["outbound_capacity_msat"] = String(it.getOutboundCapacityMsat())
+        channelsDict["next_outbound_htlc_limit"] = String(it.getNextOutboundHtlcLimitMsat())
         
         channelsDict["is_usable"] = it.getIsUsable() ? "true" : "false"
         channelsDict["is_channel_ready"] = it.getIsChannelReady() ? "true" : "false"
@@ -802,12 +810,12 @@ public class Lightning {
             return PayInvoiceResult(bolt11: deserializedBolt11.1, memo: deserializedBolt11.2, amt: deserializedBolt11.3)
         } else {
             let deserializedBolt11 = try deserializeBolt11(bolt11: bolt11)
-            print("\(deserializedBolt11)")
+            print("Velas/Lightning payInvoice: \(deserializedBolt11)")
             let error = invoicePaymentResult.getError()
-            print("payInvoice error: \(String(describing: error))")
-            print("payInvoice error: \(String(describing: error?.getValueAsInvoice()))")
-            print("payInvoice error: \(String(describing: error?.getValueAsSending()))")
-            print("payInvoice error: \(String(describing: error?.getValueType()))")
+            print("Velas/Lightning payInvoice error: \(String(describing: error))")
+            print("Velas/Lightning payInvoice error: \(String(describing: error?.getValueAsInvoice()))")
+            print("Velas/Lightning payInvoice error: \(String(describing: error?.getValueAsSending()))")
+            print("Velas/Lightning payInvoice error: \(String(describing: error?.getValueType()))")
             throw LightningError.payInvoice(msg: "payInvoice error: \(String(describing: error?.getValueType()))")
         }
         
