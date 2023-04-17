@@ -123,12 +123,12 @@ public class LAPP: NSObject, URLSessionDelegate {
     ///     url:  url to the backend we are login in to
     ///     username: username to login with
     ///     password: pasword to account
-    public static func Login(url:String, username:String, password:String) throws {
+    public static func Login(url:String, username:String?, password:String?, jwt:String?) throws {
         
         let lapp = LAPP(baseUrl: url);
         
         // login to workit backend
-        let res = try lapp.login(username: username, password: password)
+        let res = try lapp.login(username: username, password: password, jwt: jwt)
         
         // setup jwt token
         lapp.jwt = res?.token
@@ -216,17 +216,21 @@ public class LAPP: NSObject, URLSessionDelegate {
     ///
     /// returns
     ///     LoginResponse
-    public func login(username:String, password:String) throws -> LoginResponse? {
+    public func login(username:String?, password:String?, jwt:String?) throws -> LoginResponse? {
         let req = "\(self.baseUrl!)/auth/login"
         let url = URL(string: req)
         var urlRequest = URLRequest(url: url!)
         urlRequest.httpMethod = "POST"
+        urlRequest.setValue("Bearer \(jwt!)", forHTTPHeaderField: "Authorization")
         urlRequest.setValue("application/json", forHTTPHeaderField: "content-type")
         
         let session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: nil)
         
-        let parameters:[String:Any] = ["username": username, "password": password]
-        
+//        let parameters:[String:Any] = ["username": username, "password": password]
+        let parameters:[String:Any] = [
+            "username": username!,
+        ]
+
         do {
             urlRequest.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted)
 

@@ -20,10 +20,10 @@ public class Velas {
     ///     url: url to the workit backend
     ///     username: username to workit account
     ///     password: password to workit account
-    public static func Login(url:String, username:String, password:String){
+    public static func Login(url:String, username:String?=nil, password:String?=nil, jwt:String?=nil){
         do {
             // login to workit backend
-            try LAPP.Login(url: url, username: username, password: password)
+            try LAPP.Login(url: url, username: username, password: password, jwt: jwt)
             
             // check if a velas object is ready to be load
             if Velas.Check() {
