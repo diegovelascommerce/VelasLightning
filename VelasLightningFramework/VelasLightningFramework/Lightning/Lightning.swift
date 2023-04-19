@@ -73,6 +73,7 @@ public class Lightning {
     public init(btc:Bitcoin) throws {
         
         print("----- Start LDK setup -----")
+        Bindings.setLogThreshold(severity: .DEBUG)
         
         self.btc = btc
         
