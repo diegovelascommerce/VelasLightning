@@ -169,16 +169,22 @@ def configure_routes(app, velas):
         res = velas.payinvoice(pay_req=bolt11)
         print(res)
         return res
+    
+    @app.route('/createinvoice',methods=['post'])
+    @token_required
+    def createinvoice():
+        print("create an invoice")
+        return "create an invoice"
+
+    @app.route('/invoicestatus', methods=['post'])
+    @token_required
+    def invoicestatus():
+        print("status of your invoice")
+        return "status of your invoice"
 
     @app.errorhandler(Exception)
     def handle_exception(e):
         return {'message': repr(e)}, 500
+    
 
-    # @app.route('/submit_bolt11', methods=['POST'])
-    # def submit_bolt11():
-    #     """Passes bolt11 to LAPP."""
-    #     print("submitBolt11")
-    #     data = request.get_json()
-    #     bolt11 = data.get('bolt11')
-    #     velas.payBolt11(bolt11)
-    #     return "Ok", 200
+
