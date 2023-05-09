@@ -15,8 +15,8 @@ public struct LoginResponse: Codable {
     public let success: Bool
     public let token: String?
     public let message: String?
-//    public let authId: UInt
-//    public let authName: String
+    public let authId: UInt?
+    public let authName: String?
 }
 
 
@@ -217,7 +217,9 @@ public class LAPP: NSObject, URLSessionDelegate {
     /// returns
     ///     LoginResponse
     public func login(username:String?, password:String?, jwt:String?) throws -> LoginResponse? {
-        let req = "\(self.baseUrl!)/auth/login"
+//        let req = "\(self.baseUrl!)/auth/login"
+        let req = "\(self.baseUrl!)/account/login"
+
         let url = URL(string: req)
         var urlRequest = URLRequest(url: url!)
         urlRequest.httpMethod = "POST"
@@ -260,7 +262,7 @@ public class LAPP: NSObject, URLSessionDelegate {
         
         var res:LoginResponse?
         if let data = data {
-            do {                
+            do {
                 res = try JSONDecoder().decode(LoginResponse.self, from: data)
             }
             catch {
