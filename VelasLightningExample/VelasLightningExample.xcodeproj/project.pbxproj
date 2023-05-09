@@ -8,8 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		8113FF9C299D778F00AF1619 /* velas.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8113FF9B299D778F00AF1619 /* velas.plist */; };
-		81218922290885B300354733 /* VelasLightningFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 81218921290885B300354733 /* VelasLightningFramework.framework */; };
-		81218923290885B300354733 /* VelasLightningFramework.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 81218921290885B300354733 /* VelasLightningFramework.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		813649CC291BEF9A00C344B6 /* BitcoinDevKit in Frameworks */ = {isa = PBXBuildFile; productRef = 813649CB291BEF9A00C344B6 /* BitcoinDevKit */; };
 		81481A7A29087B5000DA3224 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81481A7929087B5000DA3224 /* AppDelegate.swift */; };
 		81481A7C29087B5000DA3224 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81481A7B29087B5000DA3224 /* SceneDelegate.swift */; };
@@ -27,7 +25,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				81218923290885B300354733 /* VelasLightningFramework.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -36,7 +33,6 @@
 
 /* Begin PBXFileReference section */
 		8113FF9B299D778F00AF1619 /* velas.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = velas.plist; sourceTree = "<group>"; };
-		81218921290885B300354733 /* VelasLightningFramework.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = VelasLightningFramework.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		81481A7629087B5000DA3224 /* VelasLightningExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VelasLightningExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		81481A7929087B5000DA3224 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		81481A7B29087B5000DA3224 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -54,7 +50,6 @@
 			files = (
 				813649CC291BEF9A00C344B6 /* BitcoinDevKit in Frameworks */,
 				8156780229E9A5BE00CFBA59 /* LightningDevKit in Frameworks */,
-				81218922290885B300354733 /* VelasLightningFramework.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -64,7 +59,6 @@
 		81218920290885B300354733 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				81218921290885B300354733 /* VelasLightningFramework.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -423,7 +417,7 @@
 			repositoryURL = "https://github.com/lightningdevkit/ldk-swift";
 			requirement = {
 				kind = exactVersion;
-				version = 0.0.114;
+				version = 0.0.115;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

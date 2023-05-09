@@ -235,11 +235,11 @@ public class Lightning {
         )
         
         // if there are channel previously created
-        if let netGraphSerialized = netGraph?.write(), !channelManagerSerialized.isEmpty {
+        if let netGraph = netGraph, !channelManagerSerialized.isEmpty {
             channelManagerConstructor = try ChannelManagerConstructor(
                 channelManagerSerialized: channelManagerSerialized,
                 channelMonitorsSerialized: channelMonitorsSerialized,
-                netGraphSerialized: netGraphSerialized,
+                networkGraph: NetworkGraphArgument.instance(netGraph),
                 filter: filter,
                 params: constructionParameters
             )
