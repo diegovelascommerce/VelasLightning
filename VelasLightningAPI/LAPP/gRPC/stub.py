@@ -149,5 +149,16 @@ def get_wallet_balance(stub):
     balance = stub.WalletBalance(ln.WalletBalanceRequest())
     return balance
 
+
+def addinvoice(stub, memo, amount):
+    request = ln.Invoice(
+        memo=memo,
+        value=int(amount)
+    )
+    print(request)
+    response = stub.AddInvoice(request)
+    # return f"invoice: {memo}, {amount}"
+    return response
+
 # if __name__ == "__main__":
 #     start_server()

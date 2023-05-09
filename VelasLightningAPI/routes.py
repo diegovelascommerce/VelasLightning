@@ -170,17 +170,18 @@ def configure_routes(app, velas):
         print(res)
         return res
     
-    @app.route('/createinvoice',methods=['post'])
+    @app.route('/addinvoice',methods=['post'])
     @token_required
-    def createinvoice():
-        print("create an invoice")
-        return "create an invoice"
+    def addinvoice():
+        data = request.get_json()
+        memo = data.get('memo')
+        amount = data.get('amount')
 
-    @app.route('/invoicestatus', methods=['post'])
-    @token_required
-    def invoicestatus():
-        print("status of your invoice")
-        return "status of your invoice"
+        # res = velas.createinvoice()
+        res = velas.addinvoice(memo,amount)
+        # res = "foobar"
+        print(res)
+        return res
 
     @app.errorhandler(Exception)
     def handle_exception(e):

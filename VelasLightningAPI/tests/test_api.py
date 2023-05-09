@@ -152,22 +152,20 @@ def test_payinvoice(client):
 
     print(response)
 
-def test_createinvoice(client):
-    response = client.post('/createinvoice',
+def test_addinvoice(client):
+    data = {
+        "memo": "foobar",
+        "amount": 555
+    }
+    response = client.post('/addinvoice',
+                           data=json.dumps(data),
                            content_type='application/json',
                            headers=dict(
                                Authorization=f"Bearer {TOKEN}"
                            ))
 
     assert response is not None
-    assert response.data.decode('utf-8') == "create an invoice"
-
-def test_invoicestatus(client):
-    response = client.post('/invoicestatus',
-                           content_type='application/json',
-                           headers=dict(
-                               Authorization=f"Bearer {TOKEN}"
-                           ))
-
-    assert response is not None
-    assert response.data.decode('utf-8') == "status of your invoice"
+    res_str = response.data.decode('utf-8')
+    res_obj = json.loads(res_str)
+    assert "payment_request" in res_obj
+    assert len(res_obj['payment_request']) > 0

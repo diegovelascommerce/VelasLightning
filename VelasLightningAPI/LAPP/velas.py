@@ -60,3 +60,9 @@ class Velas:
             "payment_preimage": convertion.bytes_to_hex(res.payment_preimage),
             "payment_hash": convertion.bytes_to_hex(res.payment_hash)
         }
+    
+    def addinvoice(self,memo,amount):
+        res = lnd.addinvoice(self.stub, memo, amount)
+        return {
+            "payment_request": res.payment_request
+        }
