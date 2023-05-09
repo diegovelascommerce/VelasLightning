@@ -151,3 +151,23 @@ def test_payinvoice(client):
     assert response is not None
 
     print(response)
+
+def test_createinvoice(client):
+    response = client.post('/createinvoice',
+                           content_type='application/json',
+                           headers=dict(
+                               Authorization=f"Bearer {TOKEN}"
+                           ))
+
+    assert response is not None
+    assert response.data.decode('utf-8') == "create an invoice"
+
+def test_invoicestatus(client):
+    response = client.post('/invoicestatus',
+                           content_type='application/json',
+                           headers=dict(
+                               Authorization=f"Bearer {TOKEN}"
+                           ))
+
+    assert response is not None
+    assert response.data.decode('utf-8') == "status of your invoice"
