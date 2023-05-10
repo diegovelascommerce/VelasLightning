@@ -64,5 +64,17 @@ class Velas:
     def addinvoice(self,memo,amount):
         res = lnd.addinvoice(self.stub, memo, amount)
         return {
-            "payment_request": res.payment_request
+            "payment_request": res.payment_request,
+            "payment_hash": convertion.bytes_to_hex(res.r_hash)
+        }
+    
+    def lookupinvoice(self, hash):
+        res = lnd.lookupinvoice(self.stub, hash)
+        return {
+            "memo": res.memo,
+            "value": res.value,
+            "settled": res.settled,
+            "creation_date": res.creation_date,
+            "settle_date": res.settle_date,
+            "expiry": res.expiry
         }

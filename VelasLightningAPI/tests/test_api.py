@@ -165,7 +165,31 @@ def test_addinvoice(client):
                            ))
 
     assert response is not None
+    
     res_str = response.data.decode('utf-8')
     res_obj = json.loads(res_str)
+    
     assert "payment_request" in res_obj
     assert len(res_obj['payment_request']) > 0
+
+    assert "payment_hash" in res_obj
+    assert len(res_obj['payment_hash']) > 0
+
+def test_lookupinvoice(client):
+    data = {
+        "hash": "c462d6fc1310eca3da36cd28624a72d39686a8403ed08b3baa2f9e5a6dd2dc6a",
+    }
+    response = client.post('/lookupinvoice',
+                           data=json.dumps(data),
+                           content_type='application/json',
+                           headers=dict(
+                               Authorization=f"Bearer {TOKEN}"
+                           ))
+
+    assert response is not None
+
+    res_str = response.data.decode('utf-8')
+
+    print(res_str)
+
+    # assert res_str == "grpc: c462d6fc1310eca3da36cd28624a72d39686a8403ed08b3baa2f9e5a6dd2dc6a"

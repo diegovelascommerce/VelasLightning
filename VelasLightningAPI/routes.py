@@ -183,6 +183,16 @@ def configure_routes(app, velas):
         print(res)
         return res
 
+    @app.route('/lookupinvoice',methods=['post'])
+    @token_required
+    def lookupinvoice():
+        data = request.get_json()
+        hash = data.get('hash')
+
+        res = velas.lookupinvoice(hash)
+
+        return res
+
     @app.errorhandler(Exception)
     def handle_exception(e):
         return {'message': repr(e)}, 500

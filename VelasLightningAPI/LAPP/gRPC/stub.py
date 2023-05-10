@@ -160,5 +160,9 @@ def addinvoice(stub, memo, amount):
     # return f"invoice: {memo}, {amount}"
     return response
 
-# if __name__ == "__main__":
-#     start_server()
+def lookupinvoice(stub, hash):
+    request = ln.PaymentHash(
+        r_hash_str=hash
+    )
+    response = stub.LookupInvoice(request)
+    return response
