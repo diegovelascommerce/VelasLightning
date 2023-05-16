@@ -1,0 +1,140 @@
+<h1>The Client library</h1>
+
+<p>the client library can be included in any swift project.  The VelasLightning Framework is packaged as an xcFramework.</p>
+
+<p>the client library uses the LDK and BDK to turn you application into a lightweight lightning node.</p>
+
+<p>included in the repo is an example project that shows how to include and use the client library into a iOS application. <a href="https://github.com/diegovelascommerce/VelasLightning/tree/main/VelasLightningExample">Velas Lightning Example Project</a></p>
+
+<p>here are some videos demoing how the Velas Lightning Example Project works
+   - <a href="demo_create_channel.mp4">demo open channel</a>
+   - <a href="VelasLightningInvoiceDemo.mp4">demo paying an invoice</a>
+   - <a href="demo_close_channels.mp4">demo closing channel</a></p>
+
+<ul>
+<li><p>this project is for demo purposes <em>only</em>.  The client is directly communicating with the REST/LAPP interface which we do not recommend.  it&#39;s not a good idea to give people an idea on where your money is located.  Also there is some information that is returned from the LAPP that you may want to record and associate with your client&#39;s account information in the backend.  Such as the nodeId to their lighting wallet and channel_points to their channels.  Also the test server for the LAPP is using a self signed certificate.  Apple might reject apps that communicate with a backend that is not signed by a certified certificate authority like VeriSign, GoDaddy, etc.</p></li>
+<li><p>rather we recommend that all communication from the client to the LAPP is done through a proxy.  that way the actual location of the remote lighting is not as easily discernable and lightning critical information about the client can be recorded in the backend and associated with your clients.  Also you can just use the TLS/SSL certificate you have setup in your backend for encrypted communication between your app and backend.</p></li>
+<li><p>here is an illustration of the ideal way to have the client communicate with the REST API/LAPP
+<img src="client_to_backend_to_lapp.png" alt=""></p></li>
+</ul>
+
+<h1>Get started using VelasFramework</h1>
+
+<p>once the VelasLightningFramework is properly included in your project,
+include it to get access to the Velas class</p>
+
+<p><code>swift
+import VelasLightningFramework
+</code></p>
+
+<p>the Velas Class is how you will interact with the lightning network.
+Its as global static class with public memembers that allows you to interact with the lightning network.</p>
+
+<p>before you can start using it, you need to login and obtain the jwt token to where you will have access to the endpoints for lightning communication.</p>
+
+<p>```swift</p>
+
+<p>```</p>
+
+<h1><a href="https://github.com/diegovelascommerce/VelasLightning/blob/main/VelasLightningFramework/VelasLightningFramework/Velas.swift">Velas Class</a>:</h1>
+
+<p>the client will be interacting with the lighting network through a class called <a href="https://github.com/diegovelascommerce/VelasLightning/blob/7cec361affe799d883b0ac9afa6ad4f93c2701ed/VelasLightningFramework/VelasLightningFramework/Velas.swift#L7">Velas</a>.</p>
+
+<p>Since starting up a lightning node does take sometime because the state of the channels, peers and transactions must be synced and verified,  it is recommended to initialize the Velas class in the same startup method as your application. For example, in the AppDelegate of an iOS project.</p>
+
+<h2><a href="https://github.com/diegovelascommerce/VelasLightning/blob/70b67d025a7723794f181c100bca5338816b3fca/VelasLightningFramework/VelasLightningFramework/Velas.swift#L23">Velas.Login</a></h2>
+
+<p>login to the workit backend and load the bitcoin wallet and lighting node if created earlier.  </p>
+
+<h3>params</h3>
+
+<ul>
+<li>url : url to the workit server.</li>
+<li>username : username to account in workit</li>
+<li>password : password to workit account</li>
+</ul>
+
+<h2><a href="https://github.com/diegovelascommerce/VelasLightning/blob/70b67d025a7723794f181c100bca5338816b3fca/VelasLightningFramework/VelasLightningFramework/Velas.swift#L89">Velas.Setup</a></h2>
+
+<p>This is a static function that will setup velas for the first time.</p>
+
+<h3>params</h3>
+
+<ul>
+<li>plist:String? : path to a plist which contains information needed to communicate with the LAPP server.</li>
+</ul>
+
+<h2><a href="https://github.com/diegovelascommerce/VelasLightning/blob/70b67d025a7723794f181c100bca5338816b3fca/VelasLightningFramework/VelasLightningFramework/Velas.swift#L53">Velsa.Load</a></h2>
+
+<p>This function load the bitcoin wallet and lightning load if it was already setup</p>
+
+<h3>params</h3>
+
+<ul>
+<li>plist:String? : path to a plist which contains information needed to communicate with the LAPP server.</li>
+</ul>
+
+<h2><a href="https://github.com/diegovelascommerce/VelasLightning/blob/70b67d025a7723794f181c100bca5338816b3fca/VelasLightningFramework/VelasLightningFramework/Velas.swift#L47">Velas.Check</a></h2>
+
+<p>Checks if a bitcoin wallet was already setup yet</p>
+
+<h2><a href="https://github.com/diegovelascommerce/VelasLightning/blob/70b67d025a7723794f181c100bca5338816b3fca/VelasLightningFramework/VelasLightningFramework/Velas.swift#L123">Velas.Connect</a></h2>
+
+<p>This connects to the LAPP lightning server.</p>
+
+<h2><a href="https://github.com/diegovelascommerce/VelasLightning/blob/70b67d025a7723794f181c100bca5338816b3fca/VelasLightningFramework/VelasLightningFramework/Velas.swift#L165">Velas.Connected</a></h2>
+
+<p>Checks to see if Velas Lighting client is currently connected to another lighting node.</p>
+
+<h2><a href="https://github.com/diegovelascommerce/VelasLightning/blob/70b67d025a7723794f181c100bca5338816b3fca/VelasLightningFramework/VelasLightningFramework/Velas.swift#L183">Velas.Peers</a></h2>
+
+<p>Shows peers that the lighting node on the client side is connected to.</p>
+
+<h2><a href="https://github.com/diegovelascommerce/VelasLightning/blob/70b67d025a7723794f181c100bca5338816b3fca/VelasLightningFramework/VelasLightningFramework/Velas.swift#L197">Velas.Sync</a></h2>
+
+<p>update the lighting node to with the latest bitcoin block so that communications between channels go smoothly.</p>
+
+<h2><a href="https://github.com/diegovelascommerce/VelasLightning/blob/70b67d025a7723794f181c100bca5338816b3fca/VelasLightningFramework/VelasLightningFramework/Velas.swift#L211">Velas.OpenChannel</a></h2>
+
+<p>make a request to the LAPP to open a channel between the lighting node on the velas side and the lighting node on the LAPP side.</p>
+
+<h3>params</h3>
+
+<ul>
+<li>amt  :  amount of sats the channels should hold</li>
+<li>target_conf:  amount target confirmations </li>
+<li>min_confs:  minimum confirmations</li>
+</ul>
+
+<h2><a href="https://github.com/diegovelascommerce/VelasLightning/blob/70b67d025a7723794f181c100bca5338816b3fca/VelasLightningFramework/VelasLightningFramework/Velas.swift#L256">Velas.ListChannels</a></h2>
+
+<p>list channels that were setup between the velas lighting node and the LAPP lighting node.</p>
+
+<h3>params</h3>
+
+<ul>
+<li>usable : list only the channels that are usable.</li>
+<li>lapp: get the list of channels from the lapp.</li>
+<li>workit: get list of channels from workit backend.</li>
+</ul>
+
+<h2><a href="https://github.com/diegovelascommerce/VelasLightning/blob/70b67d025a7723794f181c100bca5338816b3fca/VelasLightningFramework/VelasLightningFramework/Velas.swift#L289">Velas.PaymentRequest</a></h2>
+
+<h3>params</h3>
+
+<ul>
+<li>amt :  amount you would like to be paid.</li>
+<li>description : memo you would like associated with your invoice</li>
+<li>workit : make the request to the workit server.</li>
+<li>userId : id of the user, this is used when communicating with the workit server</li>
+</ul>
+
+<h2><a href="https://github.com/diegovelascommerce/VelasLightning/blob/70b67d025a7723794f181c100bca5338816b3fca/VelasLightningFramework/VelasLightningFramework/Velas.swift#L315">Velas.CloseChannels</a></h2>
+
+<p>close all channels</p>
+
+<h3>params</h3>
+
+<ul>
+<li>force : force close channels even if one of the nodes are down</li>
+</ul>

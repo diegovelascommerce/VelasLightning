@@ -1,177 +1,128 @@
-# Example Lightning App (LApp)
+# REST API / LAPP
 
-## Velas LApp
+this handles the creation of channels and the processing of invoices through a REST/LAPP interface.
 
-[![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://travis-ci.org/joemccann/dillinger)
+It is recommended that all calls to the REST/LAPP interface be done through a proxy.
+that way the location of the lightning node will not be obvious but also make scaling  easier in the future.
 
-The Velas LApp is client side software that can use python scripts to control an LND node. It is a Python application designed to run on a Ubuntu Server running LND.
+here is an example of how the REST API / LAPP can be setup.
+![](client_to_backend_to_lapp.png)
+  
+The backend is written in python using [Flask](https://flask.palletsprojects.com/en/2.2.x/).
 
-For example, it can be used for:
+It communicates with a LAPP which communicates with a remote full lighting node using [gRPC](https://grpc.io/).
 
-- Create channels
-- Send payments
-- Create invoices
-- Stream payments
+for security reasons, all requests are encoded using [TLS](https://flask.palletsprojects.com/en/2.2.x/).
 
-The LApp mainly follows this set of instructions by Lightning Labs [How to write a Python gRPC client for the Lightning Network Daemon](https://github.com/lightningnetwork/lnd/blob/master/docs/grpc/python.md)
+also for security reason, all request must have to have a JWT([Json Web Token](https://www.youtube.com/watch?v=7ozQLeFJpqs)) token in the header of the request.
 
-## Features
+we have a test server setup for experimenting with the REST/LAPP APIs.
+- the server is called velastestnet and it's ip address is 45.33.22.210 
+- it uses a self signed certificate for TLS.
+  - however, in production it is recomended that the client communicate with a backend that  is signed with  a public certification authority like VeriSign, Digicert, etc.
+  otherwise the app might be rejected by apple.
 
-Currently the Velas LApp is built to support lightning.proto gRPC calls. We have working examples of the following:
+- for testing purposes the JWT token used for communicating with velastestnet(45.33.22.210) was created usings the secret phrase, literally, 'secret'.
+  in production it will be expected that the jwt will be created with a much more secure secret phrase.
 
-- Hello World - Communication test
-- GetInfo - Returns basic information about the LND node
-- OpenChannel - Options a channel between the LND node and another node
-- CloseChannel - Closes a channel given the channel point
-- ListChannels - returns channel balances, optional to pass in a pub key to be given info about only that remote node balance
-- SubmitBolt11 - Submit a bolt 11 invoice to be paid automatically
-- WalletBalance - Retrieve and display the on-chain wallet balance
-- A complete list of supported gRPC API calls is located here [ln.proto](https://github.com/lightningnetwork/lnd/blob/de3e0d7875de11d8f04c29e2d58f8bdc8d4051d7/lnrpc/lightning.proto)
+included in this project is an export file for a plugin called [RESTClient](https://addons.mozilla.org/en-US/firefox/addon/restclient/).
+  - you can download the plugin for both Firefox or Chrome. 
+  - note: we have tested these endpoints on many different machines.  the ones you want to focus on is https://45.33.22.210, the velastestnet server
+  - here is the [export file for RESTClient](RESTClient_dump.json)
 
-## Tech
+also we have some unit test that can be useful in showing how the api can work.  it uses [pytest](https://docs.pytest.org/en/7.2.x/).
+- [unit test](https://github.com/diegovelascommerce/VelasLightning/tree/main/VelasLightningAPI/tests)
+  
+## `GET: getinfo`
 
-The Velas LApp uses a number of open source projects to work properly:
+![](getinfo.png)
 
-- [Python] - a programming language that lets you work quickly
-  and integrate systems more effectively.
-- [VirtualEnv] - a tool to create isolated Python environments.
-- [LND] - a complete implementation of a Lightning Network node.
-- [googleapis] - the original interface definitions of public Google APIs that support both REST and gRPC protocols.
+you call this endpoint to get the information of the remote Lighting node that the LAPP is connected to.
 
-And of course the Velas LApp itself is open source with a [public repository][dill]
-on GitHub.
+you will need to extract information such as the identity_pubkey and the public ip address of the node so that the client can create a connection with that node
 
-## Setup and Installation
+### response:
 
-Lnd uses the gRPC protocol for communication with clients like lncli. gRPC is based on protocol buffers and as such, you will need to compile the lnd proto file in Python before you can use it to communicate with lnd.
+@identity_pubkey: is the node ID of the remote Lightning node that the LAPP is setup with.
+- the client will need this information in order to connect to the remote full lighting node.
+  
+@urls.public:  this the public ip address to the remote Lighting node that the LAPP is setup with.
+- the client will also need this information in order to connect the remote full lighting node.
 
-1. Create a virtual environment for your project
+## `POST: openchannel`
 
-```sh
-$ virtualenv lnd
-```
+![](openchannel.png)
 
-2. Activate the virtual environment
+this is responsible for creating a channel between the client and the LAPP backend.
 
-```
-$ source lnd/bin/activate
-```
+### body:
 
-3. Install dependencies (googleapis-common-protos is required due to the use of google/api/annotations.proto)
+@nodeId:  node ID of the client which the LAPP will setup a channel with it's backend lightning node.
+- this is the node ID of the client that is running VelasLighting Framework.  Not to be confused with the node ID of the remote Lighting node that the LAPP communicates with.
 
-```
-lnd $  pip install grpcio grpcio-tools googleapis-common-protos
-```
+@amt:  the capacity that you want the channel to be.
+- this is specified in satoshis.  
 
-4. Clone the google api's repository (required due to the use of google/api/annotations.proto)
 
-```
-lnd $  git clone https://github.com/googleapis/googleapis.git
-```
+### response:
+@txid:  this is the id of the transaction that was used to fund the channel.
+- this can be seen in a block explorer.
+  - here I am using [blockstream.info](https://blockstream.info/testnet/)
+  ![](blockstream.info.png)
 
-5. Copy the lnd lightning.proto file (you'll find this at [ln.proto](https://github.com/lightningnetwork/lnd/blob/de3e0d7875de11d8f04c29e2d58f8bdc8d4051d7/lnrpc/lightning.proto) or just download it
+@vout: is the index of where the transactions in places in the block.
+- you will need both the txid and the vout in order to close the channel in the future.
+- it is a good idea to save this somewhere like in a table that is associated with your client's account information.
 
-```
-lnd $  curl -o lightning.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/lightning.proto
-```
 
-6. Compile the proto file
+## `POST: listchannels`
 
-```
-lnd $  python -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. lightning.proto
-```
+![](listchannels.png)
 
-After following these steps, two files lightning_pb2.py and lightning_pb2_grpc.py will be generated. These files will be imported in your project anytime you use Python gRPC.
+returns a list of channels that the remote Full lightning node has setup.
 
-\*Note: It is possible to setup RPC modules for subservers. We skipped this for our LApp. If wanted, instructions can be found here: [Generating RPC modules for subservers](https://github.com/lightningnetwork/lnd/blob/master/docs/grpc/python.md#generating-rpc-modules-for-subservers))
+### body:
+@peer:  the node ID which you want to see channels for.
+- if you leave this blank it will return to you all the channels you have setup in your remote full lightning node
 
-## Imports
+### response:
+@channel_point: this is a combination of the txid and the vout.
+- you will need to provide this information if you want to close the channel in the future.
 
-Every time you use Python gRPC, you will have to import the generated rpc modules and set up a channel and stub to your connect to your lnd node.
+### `POST: closechannel`
 
-To authenticate using macaroons you need to include the macaroon in the metadata of the request. This is included in the Client run.py as an example for running on Regtest using Polar and needs to be adapted for use in Testnet or Mainnet applications.
+![](closechannel.png)
 
-\*Note that when an IP address is used to connect to the node
+this is used to close a channel
 
-```sh
-(e.g. 192.168.1.21 instead of localhost)
-```
+- you would probably use this to close the channels on behalf of a client, in case they lost their phone.
 
-you need to add
+### body:
+@txid:  the id of the transaction that was used to fund this channel
+@vout:  the index in the block that the funding transaction was added to.
 
-```sh
---tlsextraip=192.168.1.21
-```
+### response:
+@txid:  the id of the transaction that give participants back their money
+- you can see this transaction on a block explorer.  
+  ![](blockstream_closechannel.png)
 
-to your lnd configuration and re-generate the certificate (delete tls.cert and tls.key and restart lnd).
 
-## Client
+## `POST: payinvoice`
 
-The following code is contained in the run.py file and contains the bulk of the logic needed to run the LApp
+![](payinvoice.png)
 
-```sh
-import lightning_pb2 as ln
-import lightning_pb2_grpc as lnrpc
-import grpc
-import os
-import codecs
+this is used to pay an invoice that the client generated.
+- example: client reached their goal and generated a bolt11 using `velas.createInvoice`
+- the bolt11 gets processed by the lapp and now the user balance reflects that.
 
-# Due to updated ECDSA generated tls.cert we need to let gprc know that
-# we need to use that cipher suite otherwise there will be a handhsake
-# error when we communicate with the lnd rpc server.
-os.environ["GRPC_SSL_CIPHER_SUITES"] = 'HIGH+ECDSA'
+### body:
+@bolt11: this is the bolt11 string that was generated by the client.
 
-# Lnd cert is at ~/.lnd/tls.cert on Linux and
-# ~/Library/Application Support/Lnd/tls.cert on Mac
-cert = open(os.path.expanduser('/home/hannah/.polar/networks/1/volumes/lnd/alice/tls.cert'), 'rb').read()
-creds = grpc.ssl_channel_credentials(cert)
+### response:
+@payment_error:  if there were any errors, this field would have a message explaining the problem
 
-# Lnd admin macaroon is at ~/.lnd/data/chain/bitcoin/simnet/admin.macaroon on Linux and
-# ~/Library/Application Support/Lnd/data/chain/bitcoin/simnet/admin.macaroon on Mac
-with open(os.path.expanduser('/home/hannah/.polar/networks/1/volumes/lnd/alice/data/chain/bitcoin/regtest/admin.macaroon'), 'rb') as f:
-    macaroon_bytes = f.read()
-    macaroon = codecs.encode(macaroon_bytes, 'hex')
+@payment_hash:  this is a hash that is used in [HTLC](https://www.youtube.com/watch?v=NcKNzk-H8CY).
 
-def metadata_callback(context, callback):
-    # for more info see grpc docs
-    callback([('macaroon', macaroon)], None)
+@payment_preimage:  this is the preimage that generated the HASH for the [HTLC](https://www.youtube.com/watch?v=NcKNzk-H8CY).
+- if the payment was successful this field should be filled
 
-# build ssl credentials using the cert the same as before
-cert_creds = grpc.ssl_channel_credentials(cert)
-
-# now build meta data credentials
-auth_creds = grpc.metadata_call_credentials(metadata_callback)
-
-# combine the cert credentials and the macaroon auth credentials
-# such that every call is properly encrypted and authenticated
-combined_creds = grpc.composite_channel_credentials(cert_creds, auth_creds)
-
-channel = grpc.secure_channel('localhost:10001', combined_creds)
-stub = lnrpc.LightningStub(channel)
-
-# now every call will be made with the macaroon already included
-stub.GetInfo(ln.GetInfoRequest())
-
-# Retrieve and display the wallet balance
-response = stub.WalletBalance(ln.WalletBalanceRequest())
-print(response.total_balance)
-```
-
-## More examples
-
-More examples, including streaming payments via RPC can be found here: [Examples](https://github.com/lightningnetwork/lnd/blob/master/docs/grpc/python.md#examples))
-
-## License
-
-MIT
-
-**Free Software, Hell Yeah!**
-
-[//]: # "These are reference links used in the body of this note and get stripped out when the markdown processor does its job. There is no need to format nicely because it shouldn't be seen. Thanks SO - http://stackoverflow.com/questions/4823468/store-comments-in-markdown-syntax"
-[dill]: https://github.com/joemccann/dillinger
-[git-repo-url]: https://github.com/joemccann/dillinger.git
-[john gruber]: http://daringfireball.net
-[lnd]: https://github.com/lightningnetwork/lnd
-[virtualenv]: https://virtualenv.pypa.io/en/latest/
-[googleapis]: https://github.com/googleapis/googleapis.git
-[python]: https://www.python.org/downloads/
