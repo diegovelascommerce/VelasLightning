@@ -10,6 +10,6 @@ There are two pieces to this project.
   - the LAPP is just a python application that communicates with the remote lighting node using [gRPC](https://www.youtube.com/watch?v=gnchfOojMk4)
 
 
-- Checkout this link if you want to see how VelasFramework works on the client side.  [VelasFramework](VelasLightningFrameWork/README.md)
+- Checkout this link if you want to see how VelasFramework works on the client side.  [VelasFramework](VelasLightningFramework/README.md)
 
 - Checkout this link if you want to see how VelasFramework works on the server side.  [VelasFrameworkAPI](VelasLightningAPI/README.md)
