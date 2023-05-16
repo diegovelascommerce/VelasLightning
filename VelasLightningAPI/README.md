@@ -1,3 +1,7 @@
+This is the part that handles the creating of channels and processing of invoices.
+A client will communicate with the server side to request that outbounded channels be created to it submit bolt11 invoices to collect their rewards
+
+
 # REST API / LAPP
 
 this handles the creation of channels and the processing of invoices through a REST/LAPP interface.
@@ -6,7 +10,7 @@ It is recommended that all calls to the REST/LAPP interface be done through a pr
 that way the location of the lightning node will not be obvious but also make scaling  easier in the future.
 
 here is an example of how the REST API / LAPP can be setup.
-![](client_to_backend_to_lapp.png)
+![](../client_to_backend_to_lapp.png)
   
 The backend is written in python using [Flask](https://flask.palletsprojects.com/en/2.2.x/).
 
@@ -35,7 +39,7 @@ also we have some unit test that can be useful in showing how the api can work. 
   
 ## `GET: getinfo`
 
-![](getinfo.png)
+![](../getinfo.png)
 
 you call this endpoint to get the information of the remote Lighting node that the LAPP is connected to.
 
@@ -51,7 +55,7 @@ you will need to extract information such as the identity_pubkey and the public 
 
 ## `POST: openchannel`
 
-![](openchannel.png)
+![](../openchannel.png)
 
 this is responsible for creating a channel between the client and the LAPP backend.
 
@@ -68,7 +72,7 @@ this is responsible for creating a channel between the client and the LAPP backe
 @txid:  this is the id of the transaction that was used to fund the channel.
 - this can be seen in a block explorer.
   - here I am using [blockstream.info](https://blockstream.info/testnet/)
-  ![](blockstream.info.png)
+  ![](../blockstream.info.png)
 
 @vout: is the index of where the transactions in places in the block.
 - you will need both the txid and the vout in order to close the channel in the future.
@@ -77,7 +81,7 @@ this is responsible for creating a channel between the client and the LAPP backe
 
 ## `POST: listchannels`
 
-![](listchannels.png)
+![](../listchannels.png)
 
 returns a list of channels that the remote Full lightning node has setup.
 
@@ -91,7 +95,7 @@ returns a list of channels that the remote Full lightning node has setup.
 
 ### `POST: closechannel`
 
-![](closechannel.png)
+![](../closechannel.png)
 
 this is used to close a channel
 
@@ -109,7 +113,7 @@ this is used to close a channel
 
 ## `POST: payinvoice`
 
-![](payinvoice.png)
+![](../payinvoice.png)
 
 this is used to pay an invoice that the client generated.
 - example: client reached their goal and generated a bolt11 using `velas.createInvoice`
@@ -126,3 +130,42 @@ this is used to pay an invoice that the client generated.
 @payment_preimage:  this is the preimage that generated the HASH for the [HTLC](https://www.youtube.com/watch?v=NcKNzk-H8CY).
 - if the payment was successful this field should be filled
 
+## `POST: addinvoice`
+
+![](../addinvoice.png)
+
+this is used to create an invoice for someone to pay to the workit Lightning wallet.
+you might use in the case the user would like to contribute of a pot lot / groupoun service that you are offering.
+
+### body:
+@memo:  you can attach a memo to the invoice you are creating.
+
+@amount:  the amount in satoshis you would like the invoice to be.
+
+### response:
+@payment_hash:  the hash associated with the bolt11.  you will need this if you want to track the status of the invoice latter.
+
+@payment_request: this is the actual bolt11 invoice that you want to share.
+
+
+## `POST: lookupinvoice`
+
+![](../lookupinvoice.png)
+
+this is used to find out what it is the status of the invoice you created with `/addinvoice`.
+
+### body:
+@hash:  this is the hash that came with the invoice you created with `/addinvoice`
+
+### response:
+@creation_data:  when the invoice was created.  it's in unix time
+
+@memo:  memo that you created with the invoice.
+
+@expiry:  time in seconds when bolt11 invoice will expire.
+
+@settled_data:  the time when the bolt11 invoice was paid.
+
+@settled:  boolean telling if bolt11 invoice was paid yet
+
+@value: the amount of the invoice 
