@@ -70,10 +70,16 @@ public class Lightning {
     var btc: Bitcoin
     
     /// Setup the LDK
-    public init(btc:Bitcoin) throws {
+    public init(btc:Bitcoin, verbose:Bool = false) throws {
         
         print("----- Start LDK setup -----")
-        Bindings.setLogThreshold(severity: .DEBUG)
+        if verbose {
+            Bindings.setLogThreshold(severity: .DEBUG)
+        }
+        else {
+            Bindings.setLogThreshold(severity: .ERROR)
+        }
+        
         
         self.btc = btc
         
@@ -91,7 +97,7 @@ public class Lightning {
         let feeEstimator = MyFeeEstimator()
         
         // Step 2. Initialize the Logger
-        logger = MyLogger()
+        logger = MyLogger(verbose: verbose)
         
         // Step 3. Initialize the BroadcasterInterface
         let broadcaster = MyBroadcasterInterface(btc:btc)

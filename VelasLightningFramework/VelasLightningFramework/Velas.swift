@@ -52,17 +52,22 @@ public class Velas {
     /// load velas
     public static func Load(plist:String?=nil) {
         do {
+            var verbose = false
+            if let plist = plist {
+                let plist = FileMgr.getPlist(plist)
+                verbose = plist["verbose"] as! Bool
+            }
             if FileMgr.fileExists(path: "key") {
                 let mnemonicData = try FileMgr.readData(path: "mnemonic")
                 let key = try FileMgr.readString(path: "key")
                 if let mnemonic = Cryptography.decrypt(encryptedData: mnemonicData, key: key) {
                     print("read mnemonic: \(mnemonic)")
-                    shared = try Velas(mnemonic: mnemonic)
+                    shared = try Velas(mnemonic: mnemonic, verbose: verbose)
                 }
             }
             else {
                 let mnemonic = try FileMgr.readString(path: "mnemonic")
-                shared = try Velas(mnemonic: mnemonic)
+                shared = try Velas(mnemonic: mnemonic, verbose: verbose)
             }
             if let plist = plist {
                 try LAPP.Setup(plist: plist)
@@ -88,7 +93,16 @@ public class Velas {
     /// setup velas
     public static func Setup(plist:String?=nil) {
         do {
-            shared = try Velas()
+            if let plist = plist {
+                let plist = FileMgr.getPlist(plist)
+                let verbose = plist["verbose"] as! Bool
+                shared = try Velas(verbose:verbose)
+            }
+            else {
+                shared = try Velas()
+            }
+           
+            
             if let velas = shared {
                 let mnemonic = velas.getMnemonic()
                 print("create new mnemonic: \(mnemonic)")
@@ -341,11 +355,11 @@ public class Velas {
     
     /// Initialize Bitcoin and Lightning
     public init(network: Network = Network.testnet,
-                mnemonic: String? = nil) throws {
+                mnemonic: String? = nil, verbose: Bool = false) throws {
         do {
             btc = try Bitcoin(network: network, mnemonic: mnemonic)
             try btc.sync()
-            ln = try Lightning(btc:btc)
+            ln = try Lightning(btc:btc,verbose: verbose)
         }
         catch BdkError.Electrum(let message) {
             throw VelasError.Electrum(msg: message)
