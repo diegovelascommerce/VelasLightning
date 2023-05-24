@@ -18,7 +18,8 @@ class Velas:
                     amt,
                     private,
                     target_conf,
-                    min_confs):
+                    min_confs,
+                    zero_conf):
         """
         Create a outbout channel with node submitted
 
@@ -30,7 +31,8 @@ class Velas:
                                        amt=amt,
                                        private=private,
                                        target_conf=target_conf,
-                                       min_confs=min_confs)
+                                       min_confs=min_confs,
+                                       zero_conf=zero_conf)
 
         brev = convertion.reverse_bytes(channelPoint.funding_txid_bytes)
         txid = convertion.bytes_to_hex(brev)
