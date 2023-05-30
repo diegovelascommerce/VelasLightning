@@ -58,7 +58,8 @@ def openchannel(stub,
                 amt: int,
                 private: bool,
                 target_conf: int,
-                min_confs: int):
+                min_confs: int,
+                zero_conf: bool):
 
     request = ln.OpenChannelRequest(
         # sat_per_vbyte= < uint64 > ,
@@ -79,7 +80,7 @@ def openchannel(stub,
         # remote_max_htlcs= < uint32 > ,
         # max_local_csv= < uint32 > ,
         # commitment_type= < CommitmentType > ,
-        # zero_conf= < bool > ,
+        zero_conf=zero_conf,
         # scid_alias= < bool > ,
         # base_fee= < uint64 > ,
         # fee_rate= < uint64 > ,
