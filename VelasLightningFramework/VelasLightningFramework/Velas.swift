@@ -14,6 +14,8 @@ public class Velas {
     // shared static object that can be accessed globaly
     public static var shared:Velas?
     
+    public var publicURL: Bool
+    
     /// Login to Workit backend and load the global Velas object if available.
     ///
     /// params
@@ -32,6 +34,7 @@ public class Velas {
                 
                 // connect to the workit server
                 let connected = Velas.Connect(workit: true)
+                
                 print("velas connected: \(connected)")
             }
         }
@@ -53,25 +56,31 @@ public class Velas {
     public static func Load(plist:String?=nil) {
         do {
             var verbose = false
+            var publicURL = false
+            var url:String = ""
+            var jwt:String = ""
             if let plist = plist {
                 let plist = FileMgr.getPlist(plist)
                 verbose = plist["verbose"] as! Bool
+                publicURL = plist["public_url"] as! Bool
+                url = plist["url"] as! String
+                jwt = plist["jwt"] as! String
             }
             if FileMgr.fileExists(path: "key") {
                 let mnemonicData = try FileMgr.readData(path: "mnemonic")
                 let key = try FileMgr.readString(path: "key")
                 if let mnemonic = Cryptography.decrypt(encryptedData: mnemonicData, key: key) {
                     print("read mnemonic: \(mnemonic)")
-                    shared = try Velas(mnemonic: mnemonic, verbose: verbose)
+                    shared = try Velas(mnemonic: mnemonic, verbose: verbose, publicURL: publicURL)
                 }
             }
             else {
                 let mnemonic = try FileMgr.readString(path: "mnemonic")
-                shared = try Velas(mnemonic: mnemonic, verbose: verbose)
+                shared = try Velas(mnemonic: mnemonic, verbose: verbose, publicURL: publicURL)
             }
-            if let plist = plist {
-                try LAPP.Setup(plist: plist)
-            }
+            
+            try LAPP.Setup(url: url, jwt: jwt)
+            
         }
         catch VelasError.Electrum(let msg){
             NSLog("problem with Electrum: \(msg)")
@@ -96,7 +105,8 @@ public class Velas {
             if let plist = plist {
                 let plist = FileMgr.getPlist(plist)
                 let verbose = plist["verbose"] as! Bool
-                shared = try Velas(verbose:verbose)
+                let publicURL = plist["public_url"] as! Bool
+                shared = try Velas(verbose:verbose, publicURL: publicURL)
             }
             else {
                 shared = try Velas()
@@ -149,7 +159,8 @@ public class Velas {
                     }
                     else {
                         if let info = LAPP.Info {
-                            let connected = try velas.connectToPeer(nodeId: info.identity_pubkey, address: info.urls.publicIP, port: 9735)
+                            let address = velas.publicURL ? info.urls.publicIP : info.urls.localIP
+                            let connected = try velas.connectToPeer(nodeId: info.identity_pubkey, address: address, port: 9735)
                             return connected
                         }
                     }
@@ -327,9 +338,6 @@ public class Velas {
     }
     
     public static func CloseChannels(force:Bool = false) -> Bool {
-        
-        
-        
         do {
             if let velas = shared {
                 if force {
@@ -355,8 +363,9 @@ public class Velas {
     
     /// Initialize Bitcoin and Lightning
     public init(network: Network = Network.testnet,
-                mnemonic: String? = nil, verbose: Bool = false) throws {
+                mnemonic: String? = nil, verbose: Bool = false, publicURL: Bool = true) throws {
         do {
+            self.publicURL = publicURL
             btc = try Bitcoin(network: network, mnemonic: mnemonic)
             try btc.sync()
             ln = try Lightning(btc:btc,verbose: verbose)

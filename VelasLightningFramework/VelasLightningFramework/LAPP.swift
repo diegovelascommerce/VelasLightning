@@ -156,6 +156,16 @@ public class LAPP: NSObject, URLSessionDelegate {
         shared = lapp
     }
     
+    /// Setup Velas throught plist
+    public static func Setup(url:String, jwt:String) throws {
+        let lapp = LAPP(baseUrl: url, jwt: jwt);
+        
+        let info = try lapp.getinfo()
+        LAPP.Info = info
+        
+        shared = lapp
+    }
+    
     /// Setup baseurl and jwt if passed in.
     public init(baseUrl:String, jwt:String? = nil) {
         self.baseUrl = baseUrl
