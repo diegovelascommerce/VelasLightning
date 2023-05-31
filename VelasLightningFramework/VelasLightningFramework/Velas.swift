@@ -57,14 +57,11 @@ public class Velas {
         do {
             var verbose = false
             var publicURL = false
-            var url:String = ""
-            var jwt:String = ""
+            
             if let plist = plist {
                 let plist = FileMgr.getPlist(plist)
                 verbose = plist["verbose"] as! Bool
                 publicURL = plist["public_url"] as! Bool
-                url = plist["url"] as! String
-                jwt = plist["jwt"] as! String
             }
             if FileMgr.fileExists(path: "key") {
                 let mnemonicData = try FileMgr.readData(path: "mnemonic")
@@ -78,8 +75,9 @@ public class Velas {
                 let mnemonic = try FileMgr.readString(path: "mnemonic")
                 shared = try Velas(mnemonic: mnemonic, verbose: verbose, publicURL: publicURL)
             }
-            
-            try LAPP.Setup(url: url, jwt: jwt)
+            if let plist {
+                try LAPP.Setup(plist: plist)
+            }
             
         }
         catch VelasError.Electrum(let msg){
