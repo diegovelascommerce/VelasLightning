@@ -120,7 +120,7 @@ class ViewController: UIViewController {
     
     @IBAction func openChannel(_ sender: Any) {
         
-        let res = Velas.OpenChannel(amt: 20000)
+        let res = Velas.OpenChannel(amt: 20000, target_conf: 0, min_confs: 0)
         if let res = res {
             print(res)
             self.alert(title: "Channel created", message: "channel: \(res)")
