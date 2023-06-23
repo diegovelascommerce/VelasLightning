@@ -5,7 +5,7 @@ venv:
 
 .PHONY: activate
 activate:
-	.\.env\Scripts\Activate
+	.\.venv\Scripts\Activate
 
 .PHONY: requirements 
 requirements:
