@@ -214,6 +214,7 @@ public class Lightning {
 
         let handshakeLimits = ChannelHandshakeLimits.initWithDefault()
         handshakeLimits.setForceAnnouncedChannelPreference(val: false)
+        handshakeLimits.setTrustOwnFunding0conf(val: true)
         
         let userConfig = UserConfig.initWithDefault()
         userConfig.setChannelHandshakeConfig(val: handshakeConfig)
