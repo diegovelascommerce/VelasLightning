@@ -387,7 +387,7 @@ public class LAPP: NSObject, URLSessionDelegate {
         urlRequest.setValue("application/json", forHTTPHeaderField: "content-type")
         urlRequest.httpMethod = "POST"
         
-        let parameters:[String:Any] = ["nodeId": nodeId, "amt": amt, "private": privChan ? 1 : 0, "target_conf":target_conf, "min_confs":min_confs ]
+        let parameters:[String:Any] = ["nodeId": nodeId, "amt": amt, "private": privChan ? 1 : 0, "target_conf":target_conf, "min_confs":min_confs, "zero_conf": 1 ]
         
         do {
             urlRequest.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted) // pass dictionary to data object and set it as request body
