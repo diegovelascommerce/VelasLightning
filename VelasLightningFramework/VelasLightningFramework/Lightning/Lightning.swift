@@ -785,11 +785,31 @@ public class Lightning {
             throw LightningError.Invoice(msg: "deserializeBolt11")
         }
         
+//        print("payeePubKey: \(invoice.payeePubKey()!)")
+        
         let restoredBolt11 = invoice.toStr()
+        
+        print("restoredBolt11: \(restoredBolt11)")
+        
         let memo = invoice.intoSignedRaw().rawInvoice().description()?.intoInner()
         let amt = invoice.amountMilliSatoshis()
         
+//        let pubKey = invoice.payeePubKey()
+        
+//        let pubKey = invoice.recoverPayeePubKey()
+
+        
         return (invoice, restoredBolt11, memo!, amt!)
+    }
+    
+    func getInvoice(bolt11: String) throws -> Invoice {
+        let invoiceParsed = Invoice.fromStr(s: bolt11)
+        
+        guard let invoice = invoiceParsed.getValue(), invoiceParsed.isOk() else {
+            throw LightningError.Invoice(msg: "deserializeBolt11")
+        }
+        
+        return invoice
     }
     
     /// Pay a bolt11 invoice.
@@ -826,6 +846,106 @@ public class Lightning {
             print("Velas/Lightning payInvoice error: \(String(describing: error?.getValueType()))")
             throw LightningError.payInvoice(msg: "payInvoice error: \(String(describing: error?.getValueType()))")
         }
+        
+    }
+    
+    func findRout(bolt11: String) throws {
+        guard let networkGraph = router,
+              let logger = logger
+//              let keysManager = keysManager
+//              let scorer = scorer
+        else {
+            throw LightningError.Invoice(msg: "couldn't parse bolt11")
+        }
+        
+        print("bolt11: \(bolt11)")
+
+        guard let channelManager = channelManager else {
+            throw LightningError.nodeId(msg:"failed to get nodeID")
+        }
+        
+        let payerPubkey = channelManager.getOurNodeId()
+        
+        print("payerPubkey: \(payerPubkey)")
+       
+        let invoice = try getInvoice(bolt11: bolt11)
+        
+        let payeePubkey = invoice.recoverPayeePubKey()
+        
+        print("payeePubkey: \(payeePubkey)")
+        
+        let paymentParameters = PaymentParameters.initForKeysend(payeePubkey: payeePubkey, finalCltvExpiryDelta: 3)
+        
+        let amount = invoice.amountMilliSatoshis()!
+                
+        let routeParameters = RouteParameters(paymentParamsArg: paymentParameters, finalValueMsatArg: amount)
+        
+        let randomSeedBytes: [UInt8] = [UInt8](repeating: 0, count: 32)
+        
+        let scoringParams = ProbabilisticScoringParameters.initWithDefault()
+        let scorer = ProbabilisticScorer(params: scoringParams, networkGraph: networkGraph, logger: logger)
+        let score = scorer.asScore()
+
+        
+        let foundRoute = Bindings.findRoute(
+            ourNodePubkey: payerPubkey,
+            routeParams: routeParameters,
+            networkGraph: networkGraph,
+            firstHops: [],
+            logger: logger,
+            scorer: score,
+            randomSeedBytes: randomSeedBytes
+        )
+
+        print(foundRoute)
+
+        if let route = foundRoute.getValue() {
+            let fees = route.getTotalFees()
+            print("fees: \(fees)")
+            let paths = route.getPaths()
+            print("found route with \(paths.count) paths!")
+        }
+
+        
+//        ProbabilisticScorer
+//        let randomSeedBytes: [UInt8] = [UInt8](repeating: 0, count: 32)
+//        let scoreParams = ProbabilisticScoringFeeParameters.initWithDefault();
+//        let foundRoute = Bindings.findRoute(
+//            ourNodePubkey: payerPubkey,
+//            routeParams: routeParameters,
+//            networkGraph: networkGraph,
+//            firstHops: [],
+//            logger: logger,
+//            scorer: scorer,
+////            scoreParams: scoreParams,
+//            randomSeedBytes: randomSeedBytes)
+
+
+//        let invoice = try deserializeBolt11(bolt11: bolt11)
+
+//        let amount = invoice.amountMilliSatoshis()
+//
+//        print("amount: \(amount)")
+
+//        print(deserializedBolt11)
+
+        
+//        let defaultRouter = DefaultRouter.init(networkGraph: networkGraph,
+//                                               logger: logger,
+//                                               randomSeedBytes: keysManager.asEntropySource().getSecureRandomBytes(),
+//                                               scorer: scorer.asLockableScore())
+//
+//        let res = defaultRouter.asRouter().findRoute(
+//            payer: payerPubkey,
+//            routeParams: routeParameters,
+//            firstHops: [],
+//            inflightHtlcs: InFlightHtlcs())
+//
+//        let r = res.getValue()
+//
+//        print("r: \(r)")
+        
+        
         
     }
 

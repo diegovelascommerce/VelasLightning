@@ -420,6 +420,18 @@ public class Velas {
         return nil
     }
     
+    /// find route
+    public static func FindRoute(bolt11: String) {
+        if let velas = shared {
+            do {
+                try velas.ln.findRout(bolt11: bolt11)
+            }
+            catch {
+                NSLog("velas: \(error)")
+            }
+        }
+    }
+    
     
     /// Pay invoice.
     ///
@@ -513,6 +525,10 @@ public class Velas {
     /// close channels forcfuly, the bad way
     public func closeChannelsForcefully() throws {
         try ln.closeChannelsForcefully()
+    }
+    
+    public func findRoute(bolt11: String) throws {
+        try ln.findRout(bolt11: bolt11)
     }
 }
 
