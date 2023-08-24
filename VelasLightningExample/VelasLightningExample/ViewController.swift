@@ -222,9 +222,10 @@ class ViewController: UIViewController {
 
     }
     
-    @IBAction func findRoute(_ sender: Any)  {
-        self.alert(title:"Check bolt11", message:"Please a bolt11", text:"bolt11:", onSumbit: {(bolt11) in
-            Velas.FindRoute(bolt11: bolt11)
+    @IBAction func findFee(_ sender: Any)  {
+        self.alert(title:"Find Fee", message:"Please enter a bolt11", text:"bolt11:", onSumbit: {(bolt11) in
+            let fees = Velas.FindFee(bolt11: bolt11)
+            self.alert(title: "Total Fees", message: "fees: \(fees)")
         })
     }
     

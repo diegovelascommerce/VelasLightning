@@ -421,15 +421,17 @@ public class Velas {
     }
     
     /// find route
-    public static func FindRoute(bolt11: String) {
+    public static func FindFee(bolt11: String) -> UInt64 {
         if let velas = shared {
             do {
-                try velas.ln.findRout(bolt11: bolt11)
+                let fee = try velas.ln.findFee(bolt11: bolt11)
+                return fee
             }
             catch {
                 NSLog("velas: \(error)")
             }
         }
+        return 0;
     }
     
     /// show balance of  channel
@@ -542,9 +544,6 @@ public class Velas {
         try ln.closeChannelsForcefully()
     }
     
-    public func findRoute(bolt11: String) throws {
-        try ln.findRout(bolt11: bolt11)
-    }
     
     public func getBalance() throws -> (UInt64, UInt64) {
         try ln.getBalance()

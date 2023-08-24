@@ -129,9 +129,9 @@
                                 <rect key="frame" x="191" y="8" width="168" height="51"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="filled" title="Find Route"/>
+                                <buttonConfiguration key="configuration" style="filled" title="Find Fee"/>
                                 <connections>
-                                    <action selector="findRoute:" destination="BYZ-38-t0r" eventType="touchUpInside" id="J2f-oY-TDT"/>
+                                    <action selector="findFee:" destination="BYZ-38-t0r" eventType="touchUpInside" id="q44-Cy-4iD"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XaB-cs-KN9">
