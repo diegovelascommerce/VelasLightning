@@ -63,7 +63,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VCU-tF-uGX">
-                                <rect key="frame" x="103" y="67" width="168" height="51"/>
+                                <rect key="frame" x="16" y="67" width="168" height="51"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="filled" title="Connect"/>
@@ -132,6 +132,15 @@
                                 <buttonConfiguration key="configuration" style="filled" title="Find Route"/>
                                 <connections>
                                     <action selector="findRoute:" destination="BYZ-38-t0r" eventType="touchUpInside" id="J2f-oY-TDT"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XaB-cs-KN9">
+                                <rect key="frame" x="192" y="67" width="168" height="51"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="filled" title="Get Balance"/>
+                                <connections>
+                                    <action selector="getBalance:" destination="BYZ-38-t0r" eventType="touchUpInside" id="d1E-1Q-laE"/>
                                 </connections>
                             </button>
                         </subviews>

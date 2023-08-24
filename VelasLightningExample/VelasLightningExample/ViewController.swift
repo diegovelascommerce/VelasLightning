@@ -228,5 +228,10 @@ class ViewController: UIViewController {
         })
     }
     
+    @IBAction func getBalance(_ sender: Any)  {
+        let res = Velas.GetBalance();
+        self.alert(title: "Total Balance", message: "balance: \(res)")
+    }
+    
 }
 

@@ -948,6 +948,27 @@ public class Lightning {
         
         
     }
+    
+    func getBalance() throws -> (UInt64, UInt64){
+        var inboundCapacity: UInt64 = 0
+        var outboundCapacity: UInt64 = 0
+        let channels = try self.listUsableChannelsDict()
+        
+        print(channels)
+
+        for channel in channels {
+            if let res = channel["inbound_capacity_msat"] as? String,
+               let value = UInt64(res) {
+                inboundCapacity = value / 1000
+            }
+            if let res = channel["outbound_capacity_msat"] as? String,
+               let value = UInt64(res) {
+                outboundCapacity = value / 1000
+            }
+        }
+        
+        return (inboundCapacity, outboundCapacity)
+    }
 
 }
 
