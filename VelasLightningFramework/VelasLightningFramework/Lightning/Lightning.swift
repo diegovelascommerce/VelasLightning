@@ -872,11 +872,12 @@ public class Lightning {
             let scorer = ProbabilisticScorer(params: scoringParams, networkGraph: networkGraph, logger: logger)
             let score = scorer.asScore()
             
+            let channels = channelManager.listUsableChannels()
             let foundRoute = Bindings.findRoute(
                 ourNodePubkey: payerPubkey,
                 routeParams: routeParameters,
                 networkGraph: networkGraph,
-                firstHops: [],
+                firstHops: channels,
                 logger: logger,
                 scorer: score,
                 randomSeedBytes: randomSeedBytes
