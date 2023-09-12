@@ -9,7 +9,7 @@
 	<key>port</key>
 	<integer>9735</integer>
 	<key>verbose</key>
-	<false/>
+	<true/>
 	<key>public_url</key>
 	<true/>
 </dict>
