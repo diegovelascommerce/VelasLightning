@@ -156,7 +156,9 @@ public class Lightning {
             }
             let file = try FileMgr.readData(path: "probabilistic_scorer")
             
-            let scoringParams = ProbabilisticScoringParameters.initWithDefault()
+//            let scoringParams = ProbabilisticScoringFeeParameters.initWithDefault()
+            let scoringParams = ProbabilisticScoringDecayParameters.initWithDefault()
+
             let scorerReadResult = ProbabilisticScorer.read(ser: [UInt8](file), argA: scoringParams, argB: netGraph, argC: logger)
             
             guard let readResult = scorerReadResult.getValue() else {
@@ -173,8 +175,9 @@ public class Lightning {
             guard let netGraph = netGraph else {
                 throw LightningError.networkGraph(msg: "network graph not available")
             }
-            let scoringParams = ProbabilisticScoringParameters.initWithDefault()
-            let probabilisticScorer = ProbabilisticScorer(params: scoringParams, networkGraph: netGraph, logger: logger)
+            //let scoringParams = ProbabilisticScoringFeeParameters.initWithDefault()
+            let scoringParams = ProbabilisticScoringDecayParameters.initWithDefault()
+            let probabilisticScorer = ProbabilisticScorer(decayParams: scoringParams, networkGraph: netGraph, logger: logger)
             let score = probabilisticScorer.asScore()
             self.scorer = MultiThreadedLockableScore(score: score)
             print("Velas/Lightning: scorer created and running")
@@ -778,8 +781,8 @@ public class Lightning {
     }
     
     /// deserialized the bolt11
-    func deserializeBolt11(bolt11: String) throws -> (Invoice, String, String, UInt64) {
-        let invoiceParsed = Invoice.fromStr(s: bolt11)
+    func deserializeBolt11(bolt11: String) throws -> (Bolt11Invoice, String, String, UInt64) {
+        let invoiceParsed = Bolt11Invoice.fromStr(s: bolt11)
         
         guard let invoice = invoiceParsed.getValue(), invoiceParsed.isOk() else {
             throw LightningError.Invoice(msg: "deserializeBolt11")
@@ -802,8 +805,8 @@ public class Lightning {
         return (invoice, restoredBolt11, memo!, amt!)
     }
     
-    func getInvoice(bolt11: String) throws -> Invoice {
-        let invoiceParsed = Invoice.fromStr(s: bolt11)
+    func getInvoice(bolt11: String) throws -> Bolt11Invoice {
+        let invoiceParsed = Bolt11Invoice.fromStr(s: bolt11)
         
         guard let invoice = invoiceParsed.getValue(), invoiceParsed.isOk() else {
             throw LightningError.Invoice(msg: "deserializeBolt11")
@@ -825,7 +828,7 @@ public class Lightning {
     ///     true is payment when through
     func payInvoice(bolt11: String) throws -> PayInvoiceResult? {
 
-        let invoiceResult = Invoice.fromStr(s: bolt11)
+        let invoiceResult = Bolt11Invoice.fromStr(s: bolt11)
         guard let invoice = invoiceResult.getValue(), let channelManager = self.channelManager else {
             throw LightningError.Invoice(msg: "couldn't parse bolt11")
         }
@@ -863,14 +866,17 @@ public class Lightning {
         
         let payeePubkey = invoice.recoverPayeePubKey()
                 
-        let paymentParameters = PaymentParameters.initForKeysend(payeePubkey: payeePubkey, finalCltvExpiryDelta: 3)
+        let paymentParameters = PaymentParameters.initForKeysend(payeePubkey: payeePubkey, finalCltvExpiryDelta: 3, allowMpp: false)
         
         if let amount = invoice.amountMilliSatoshis() {
             let routeParameters = RouteParameters(paymentParamsArg: paymentParameters, finalValueMsatArg: amount)
             let randomSeedBytes: [UInt8] = [UInt8](repeating: 0, count: 32)
-            let scoringParams = ProbabilisticScoringParameters.initWithDefault()
-            let scorer = ProbabilisticScorer(params: scoringParams, networkGraph: networkGraph, logger: logger)
+//            let scoringParams = ProbabilisticScoringFeeParameters.initWithDefault()
+            let scoringParams = ProbabilisticScoringDecayParameters.initWithDefault();
+            let scorer = ProbabilisticScorer(decayParams: scoringParams, networkGraph: networkGraph, logger: logger)
             let score = scorer.asScore()
+            
+            let scoreParams = ProbabilisticScoringFeeParameters.initWithDefault()
             
             let channels = channelManager.listUsableChannels()
             let foundRoute = Bindings.findRoute(
@@ -880,6 +886,7 @@ public class Lightning {
                 firstHops: channels,
                 logger: logger,
                 scorer: score,
+                scoreParams: scoreParams,
                 randomSeedBytes: randomSeedBytes
             )
             
