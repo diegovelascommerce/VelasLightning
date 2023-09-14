@@ -15,7 +15,7 @@
 		81481A8129087B5000DA3224 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81481A7F29087B5000DA3224 /* Main.storyboard */; };
 		81481A8329087B5200DA3224 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 81481A8229087B5200DA3224 /* Assets.xcassets */; };
 		81481A8629087B5200DA3224 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81481A8429087B5200DA3224 /* LaunchScreen.storyboard */; };
-		8156780229E9A5BE00CFBA59 /* LightningDevKit in Frameworks */ = {isa = PBXBuildFile; productRef = 8156780129E9A5BE00CFBA59 /* LightningDevKit */; };
+		819961212AB36D2E007B36BC /* LightningDevKit.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 819961202AB36D2E007B36BC /* LightningDevKit.xcframework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -41,6 +41,7 @@
 		81481A8229087B5200DA3224 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		81481A8529087B5200DA3224 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		81481A8729087B5200DA3224 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		819961202AB36D2E007B36BC /* LightningDevKit.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = LightningDevKit.xcframework; path = ../../../../../../Users/diegovila/Downloads/LightningDevKit/LightningDevKit.xcframework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -49,7 +50,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				813649CC291BEF9A00C344B6 /* BitcoinDevKit in Frameworks */,
-				8156780229E9A5BE00CFBA59 /* LightningDevKit in Frameworks */,
+				819961212AB36D2E007B36BC /* LightningDevKit.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -59,6 +60,7 @@
 		81218920290885B300354733 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				819961202AB36D2E007B36BC /* LightningDevKit.xcframework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -114,7 +116,6 @@
 			name = VelasLightningExample;
 			packageProductDependencies = (
 				813649CB291BEF9A00C344B6 /* BitcoinDevKit */,
-				8156780129E9A5BE00CFBA59 /* LightningDevKit */,
 			);
 			productName = VelasLightningExample;
 			productReference = 81481A7629087B5000DA3224 /* VelasLightningExample.app */;
@@ -146,7 +147,6 @@
 			mainGroup = 81481A6D29087B5000DA3224;
 			packageReferences = (
 				813649CA291BEF9A00C344B6 /* XCRemoteSwiftPackageReference "bdk-swift" */,
-				8156780029E9A5BE00CFBA59 /* XCRemoteSwiftPackageReference "ldk-swift" */,
 			);
 			productRefGroup = 81481A7729087B5000DA3224 /* Products */;
 			projectDirPath = "";
@@ -412,14 +412,6 @@
 				version = 0.6.0;
 			};
 		};
-		8156780029E9A5BE00CFBA59 /* XCRemoteSwiftPackageReference "ldk-swift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/lightningdevkit/ldk-swift";
-			requirement = {
-				kind = exactVersion;
-				version = 0.0.116;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -427,11 +419,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 813649CA291BEF9A00C344B6 /* XCRemoteSwiftPackageReference "bdk-swift" */;
 			productName = BitcoinDevKit;
-		};
-		8156780129E9A5BE00CFBA59 /* LightningDevKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 8156780029E9A5BE00CFBA59 /* XCRemoteSwiftPackageReference "ldk-swift" */;
-			productName = LightningDevKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
