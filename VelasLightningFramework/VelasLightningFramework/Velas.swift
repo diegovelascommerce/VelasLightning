@@ -335,6 +335,34 @@ public class Velas {
         return ("", nil)
     }
     
+    public func channelsAvailable() throws -> Bool {
+        let channels = try listUsableChannelsDict()
+        if channels.count > 0 {
+            return true
+        }
+        return false
+    }
+    
+    /// Create a bolt11 invoice
+    public static func CreateInvoice(amt:Int, description:String) -> String? {
+        if let velas = shared {
+            do {
+                let available = try velas.channelsAvailable()
+                if available {
+                    let bolt11 = try velas.createInvoice(
+                        amtMsat: amt * 1000,
+                        description: description)
+                    return bolt11;
+                }
+                return nil
+            }
+            catch {
+                NSLog("velas: \(error)")
+            }
+        }
+        return nil
+    }
+    
     public static func CloseChannels(force:Bool = false) -> Bool {
         do {
             if let velas = shared {
