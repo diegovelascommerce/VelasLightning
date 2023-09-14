@@ -30,7 +30,12 @@ class ViewController: UIViewController {
         
     }
     
-    func alert(title:String, message:String, text:String? = nil, onAction: ((UIAlertAction)->())? = nil, onSumbit: ((String) ->())? = nil) {
+    func alert(title:String,
+               message:String,
+               text:String? = nil,
+               onAction: ((UIAlertAction)->())? = nil,
+               onSumbit: ((String) ->())? = nil,
+               onCopy: ((UIAlertAction) ->())? = nil) {
         
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
         
@@ -49,6 +54,9 @@ class ViewController: UIViewController {
         else if let onAction = onAction {
             alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: onAction))
             alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        }
+        else if let onCopy = onCopy {
+            alertController.addAction(UIAlertAction(title: "Copy", style: .default, handler: onCopy))
         }
         else {
             alertController.addAction(UIAlertAction(title: "OK", style: .default))
@@ -167,41 +175,27 @@ class ViewController: UIViewController {
             }
             
         })
-        
-//        do {
-//            let channels = try velas.listUsableChannelsDict()
-//            let ready = channels.count > 0 ? true : false
-//
-//            if(ready){
-//                self.alert(title:"Submit bolt11", message:"Please enter amount in milisats", text:"amount:", onSumbit: {(amt) in
-//                    do {
-//                        let bolt11 = try velas.createInvoice(
-//                            amtMsat: Int(amt)!,
-//                            description: "this s a test from velas lighting")
-//
-//                        self.alert(title: "bolt11", message: bolt11, onAction: {(action) -> Void in
-//                            let res = lapp.payInvoice(bolt11: bolt11)
-//                            if let res = res {
-//                                self.alert(title: "Payment Claimed", message: "\(res)")
-//                            }
-//                            else {
-//                                NSLog("payment did not go through")
-//                            }
-//
-//                        })
-//                    }
-//                    catch {
-//                        NSLog("problem paying invoice \(error)")
-//                    }
-//                })
-//
-//            } else {
-//                self.alert(title: "Submit bolt11", message: "None of the channels are ready")
-//            }
-//        }
-//        catch {
-//            NSLog("problem with listing channels: \(error)")
-//        }
+    }
+    
+    @IBAction func createBolt11(_ sender: Any) {
+       
+        self.alert(title:"Create bolt11", message:"Please enter amount", text:"amount:", onSumbit: {(amt) in
+            
+            let bolt11 = Velas.CreateInvoice(amt: Int(amt)!, description: "this s a test from velas lighting")
+            
+            if let bolt11 = bolt11 {
+                print("\(bolt11)")
+                self.alert(title: "Bolt11", message: "\(bolt11)", onCopy: {(_) in
+                    UIPasteboard.general.string = bolt11
+                    print("Copy: \(bolt11)")
+                })
+            }
+            else {
+                print("could not create bolt11")
+                self.alert(title: "Bolt11", message: "could not create bolt11")
+            }
+            
+        })
     }
     
     

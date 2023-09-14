@@ -148,6 +148,9 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="filled" title="Create Bolt11"/>
+                                <connections>
+                                    <action selector="createBolt11:" destination="BYZ-38-t0r" eventType="touchUpInside" id="uvW-j3-EiM"/>
+                                </connections>
                             </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
