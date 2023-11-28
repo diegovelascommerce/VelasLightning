@@ -1,0 +1,26 @@
+meta {
+  name: listchannels
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://188.129.133.145/lapp/listchannels
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ2ZWxhcyIsInN1YiI6IndvcmtpdCJ9.CnksMqUsywjH4W8JgPePodi10pO_xJMrPyq9c19tQmo
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "peer": "02d55e7d3271abc86bdf0b8185f976b84fe38d3b01c1c88f74527abf2593806c47",
+    "active_only": 0,
+    "inactive_only": 0,
+    "public_only": 0,
+    "private_only": 0
+  }
+}
