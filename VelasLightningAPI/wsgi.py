@@ -1,7 +1,8 @@
 from waitress import serve
 
 from app import app
+from config import config
 
 if __name__ == '__main__':
-    print("started wsgi at port:5000")
-    serve(app, host='0.0.0.0', port=5000, url_scheme='https')
+    print(f"started wsgi at port:{config['port']}")
+    serve(app, host=config['host'], port=config['port'], url_scheme='https')

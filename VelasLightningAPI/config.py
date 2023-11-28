@@ -6,5 +6,7 @@ config: dict = {
         'tls': '/home/admin/.lnd/tls.cert',  # noqa
         'macaroon': '/home/admin/.lnd/data/chain/bitcoin/mainnet/admin.macaroon',  # noqa
     },
-    'secret': 'secret',
+    'host': '0.0.0.0',
+    'port': 5050,
+    'secret': 'secret'
 }

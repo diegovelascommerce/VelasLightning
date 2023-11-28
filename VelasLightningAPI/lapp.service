@@ -1,0 +1,14 @@
+[Unit]
+Description=LAPP
+Requires=lnd.service
+After=lnd.service
+
+[Service]
+Environment=HOME=/home/lapp
+ExecStart=/home/admin/VelasLightning/VelasLightningAPI/.env/bin/python /home/admin/VelasLightning/VelasLightningAPI/wsgi.py
+Restart=always
+RestartSec=30
+SyslogIdentifier=lapp
+
+[Install]
+WantedBy=multi-user.target
