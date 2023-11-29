@@ -1,0 +1,22 @@
+meta {
+  name: payinvoice
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://188.129.133.145/lapp/payinvoice
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{ jwt }}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "bolt11": "lnbc500n1pjkwue0pp5h4tsmyk30asja2uskmj4g38473jr7heksyn0amk4q088u8cvukuqdq6va5hvefqd4jjqvfsxqs8xct5wvcqzzsxqyz5vqsp55zz76np4ggn49ahnzdsfwg8t8756snh43c8vv5guml6ergd36hus9qyyssq79g3dx0dl9230vtl74zu4vzz47r7tsdkgdlpjmymr20mfzdrpj6jjr5jtmkut70h05q5a46hyzlm2pn49q5slc8gpuzgm8m807sy2ecpeuccz2"
+  }
+}

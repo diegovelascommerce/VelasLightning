@@ -1,11 +1,11 @@
 meta {
-  name: addinvoice
+  name: lookupinvoice
   type: http
-  seq: 4
+  seq: 7
 }
 
 post {
-  url: http://188.129.133.145/lapp/addinvoice
+  url: http://188.129.133.145/lapp/lookupinvoice
   body: json
   auth: none
 }
@@ -17,7 +17,6 @@ headers {
 
 body:json {
   {
-    "amount": 5000,
-    "memo": "give me 5000 sats"
+    "hash": "bd12d80b2e18e74646f8a548b701b34d7020209f5e7b9d51b85ad4720a3146a4"
   }
 }
