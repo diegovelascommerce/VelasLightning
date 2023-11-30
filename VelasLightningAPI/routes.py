@@ -50,6 +50,14 @@ def configure_routes(app, velas):
         """Just a basic route for testing purposes."""
         return "Hello VelasLightning"
 
+    @app.route("/login")
+    def login():
+        data = request.get_json()
+        username = data.get("username")
+        password = data.get("password")
+        res = velas.login(username, password)
+        return res
+
     @app.route("/getinfo")
     @token_required
     def getinfo():

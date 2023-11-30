@@ -1,15 +1,24 @@
+from config import config
+from velas_jwt import create_jwt
+
 from .gRPC import convertion
-from .gRPC import stub as lnd
+
+# from .gRPC import stub as lnd
 
 
 class Velas:
     """Class that handles interaction between web API and LND gRPC client"""
 
     def __init__(self):
-        self.stub = lnd.get_stub()
-
-    def login(self):
         pass
+        # self.stub = lnd.get_stub()
+
+    def login(self, username, password):
+        if username == config["username"] and password == config["password"]:
+            token = create_jwt({"iss": "velas", "sub": "workit"})
+            return {"token": token}
+
+        return {"message": "incorrect login"}
 
     def getinfo(self):
         info = lnd.getinfo(self.stub)

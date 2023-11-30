@@ -7,7 +7,7 @@ config: dict = {
     },
     "host": "0.0.0.0",
     "port": 5050,
-    "user": "admin",
+    "username": "admin",
     "password": "password",
     "secret": "secret",
 }
