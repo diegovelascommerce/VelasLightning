@@ -4,7 +4,7 @@ meta {
   seq: 2
 }
 
-get {
+post {
   url: http://127.0.0.1:5050/login
   body: json
   auth: none
@@ -16,8 +16,8 @@ headers {
 
 body:json {
   {
-    "username": "admin",
-    "password": "password"
+    "username": "{{ username }}",
+    "password": "{{ password }}"
   }
 }
 

@@ -1,11 +1,11 @@
 meta {
   name: login
   type: http
-  seq: 8
+  seq: 2
 }
 
 get {
-  url: http://127.0.0.1:5050/login
+  url: http://188.129.133.145/lapp/login
   body: json
   auth: none
 }
@@ -16,7 +16,11 @@ headers {
 
 body:json {
   {
-    "username": "admin",
-    "password": "password"
+    "username": "{{username}}",
+    "password": "{{password}}"
   }
+}
+
+script:post-response {
+  bru.setVar("jwt", res.body.token);
 }
