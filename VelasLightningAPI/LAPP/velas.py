@@ -2,16 +2,14 @@ from config import config
 from velas_jwt import create_jwt
 
 from .gRPC import convertion
-
-# from .gRPC import stub as lnd
+from .gRPC import stub as lnd
 
 
 class Velas:
     """Class that handles interaction between web API and LND gRPC client"""
 
     def __init__(self):
-        pass
-        # self.stub = lnd.get_stub()
+        self.stub = lnd.get_stub()
 
     def login(self, username, password):
         if username == config["username"] and password == config["password"]:

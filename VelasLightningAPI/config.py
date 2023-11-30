@@ -1,9 +1,9 @@
 config: dict = {
     "grpc": {
-        "ip": "127.0.0.1",
+        "ip": "188.129.133.145",
         "port": "10009",
-        "tls": "/home/admin/.lnd/tls.cert",  # noqa
-        "macaroon": "/home/admin/.lnd/data/chain/bitcoin/mainnet/admin.macaroon",  # noqa
+        "tls": "/Users/diegovila/Velas/VelasLightning/VelasLightningAPI/tls.cert",  # noqa
+        "macaroon": "/Users/diegovila/Velas/VelasLightning/VelasLightningAPI/admin.macaroon",  # noqa
     },
     "host": "0.0.0.0",
     "port": 5050,

@@ -1,0 +1,15 @@
+meta {
+  name: getinfo
+  type: http
+  seq: 3
+}
+
+get {
+  url: http://127.0.0.1:5050/getinfo
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{ jwt }}
+}

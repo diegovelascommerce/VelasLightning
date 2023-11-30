@@ -29,3 +29,4 @@ admin.macaroon
 tls.cert
 googleapis
 *.backup
+.DS_Store
