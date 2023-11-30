@@ -1,0 +1,24 @@
+meta {
+  name: closechannel
+  type: http
+  seq: 10
+}
+
+post {
+  url: http://188.129.133.145/lapp/closechannel
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{ jwt }}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "txid": "717e2706a84f5706c7278870e6d2aeaf089feb716cac511b93d5bd81ea11d0aa",
+    "vout": 1,
+    "force": 0
+  }
+}
