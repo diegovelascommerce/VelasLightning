@@ -1,0 +1,22 @@
+meta {
+  name: login
+  type: http
+  seq: 8
+}
+
+get {
+  url: http://127.0.0.1:5050/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "username": "admin",
+    "password": "password"
+  }
+}
