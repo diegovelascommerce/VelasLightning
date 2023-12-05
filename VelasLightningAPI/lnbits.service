@@ -1,0 +1,17 @@
+[Unit]
+Description=LNbits
+Wants=lnd.service
+After=lnd.service
+
+[Service]
+WorkingDirectory=/home/ubuntu/lnbits
+ExecStart=/home/ubuntu/.local/bin/poetry run lnbits --port 9000 --host 0.0.0.0
+User=ubuntu
+Restart=always
+TimeoutSec=120
+RestartSec=30
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
+
