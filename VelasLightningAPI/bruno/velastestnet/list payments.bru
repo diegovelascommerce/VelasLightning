@@ -1,0 +1,23 @@
+meta {
+  name: list payments
+  type: http
+  seq: 8
+}
+
+get {
+  url: http://45.33.22.210:9000/api/v1/payments
+  body: json
+  auth: none
+}
+
+headers {
+  X-Api-Key: e24e6b6f780d4f4bb6bb6aa9c96bba31
+}
+
+body:json {
+  {
+    "out": false, 
+    "amount": 50, 
+    "memo": "this is a test"
+  }
+}

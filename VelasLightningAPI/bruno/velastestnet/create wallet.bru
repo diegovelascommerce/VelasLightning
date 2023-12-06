@@ -1,0 +1,21 @@
+meta {
+  name: create wallet
+  type: http
+  seq: 7
+}
+
+post {
+  url: http://45.33.22.210:9000/api/v1/wallet
+  body: json
+  auth: none
+}
+
+headers {
+  X-Api-Key: e0da1168922a47038801d234c9591398
+}
+
+body:json {
+  {
+    "name": "bruno"
+  }
+}
