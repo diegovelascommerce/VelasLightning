@@ -1,0 +1,22 @@
+meta {
+  name: decodereq
+  type: http
+  seq: 5
+}
+
+post {
+  url: https://45.33.22.210/decodereq
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{ jwt }}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "bolt11": "lntb50u1pjhxerepp5h6zkmj6qexyulmwjnw47ke7wjgker8zjvye46p3hdyh6ycqj5rjqdquva5hvefqd4jjqdfsxqczqumpw3escqzzsxqyz5vqsp5xzpecckac4330zfp7vnp3tv3cvnwmpe7cuxd8rtphrtxjtu2ne4q9qyyssqmzevhv4ak5y6nap22q2darm0609mxl399z4up9uut38jxkd78ujylps8u9ml6gz7ukey882j48llxp04v35lq555zellq92ugdcn95cqekzcdm"
+  }
+}

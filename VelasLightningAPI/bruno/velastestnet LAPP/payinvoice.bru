@@ -1,0 +1,22 @@
+meta {
+  name: payinvoice
+  type: http
+  seq: 7
+}
+
+post {
+  url: https://45.33.22.210/payinvoice
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{ jwt }}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "bolt11": "lntb50n1pjhx6jrpp5q7rupd9mc6myms6cjr0l3g7lhvth0532lut3hwsavxy6mnang4yqdrq2pskjepqw3hjq4n9d3shxsm0d4kk2unrv42x2um5yq5y7unyv4ezqj2y8gsyg6t9vahjq4m0wf4kjapqf3shqupq23jhxapfcqzzsxqzuysp5p7c40l6sn8hyse2c0qqdpqqgcmm8wfrfj629n2dlwzzqdlx30dmq9qyyssq4tmt8cs867p5vrk05lk0k3kt4n833swlwzzjt2ll3yuktd4sdrpnudshzc7znxpwp6puqsxxd3gx3fp3nkju7vmrwtsmvhfn224yvpqq2eyyny"
+  }
+}

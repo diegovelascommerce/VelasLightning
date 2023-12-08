@@ -1,0 +1,23 @@
+meta {
+  name: addinvoice
+  type: http
+  seq: 4
+}
+
+post {
+  url: https://45.33.22.210/addinvoice
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{ jwt }}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": 5000,
+    "memo": "give me 5000 sats"
+  }
+}

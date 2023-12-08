@@ -1,0 +1,26 @@
+meta {
+  name: listchannels
+  type: http
+  seq: 3
+}
+
+post {
+  url: https://45.33.22.210/listchannels
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{ jwt }}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "peer": "03fe3391888f95935641951cea91d2de123c0cc7db60385aeb62518b54601bc7fc",
+    "active_only": 0,
+    "inactive_only": 0,
+    "public_only": 0,
+    "private_only": 0
+  }
+}

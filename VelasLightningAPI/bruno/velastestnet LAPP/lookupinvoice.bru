@@ -1,0 +1,22 @@
+meta {
+  name: lookupinvoice
+  type: http
+  seq: 6
+}
+
+post {
+  url: https://45.33.22.210/lookupinvoice
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{ jwt }}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "hash": "2ba520e3337f722552b291a02773b16530eb9a35e76b3e7f80c2aca74eb2ae3b"
+  }
+}

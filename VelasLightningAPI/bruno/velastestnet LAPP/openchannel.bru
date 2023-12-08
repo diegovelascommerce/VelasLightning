@@ -1,0 +1,27 @@
+meta {
+  name: openchannel
+  type: http
+  seq: 8
+}
+
+post {
+  url: https://45.33.22.210/openchannel
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{ jwt }}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "nodeId": "02b2c79c08a22d14993a29b2ba0c28968eae24f64d6543e8d746ad4ce9b66faa8b",
+    "amt": 100000,
+    "private": 0,
+    "target_conf": 3,
+    "min_confs": 3,
+    "zero_conf": 0
+  }
+}
