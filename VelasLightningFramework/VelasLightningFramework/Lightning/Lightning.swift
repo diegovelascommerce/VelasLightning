@@ -69,10 +69,17 @@ public class Lightning {
     // handles all operations that have to do with bitcoin
     var btc: Bitcoin
     
-    /// Setup the LDK
+    /***
+     *  init lightning
+     *
+     *  @param btc :  bitcoin object
+     *  @param verbose : allow verbose logging from LDK
+     */
     public init(btc:Bitcoin, verbose:Bool = false) throws {
         
         print("----- Start LDK setup -----")
+        
+        // setup verbose logging for LDK
         if verbose {
             Bindings.setLogThreshold(severity: .DEBUG)
         }

@@ -46,35 +46,61 @@ public class Velas {
         }
     }
     
-    // check if velas object has already been created
+    /***
+     * checks if velas object has already been created
+     *
+     * it does this by checking if mnemonic is saved
+     *
+     * returns: Bool
+     */
     public static func Check() -> Bool {
-        let mnemonic = FileMgr.fileExists(path: "mnemonic")
-        return mnemonic
+        
+        // check if there is a mnemonic
+        let found = FileMgr.fileExists(path: "mnemonic")
+        return found
     }
     
-    /// load velas
+    /***
+     *  Load the Velas object using Plist and mnemonic that was saved
+     *
+     *  @param plist :  name of plist file that has some configs that we may want to use
+     */
     public static func Load(plist:String?=nil) {
         do {
             var verbose = false
             var publicURL = false
             
+            // get configs from plist
             if let plist = plist {
                 let plist = FileMgr.getPlist(plist)
                 verbose = plist["verbose"] as! Bool
                 publicURL = plist["public_url"] as! Bool
             }
+            
+            // if there is a key for decripting the mnemonic
             if FileMgr.fileExists(path: "key") {
+                
+                // get mnemonic
                 let mnemonicData = try FileMgr.readData(path: "mnemonic")
+                
+                // get key for decrypting mnemonic
                 let key = try FileMgr.readString(path: "key")
+                
+                // decrypt mnemonic with key
                 if let mnemonic = Cryptography.decrypt(encryptedData: mnemonicData, key: key) {
                     print("read mnemonic: \(mnemonic)")
+                    
+                    // load Velas object with mnemonic and configs from plist
                     shared = try Velas(mnemonic: mnemonic, verbose: verbose, publicURL: publicURL)
                 }
             }
+            // just load the mnemonic, doesn't need to be decrypted
             else {
                 let mnemonic = try FileMgr.readString(path: "mnemonic")
                 shared = try Velas(mnemonic: mnemonic, verbose: verbose, publicURL: publicURL)
             }
+            
+            // setup LAPP
             if let plist {
                 try LAPP.Setup(plist: plist)
             }
@@ -359,13 +385,27 @@ public class Velas {
     
     
     
-    /// Initialize Bitcoin and Lightning
+    /**
+     *  Initialize Bitcoin and Lightning
+     *
+     *  @param network: bitcoin network
+     *  @param mnemonic: mnemonic for bitcoin private seed
+     *  @param verbose: show verbos log messages
+     *  @param publicURL: use the public url of lightning node
+     */
     public init(network: Network = Network.testnet,
                 mnemonic: String? = nil, verbose: Bool = false, publicURL: Bool = true) throws {
+        
         do {
             self.publicURL = publicURL
+            
+            // setup bitcoin
             btc = try Bitcoin(network: network, mnemonic: mnemonic)
+            
+            // sync btc
             try btc.sync()
+            
+            // setup lightning
             ln = try Lightning(btc:btc,verbose: verbose)
         }
         catch BdkError.Electrum(let message) {

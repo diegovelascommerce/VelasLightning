@@ -19,7 +19,12 @@ public class Bitcoin {
     private var wallet: Wallet
 
     
-    /// Create a bitcoin wallet, by default it is setup for testnet and creates a new mnemonic
+    /***
+     *  Create a bitcoin wallet, by default it is setup for testnet and creates a new mnemonic
+     *
+     *  @param _network:   bitcoin network
+     *  @param mnemonic:  menimonic for private seed
+     */
     public init(network _network: Network = Network.testnet, mnemonic _mnemonic: String? = nil) throws {
         print("***** Start BDK setup *****")
         
@@ -46,15 +51,16 @@ public class Bitcoin {
         let changeExternalPath: DerivationPath = try DerivationPath(path:"m/84h/1h/0h/1")
         self.changeDescriptor = "wpkh(\(privKey.extend(path:changeExternalPath).asString()))"
         
-        // create electrum client
+        // get url to electrum server base if network is testnet or mainnet
         let electrumUrl = self.network == Network.testnet ?
             "ssl://electrum.blockstream.info:60002" :
             "ssl://electrum.blockstream.info:50002"
-                
+           
+        // create electrum client
         let electrum = ElectrumConfig(url: electrumUrl, socks5: nil, retry: 5, timeout: nil, stopGap: 10)
         
         
-        // create a blockchain for syncing and broadcasting
+        // setup electrum for syncing the block chain and broadcasting on the bitcoin network.
         let blockchainConfig = BlockchainConfig.electrum(config: electrum)
 
         self.blockchain = try Blockchain(config: blockchainConfig)
@@ -75,7 +81,9 @@ public class Bitcoin {
         return addressInfo.address
     }
     
-    /// Sync wallet with the latest state of the blockchain
+    /***
+     *  Sync wallet with the latest state of the blockchain
+     */
     public func sync() throws {
         try wallet.sync(blockchain: self.blockchain, progress: nil)
     }

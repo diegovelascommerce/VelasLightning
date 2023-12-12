@@ -28,6 +28,8 @@ class MyBroadcasterInterface: BroadcasterInterface {
         do {
             for tx in txs {
                 let txHex = Utils.bytesToHex(bytes: tx)
+                
+                // broadcast transaction
                 let txId = try btc.broadcast(txHex: txHex)
             }
         }

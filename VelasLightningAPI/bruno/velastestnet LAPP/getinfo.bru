@@ -1,0 +1,15 @@
+meta {
+  name: getinfo
+  type: http
+  seq: 3
+}
+
+get {
+  url: https://45.33.22.210/getinfo
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{ jwt }}
+}
