@@ -1,0 +1,13 @@
+config: dict = {
+    'grpc': {
+        'ip': '127.0.0.1',
+        'port': '10009',
+        'tls': '/home/ubuntu/.lnd/tls.cert',
+        'macaroon': '/home/ubuntu/.lnd/data/chain/bitcoin/testnet/admin.macaroon',
+    },
+    "host": "0.0.0.0",
+    "port": 5000,
+    "username": "admin",
+    "password": "password",
+    "secret": "secret",
+}
