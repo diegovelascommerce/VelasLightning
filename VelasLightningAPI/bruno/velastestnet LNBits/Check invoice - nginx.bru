@@ -1,0 +1,16 @@
+meta {
+  name: Check invoice - nginx
+  type: http
+  seq: 18
+}
+
+get {
+  url: https://45.33.22.210/lnbits/api/v1/payments/852a84977701204769ff1246d4e0bf88bed4c018d0a93223a0aa4319a8ef1c41
+  body: json
+  auth: none
+}
+
+headers {
+  X-Api-Key: {{ api-token }}
+  Content-Type: application/json
+}

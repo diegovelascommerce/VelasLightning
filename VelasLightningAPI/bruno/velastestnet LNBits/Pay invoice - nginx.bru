@@ -1,0 +1,23 @@
+meta {
+  name: Pay invoice - nginx
+  type: http
+  seq: 17
+}
+
+post {
+  url: https://45.33.22.210/lnbits/api/v1/payments
+  body: json
+  auth: none
+}
+
+headers {
+  X-Api-Key: {{ api-token }}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "out": true, 
+    "bolt11": "lntb100n1pjhkemfpp5s54gf9mhqysyw60lzfrdfc9l3zldfsqc6z5nygaq4fp3n280r3qsdqcva5hvefqd4jjqvfsypekzarncqzzsxqzjcsp50gwqesll4ldyrx7aqw873r49mnzppgrqacx0pmymt3l0n03khgfq9qyyssqxkxv2ug48wujharezcj93qnqqv0sjzmdsavzksudxjq4mj24dsr5vyjknydev9rm8s37m0y6c6a030lvtsrp3exuxljza7262yxnx3gp07nz66"
+  }
+}

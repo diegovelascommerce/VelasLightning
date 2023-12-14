@@ -1,0 +1,21 @@
+meta {
+  name: create wallet - nginx
+  type: http
+  seq: 14
+}
+
+post {
+  url: https://45.33.22.210/lnbits/api/v1/wallet
+  body: json
+  auth: none
+}
+
+headers {
+  X-Api-Key: {{ api-token }}
+}
+
+body:json {
+  {
+    "name": "bruno - nginx"
+  }
+}

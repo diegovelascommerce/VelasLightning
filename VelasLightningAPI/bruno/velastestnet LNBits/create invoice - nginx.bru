@@ -1,0 +1,24 @@
+meta {
+  name: create invoice - nginx
+  type: http
+  seq: 13
+}
+
+post {
+  url: https://45.33.22.210/lnbits/api/v1/payments
+  body: json
+  auth: none
+}
+
+headers {
+  X-Api-Key: {{ api-token }}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "out": false, 
+    "amount": 50, 
+    "memo": "this is a test"
+  }
+}
