@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>url</key>
-	<string>https://45.33.22.210</string>
+	<string>https://45.33.22.210/lapp</string>
 	<key>jwt</key>
 	<string>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ2ZWxhcyIsInN1YiI6IndvcmtpdCJ9.CnksMqUsywjH4W8JgPePodi10pO_xJMrPyq9c19tQmo</string>
 	<key>port</key>
