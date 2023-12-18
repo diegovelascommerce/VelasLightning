@@ -1,11 +1,11 @@
 meta {
-  name: Pay invoice - nginx
+  name: Pay invoice ssl:5001
   type: http
   seq: 17
 }
 
 post {
-  url: https://45.33.22.210/lnbits/api/v1/payments
+  url: https://45.33.22.210:5001/api/v1/payments
   body: json
   auth: none
 }

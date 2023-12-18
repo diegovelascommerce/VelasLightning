@@ -1,15 +1,21 @@
 meta {
-  name: get wallet details
+  name: create wallet port:9000
   type: http
-  seq: 2
+  seq: 7
 }
 
-get {
+post {
   url: http://45.33.22.210:9000/api/v1/wallet
-  body: none
+  body: json
   auth: none
 }
 
 headers {
   X-Api-Key: {{ api-token }}
+}
+
+body:json {
+  {
+    "name": "bruno"
+  }
 }

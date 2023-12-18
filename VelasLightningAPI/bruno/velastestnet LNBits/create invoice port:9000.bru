@@ -1,11 +1,11 @@
 meta {
-  name: create invoice - nginx
+  name: create invoice port:9000
   type: http
-  seq: 13
+  seq: 4
 }
 
 post {
-  url: https://45.33.22.210/lnbits/api/v1/payments
+  url: http://45.33.22.210:9000/api/v1/payments
   body: json
   auth: none
 }

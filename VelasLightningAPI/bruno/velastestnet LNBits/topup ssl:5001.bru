@@ -1,11 +1,11 @@
 meta {
-  name: topup - nginx
+  name: topup ssl:5001
   type: http
   seq: 15
 }
 
 put {
-  url: https://45.33.22.210/lnbits/admin/api/v1/topup/?usr=06afb7cccbc642c29ea092f781deae57
+  url: https://45.33.22.210:5001/admin/api/v1/topup/?usr=06afb7cccbc642c29ea092f781deae57
   body: json
   auth: none
 }
