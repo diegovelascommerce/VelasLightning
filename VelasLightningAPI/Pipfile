@@ -38,6 +38,8 @@ waitress = "==2.1.2"
 werkzeug = "==2.2.2"
 yapf = "==0.32.0"
 zipp = "==3.10.0"
+python-dotenv = "*"
+mypy = "*"
 
 [dev-packages]
 

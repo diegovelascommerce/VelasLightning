@@ -1,0 +1,22 @@
+meta {
+  name: topup
+  type: http
+  seq: 3
+}
+
+put {
+  url: https://188.129.133.145:5001/admin/api/v1/topup/?usr=58527e692d05402ab86bb0239d32f842
+  body: json
+  auth: none
+}
+
+query {
+  usr: 58527e692d05402ab86bb0239d32f842
+}
+
+body:json {
+  {
+    "id": "76f58bea805a4ff9aa47101c915ead82",
+    "amount": 50
+  }
+}
