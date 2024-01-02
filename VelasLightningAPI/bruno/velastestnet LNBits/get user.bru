@@ -1,0 +1,15 @@
+meta {
+  name: get user
+  type: http
+  seq: 12
+}
+
+get {
+  url: https://45.33.22.210:5001/usermanager/api/v1/users/11cdd63473f14f488ada43e46f036e7f
+  body: json
+  auth: none
+}
+
+headers {
+  X-Api-Key: {{ api-token }}
+}
