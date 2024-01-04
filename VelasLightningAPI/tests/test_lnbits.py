@@ -50,7 +50,7 @@ def test_wallet():
 
     res = requests.get(
         LNBITS_HOST + "/api/v1/wallet",
-        headers={"X-Api-Key": LNBITS_API_KEY},
+        headers={"X-Api-Key": SUPER_USER_API_KEY},
         verify=False,
     )
     assert res.status_code == 200
@@ -62,7 +62,7 @@ def test_create_wallet():
 
     res = requests.post(
         LNBITS_HOST + "/api/v1/wallet",
-        headers={"X-Api-Key": LNBITS_API_KEY},
+        headers={"X-Api-Key": SUPER_USER_API_KEY},
         verify=False,
         json={"name": "test wallet"},
     )
@@ -76,7 +76,7 @@ def test_decode():
 
     res = requests.post(
         LNBITS_HOST + "/api/v1/payments/decode",
-        headers={"X-Api-Key": LNBITS_API_KEY},
+        headers={"X-Api-Key": SUPER_USER_API_KEY},
         verify=False,
         json={
             "data": "lntb500n1pjhp3s2pp5tp5farf5v644x8j0gsthmyxzdkdtp3mylr5m0edyepyyl5ues9uqdqhw35xjueqd9ejqcfqw3jhxaqcqzzsxqzjcsp5jttxa5u5e6edj4jsex5xa0wkzkkzg2a2x25qhsn3lswvzjympxtq9qyyssqvkh74rdhmmspek9cpnz2dax3pqemv9rjpcat9f8gf8uy532mqjnk806ljsup0sql62zsa4mlw0gau0x5teakfcwydlf5c6l0s2scxespwlnyyw"
@@ -232,6 +232,7 @@ def test_get_user_info():
             assert "id" in wallet
             assert "adminkey" in wallet
             assert "name" in wallet
+            pprint.pprint(wallet)
 
 
 def test_get_user_wallet():
@@ -264,7 +265,7 @@ def test_get_user_wallet():
             )
             assert resWallet.status_code == 200
             wallet = resWallet.json()
-            pprint.pprint(wallet)
             assert "balance" in wallet
             assert "id" in wallet
             assert "name" in wallet
+            pprint.pprint(wallet)

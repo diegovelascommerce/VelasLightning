@@ -1,0 +1,23 @@
+meta {
+  name: user Pay invoice
+  type: http
+  seq: 14
+}
+
+post {
+  url: https://45.33.22.210:5001/api/v1/payments
+  body: json
+  auth: none
+}
+
+headers {
+  X-Api-Key: 4e96566272564d21a2cf0bec848ed987
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "out": true, 
+    "bolt11": "lntb50n1pjew94fpp56kd36uf4effvrkq3284um0xnc3jvym6r52ff4d97m5px36zyvfcsdqqcqzzsxqyz5vqsp570dty0cahhyrlry5x3ngce6mjwa8eq37er49h6rs4ymcjelmtlhq9qyyssq8scxpad9t9pn4m97u2ueadhkhng5u63ntjfwwewm2tww7j94rpsk7tsuukqf74yx97nsjnghg75cy46w84t6z0nrvk6m444zu82k03qpxynuhh"
+  }
+}
