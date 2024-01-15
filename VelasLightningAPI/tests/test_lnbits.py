@@ -4,33 +4,40 @@ import pprint
 import requests
 from dotenv import load_dotenv  # type: ignore
 
+# load environment variables from .env file
 load_dotenv()
 
+# host address of lnbits test server
 LNBITS_HOST = ""
 env = os.getenv("LNBITS_HOST")
 if env is not None:
     LNBITS_HOST = env
 
+# super user setup for lnbits
 SUPER_USER = ""
 env = os.getenv("SUPER_USER")
 if env is not None:
     SUPER_USER = env
 
+# api key of the super user
 SUPER_USER_API_KEY = ""
 env = os.getenv("SUPER_USER_API_KEY")
 if env is not None:
     SUPER_USER_API_KEY = env
 
+# just a random test user that was setup
 TEST_USER = ""
 env = os.getenv("TEST_USER")
 if env is not None:
     TEST_USER = env
 
+# the api key of the test user
 TEST_USER_API_KEY = ""
 env = os.getenv("TEST_USER_API_KEY")
 if env is not None:
     TEST_USER_API_KEY = env
 
+# wallet of the test user
 TEST_USER_WALLET = ""
 env = os.getenv("TEST_USER_WALLET")
 if env is not None:
@@ -38,7 +45,7 @@ if env is not None:
 
 
 def test_lnbits():
-    "show welcome screen for lnbits"
+    "just test the welcome screen for lnbits"
 
     res = requests.get(LNBITS_HOST, verify=False)
     assert res.status_code == 200
@@ -46,7 +53,7 @@ def test_lnbits():
 
 
 def test_wallet():
-    "show wallet for user associated with api key"
+    "show the wallet associated with api key"
 
     res = requests.get(
         LNBITS_HOST + "/api/v1/wallet",
@@ -58,13 +65,16 @@ def test_wallet():
 
 
 def test_create_wallet():
-    "create a new wallet"
+    "create a new wallet for a user"
+
+    # specify the name of the wallet you want to create
+    data = {"name": "test wallet"}
 
     res = requests.post(
         LNBITS_HOST + "/api/v1/wallet",
         headers={"X-Api-Key": SUPER_USER_API_KEY},
         verify=False,
-        json={"name": "test wallet"},
+        json=data,
     )
 
     assert res.status_code == 200
@@ -89,11 +99,14 @@ def test_decode():
 def test_user_create_invoice():
     "create an invoice for user"
 
+    # specify the amount and memo for the invoice you want to create
+    data={"out": False, "amount": 50, "memo": "test invoice"}
+
     res = requests.post(
         LNBITS_HOST + "/api/v1/payments",
         headers={"X-Api-Key": TEST_USER_API_KEY},
         verify=False,
-        json={"out": False, "amount": 50, "memo": "test invoice"},
+        json=data
     )
     assert res.status_code == 201
     invoice = res.json()
@@ -103,19 +116,22 @@ def test_user_create_invoice():
 
 
 def test_user_pay_invoice():
-    "user pay an invoice"
-
+    "have a user pay an invoice"
+    
     bolt11 = "lntb50n1pjegajtpp5urx7sc9dgh2q9waxxhs8v3ekqehfrxyff0hdl34lfl3elf64muqqdqqcqzzsxqyz5vqsp5uxdfz2ke3wn82x6cmqdpdslzxhup5aaqstjjq03hqg4gg3tjs0nq9qyyssquacvnxlqwn534r00g597s2pke2pph9q8795gqsyryvaspw8y59xrfwgdaumlevseq8da7uq4j7qsqtmsvqy07h6r27ktvcpp39nn87qq97z2tu"
+
+    # specify the bolt11 invoice you want to pay
+    body ={
+        "out": True,
+        "internal": True,
+        "bolt11": bolt11,
+    }
 
     res = requests.post(
         LNBITS_HOST + "/api/v1/payments",
         headers={"X-Api-Key": TEST_USER_API_KEY},
         verify=False,
-        json={
-            "out": True,
-            "internal": True,
-            "bolt11": bolt11,
-        },
+        json=body
     )
     data = res.json()
     pprint.pprint(data)
@@ -150,10 +166,13 @@ def test_check_invoice():
 def test_topup():
     "top up wallet, fund it from lightning source"
 
+    # specify the wallet you want to give funds to and the amount
+    body = {"id": TEST_USER_WALLET, "amount": 50}
+
     res = requests.put(
         LNBITS_HOST + "/admin/api/v1/topup/",
         params={"usr": SUPER_USER},
-        json={"id": TEST_USER_WALLET, "amount": 50},
+        json=body,
         verify=False,
     )
 
@@ -167,6 +186,7 @@ def test_topup():
 def test_create_user():
     """create a new user"""
 
+
     res = requests.post(
         LNBITS_HOST + "/usermanager/api/v1/users",
         headers={"X-Api-Key": SUPER_USER_API_KEY},
@@ -179,7 +199,22 @@ def test_create_user():
         },
     )
     assert res.status_code == 200
-    pprint.pprint(res.json())
+    data = res.json()
+    pprint.pprint(data)
+    assert "email" in data
+    assert "extra" in data 
+    assert "id" in data 
+    assert "name" in data 
+    assert "password" in data
+    assert "wallets" in data 
+
+    wallet = data["wallets"][0]
+    assert "admin" in wallet
+    assert "adminkey" in wallet
+    assert "id" in wallet
+    assert "inkey" in wallet
+    assert "name" in wallet
+    assert "user" in wallet
 
 
 def test_get_users():
