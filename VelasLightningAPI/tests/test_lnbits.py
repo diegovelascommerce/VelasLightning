@@ -96,17 +96,58 @@ def test_decode():
     pprint.pprint(res.json())
 
 
+def test_decode_with_superuser():
+    "decode a bolt11 created from a test wallet as super user"
+
+    # create bolt11 invoice with test user
+    data = {"out": False, "amount": 50, "memo": "test invoice for decode"}
+
+    resBolt11 = requests.post(
+        LNBITS_HOST + "/api/v1/payments",
+        headers={"X-Api-Key": TEST_USER_API_KEY},
+        verify=False,
+        json=data,
+    )
+
+    invoice = resBolt11.json()
+
+    print("...invoice created by test user")
+    pprint.pprint(invoice)
+
+    # decode the bolt11 invoice with super user
+    bolt11 = invoice["payment_request"]
+
+    resDecode = requests.post(
+        LNBITS_HOST + "/api/v1/payments/decode",
+        headers={"X-Api-Key": SUPER_USER_API_KEY},
+        verify=False,
+        json={
+            "data": bolt11,
+        },
+    )
+
+    decodedInvoice = resDecode.json()
+
+    assert "amount_msat" in decodedInvoice
+    assert "description" in decodedInvoice
+    assert decodedInvoice["amount_msat"] == 50000
+    assert decodedInvoice["description"] == "test invoice for decode"
+
+    print("...invoice decoded by super user")
+    pprint.pprint(decodedInvoice)
+
+
 def test_user_create_invoice():
     "create an invoice for user"
 
     # specify the amount and memo for the invoice you want to create
-    data={"out": False, "amount": 50, "memo": "test invoice"}
+    data = {"out": False, "amount": 50, "memo": "test invoice"}
 
     res = requests.post(
         LNBITS_HOST + "/api/v1/payments",
         headers={"X-Api-Key": TEST_USER_API_KEY},
         verify=False,
-        json=data
+        json=data,
     )
     assert res.status_code == 201
     invoice = res.json()
@@ -117,11 +158,11 @@ def test_user_create_invoice():
 
 def test_user_pay_invoice():
     "have a user pay an invoice"
-    
+
     bolt11 = "lntb50n1pjegajtpp5urx7sc9dgh2q9waxxhs8v3ekqehfrxyff0hdl34lfl3elf64muqqdqqcqzzsxqyz5vqsp5uxdfz2ke3wn82x6cmqdpdslzxhup5aaqstjjq03hqg4gg3tjs0nq9qyyssquacvnxlqwn534r00g597s2pke2pph9q8795gqsyryvaspw8y59xrfwgdaumlevseq8da7uq4j7qsqtmsvqy07h6r27ktvcpp39nn87qq97z2tu"
 
     # specify the bolt11 invoice you want to pay
-    body ={
+    body = {
         "out": True,
         "internal": True,
         "bolt11": bolt11,
@@ -131,7 +172,7 @@ def test_user_pay_invoice():
         LNBITS_HOST + "/api/v1/payments",
         headers={"X-Api-Key": TEST_USER_API_KEY},
         verify=False,
-        json=body
+        json=body,
     )
     data = res.json()
     pprint.pprint(data)
@@ -186,7 +227,6 @@ def test_topup():
 def test_create_user():
     """create a new user"""
 
-
     res = requests.post(
         LNBITS_HOST + "/usermanager/api/v1/users",
         headers={"X-Api-Key": SUPER_USER_API_KEY},
@@ -202,11 +242,11 @@ def test_create_user():
     data = res.json()
     pprint.pprint(data)
     assert "email" in data
-    assert "extra" in data 
-    assert "id" in data 
-    assert "name" in data 
+    assert "extra" in data
+    assert "id" in data
+    assert "name" in data
     assert "password" in data
-    assert "wallets" in data 
+    assert "wallets" in data
 
     wallet = data["wallets"][0]
     assert "admin" in wallet
