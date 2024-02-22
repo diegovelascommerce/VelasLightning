@@ -1,0 +1,24 @@
+meta {
+  name: create user
+  type: http
+  seq: 5
+}
+
+post {
+  url: https://d26413c1a4.d.voltageapp.io/usermanager/api/v1/users
+  body: json
+  auth: none
+}
+
+headers {
+  X-Api-Key: {{ api-token }}
+}
+
+body:json {
+  {
+    "user_name": "foobar",
+    "wallet_name": "foobar-wallet",
+    "email": "foobar@email.com",
+    "password": "foobar"
+  }
+}

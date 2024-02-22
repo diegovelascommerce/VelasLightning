@@ -1,0 +1,22 @@
+meta {
+  name: decode
+  type: http
+  seq: 8
+}
+
+post {
+  url: https://d26413c1a4.d.voltageapp.io/api/v1/payments/decode
+  body: json
+  auth: none
+}
+
+headers {
+  X-Api-Key: {{ api-token }}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "data": "lnbc500n1pja0t9cpp5660kzla3t8e9t86nahreml4a57t2rgrtm5mvk6jfktd0mj8h6fvsdqhw35xjueqd9ejqcfqw3jhxaqcqzzsxqrrsssp5ucl5yvn8espdgvf8mrlsmekg4j0pmum5vwaawwepqqe8ym2grmrs9qyyssqpzfmpjw7nlysw7nw4c48fxh0yrxsckhcac657zwrz582txas7qq4c40k343dfmcgpj2dszdpaq3agceqhfssgvu6cheuvr83vqcameqpfpuwh0"
+  }
+}

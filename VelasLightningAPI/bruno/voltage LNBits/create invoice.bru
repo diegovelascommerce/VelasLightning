@@ -1,0 +1,24 @@
+meta {
+  name: create invoice
+  type: http
+  seq: 6
+}
+
+post {
+  url: https://d26413c1a4.d.voltageapp.io/api/v1/payments
+  body: json
+  auth: none
+}
+
+headers {
+  X-Api-Key: {{ api-token }}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "out": false, 
+    "amount": 50, 
+    "memo": "this is a test"
+  }
+}

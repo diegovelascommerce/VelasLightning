@@ -1,0 +1,23 @@
+meta {
+  name: pay invoice
+  type: http
+  seq: 7
+}
+
+post {
+  url: https://d26413c1a4.d.voltageapp.io/api/v1/payments
+  body: json
+  auth: none
+}
+
+headers {
+  X-Api-Key: {{ api-token }}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "out": true, 
+    "bolt11": "lntb50n1pj6rfprpp5wju7xda40djzf8l95axv4m5vu48a98f4p6lmyytjjd99a9a4ymgsdqqcqzzsxqyz5vqsp5jf70zjntq3qkczvcp9mexhw4uv7g0rj38hurllmjy65w24d92ays9qyyssq3w3enjemahhe6ctgxxhj442mlxfvsp8ad88cu835y3qh7zn5ezzrqvxkcuhv9yf2nhdqzzc5l97684sdtenrn6w0zs4k5krpat60p4qp6pw6v4"
+  }
+}
