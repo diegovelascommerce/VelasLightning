@@ -1,3 +1,4 @@
+.PHONY: test
 test:
 ifdef t
 ifdef m 
@@ -8,3 +9,11 @@ endif
 else
 	@echo pytest -s ./tests 
 endif
+
+.PHONY: decrypt
+decrypt:
+	gpg --decrypt voltage.creds.txt.asc
+
+.PHONY: encrypt
+encrypt:
+	gpg --armor --encrypt --recipient ruahman voltage.creds.txt
