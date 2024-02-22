@@ -5,12 +5,13 @@ import requests
 from dotenv import load_dotenv  # type: ignore
 
 # load environment variables from .env file
-load_dotenv()
+load_dotenv(override=True)
 
 # host address of lnbits test server
 LNBITS_HOST = ""
 env = os.getenv("LNBITS_HOST")
 if env is not None:
+    print("LNBITS_HOST: ", env)
     LNBITS_HOST = env
 
 # super user setup for lnbits
@@ -23,6 +24,7 @@ if env is not None:
 SUPER_USER_API_KEY = ""
 env = os.getenv("SUPER_USER_API_KEY")
 if env is not None:
+    print("SUPER_USER_API_KEY: ", env)
     SUPER_USER_API_KEY = env
 
 # just a random test user that was setup
@@ -35,6 +37,7 @@ if env is not None:
 TEST_USER_API_KEY = ""
 env = os.getenv("TEST_USER_API_KEY")
 if env is not None:
+    print("TEST_USER_API_KEY: ", env)
     TEST_USER_API_KEY = env
 
 # wallet of the test user
@@ -50,6 +53,22 @@ def test_lnbits():
     res = requests.get(LNBITS_HOST, verify=False)
     assert res.status_code == 200
     print(res.text)
+
+
+def test_health():
+    "show the wallet associated with api key"
+
+    # url = "https://d26413c1a4.d.voltageapp.io/api/v1/health"
+    url = LNBITS_HOST + "/api/v1/health"
+    print(url)
+
+    res = requests.get(
+        url,
+        headers={"X-Api-Key": SUPER_USER_API_KEY},
+        verify=False,
+    )
+    assert res.status_code == 200
+    pprint.pprint(res.json())
 
 
 def test_wallet():
@@ -183,7 +202,7 @@ def test_check_invoice():
     "check if invoice is paid"
 
     payment_hash = (
-        "5d0ff92844b21f8b62079843490f0dae9452d88dcb138669110d73492d0ad8aa"
+        "58b5d9b11aefe53a7bfef49c52bb5fbb7285f91f04f17a3b028f6949b2a8be7b"
     )
 
     res = requests.get(

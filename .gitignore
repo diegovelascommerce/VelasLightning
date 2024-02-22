@@ -91,3 +91,5 @@ iOSInjectionProject/
 *._*
 .DS_Store
 VelasLightningAPI/config.py
+
+voltage.creds.txt
