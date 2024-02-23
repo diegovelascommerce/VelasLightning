@@ -11,14 +11,14 @@ post {
 }
 
 headers {
-  X-Api-Key: {{ api-token }}
+  X-Api-Key: {{ erik-adminkey }}
   Content-Type: application/json
 }
 
 body:json {
   {
     "out": false, 
-    "amount": 50, 
-    "memo": "this is a test"
+    "amount": 5, 
+    "memo": "this is a test for 5 sats"
   }
 }

@@ -1,5 +1,6 @@
 import os
 import pprint
+import pytest
 
 import requests
 from dotenv import load_dotenv  # type: ignore
@@ -14,37 +15,30 @@ if env is not None:
     print("LNBITS_HOST: ", env)
     LNBITS_HOST = env
 
-# super user setup for lnbits
+# host address of lnbits test server
 SUPER_USER = ""
 env = os.getenv("SUPER_USER")
 if env is not None:
+    print("SUPER_USER: ", env)
     SUPER_USER = env
 
-# api key of the super user
-SUPER_USER_API_KEY = ""
-env = os.getenv("SUPER_USER_API_KEY")
+# admin key for workit wallet
+WORKIT_ADMINKEY = ""
+env = os.getenv("WORKIT_ADMINKEY")
 if env is not None:
-    print("SUPER_USER_API_KEY: ", env)
-    SUPER_USER_API_KEY = env
+    WORKIT_ADMINKEY = env
 
-# just a random test user that was setup
-TEST_USER = ""
-env = os.getenv("TEST_USER")
+# admin key for erik wallet
+ERIK_ADMINKEY = ""
+env = os.getenv("ERIK_ADMINKEY")
 if env is not None:
-    TEST_USER = env
+    ERIK_ADMINKEY = env
 
-# the api key of the test user
-TEST_USER_API_KEY = ""
-env = os.getenv("TEST_USER_API_KEY")
+# admin key for diego wallet
+DIEGO_ADMINKEY = ""
+env = os.getenv("DIEGO_ADMINKEY")
 if env is not None:
-    print("TEST_USER_API_KEY: ", env)
-    TEST_USER_API_KEY = env
-
-# wallet of the test user
-TEST_USER_WALLET = ""
-env = os.getenv("TEST_USER_WALLET")
-if env is not None:
-    TEST_USER_WALLET = env
+    DIEGO_ADMINKEY = env
 
 
 def test_lnbits():
@@ -58,13 +52,11 @@ def test_lnbits():
 def test_health():
     "show the wallet associated with api key"
 
-    # url = "https://d26413c1a4.d.voltageapp.io/api/v1/health"
     url = LNBITS_HOST + "/api/v1/health"
-    print(url)
 
     res = requests.get(
         url,
-        headers={"X-Api-Key": SUPER_USER_API_KEY},
+        headers={"X-Api-Key": WORKIT_ADMINKEY},
         verify=False,
     )
     assert res.status_code == 200
@@ -76,28 +68,38 @@ def test_wallet():
 
     res = requests.get(
         LNBITS_HOST + "/api/v1/wallet",
-        headers={"X-Api-Key": SUPER_USER_API_KEY},
+        headers={"X-Api-Key": WORKIT_ADMINKEY},
         verify=False,
     )
     assert res.status_code == 200
-    pprint.pprint(res.json())
+    data = res.json()
+    pprint.pprint(data)
+
+    assert "id" in data
+    assert "name" in data
+    assert "balance" in data
 
 
 def test_create_wallet():
     "create a new wallet for a user"
 
-    # specify the name of the wallet you want to create
-    data = {"name": "test wallet"}
+    data = {"name": "foobar wallet"}
 
     res = requests.post(
         LNBITS_HOST + "/api/v1/wallet",
-        headers={"X-Api-Key": SUPER_USER_API_KEY},
+        headers={"X-Api-Key": WORKIT_ADMINKEY},
         verify=False,
         json=data,
     )
 
     assert res.status_code == 200
-    pprint.pprint(res.json())
+    data = res.json()
+    pprint.pprint(data)
+    assert "id" in data
+    assert "user" in data
+    assert "name" in data
+    assert "adminkey" in data
+    assert "balance_msat" in data
 
 
 def test_decode():
@@ -105,14 +107,19 @@ def test_decode():
 
     res = requests.post(
         LNBITS_HOST + "/api/v1/payments/decode",
-        headers={"X-Api-Key": SUPER_USER_API_KEY},
+        headers={"X-Api-Key": WORKIT_ADMINKEY},
         verify=False,
         json={
-            "data": "lntb500n1pjhp3s2pp5tp5farf5v644x8j0gsthmyxzdkdtp3mylr5m0edyepyyl5ues9uqdqhw35xjueqd9ejqcfqw3jhxaqcqzzsxqzjcsp5jttxa5u5e6edj4jsex5xa0wkzkkzg2a2x25qhsn3lswvzjympxtq9qyyssqvkh74rdhmmspek9cpnz2dax3pqemv9rjpcat9f8gf8uy532mqjnk806ljsup0sql62zsa4mlw0gau0x5teakfcwydlf5c6l0s2scxespwlnyyw"
+            "data": "lnbc50n1pja3m6xpp5wanddj7curc5t2f43fas4zegcpcws6v0sylhmpvahq0net3hazysdpgw35xjueqd9ejqcfqw3jhxapqvehhygp4ypekzarncqzzsxqrrsssp5dgd30mq3em33vkga37mu9jfz6far52fv4dze2x5kvcna9vu8jseq9qyyssqn40reudsj8nvrtn89p908sr0hsegxfl8g2tuphknv4slzrfkhkwkhexvvc40dmlgghnq4ygq25nffkug48uw06gfexsz9zaaa85sgscpv6uqzs"
         },
     )
     assert res.status_code == 200
-    pprint.pprint(res.json())
+    data = res.json()
+    pprint.pprint(data)
+    assert "payment_hash" in data
+    assert "payment_secret" in data
+    assert "description" in data
+    assert "amount_msat" in data
 
 
 def test_decode_with_superuser():
@@ -123,7 +130,7 @@ def test_decode_with_superuser():
 
     resBolt11 = requests.post(
         LNBITS_HOST + "/api/v1/payments",
-        headers={"X-Api-Key": TEST_USER_API_KEY},
+        headers={"X-Api-Key": ERIK_ADMINKEY},
         verify=False,
         json=data,
     )
@@ -138,7 +145,7 @@ def test_decode_with_superuser():
 
     resDecode = requests.post(
         LNBITS_HOST + "/api/v1/payments/decode",
-        headers={"X-Api-Key": SUPER_USER_API_KEY},
+        headers={"X-Api-Key": WORKIT_ADMINKEY},
         verify=False,
         json={
             "data": bolt11,
@@ -164,7 +171,7 @@ def test_user_create_invoice():
 
     res = requests.post(
         LNBITS_HOST + "/api/v1/payments",
-        headers={"X-Api-Key": TEST_USER_API_KEY},
+        headers={"X-Api-Key": DIEGO_ADMINKEY},
         verify=False,
         json=data,
     )
@@ -178,9 +185,21 @@ def test_user_create_invoice():
 def test_user_pay_invoice():
     "have a user pay an invoice"
 
-    bolt11 = "lntb50n1pjegajtpp5urx7sc9dgh2q9waxxhs8v3ekqehfrxyff0hdl34lfl3elf64muqqdqqcqzzsxqyz5vqsp5uxdfz2ke3wn82x6cmqdpdslzxhup5aaqstjjq03hqg4gg3tjs0nq9qyyssquacvnxlqwn534r00g597s2pke2pph9q8795gqsyryvaspw8y59xrfwgdaumlevseq8da7uq4j7qsqtmsvqy07h6r27ktvcpp39nn87qq97z2tu"
+    # create a bolt11 from a test user
+    data = {"out": False, "amount": 5, "memo": "test invoice for 5sats"}
 
-    # specify the bolt11 invoice you want to pay
+    res = requests.post(
+        LNBITS_HOST + "/api/v1/payments",
+        headers={"X-Api-Key": DIEGO_ADMINKEY},
+        verify=False,
+        json=data,
+    )
+    assert res.status_code == 201
+    invoice = res.json()
+
+    bolt11 = invoice["payment_request"]
+
+    # pay the bolt11 invoice with super user
     body = {
         "out": True,
         "internal": True,
@@ -189,25 +208,27 @@ def test_user_pay_invoice():
 
     res = requests.post(
         LNBITS_HOST + "/api/v1/payments",
-        headers={"X-Api-Key": TEST_USER_API_KEY},
+        headers={"X-Api-Key": WORKIT_ADMINKEY},
         verify=False,
         json=body,
     )
+    assert res.status_code == 201
     data = res.json()
     pprint.pprint(data)
-    assert res.status_code == 201
+    assert "payment_hash" in data
+    assert "checking_id" in data
 
 
 def test_check_invoice():
-    "check if invoice is paid"
+    "check if invoice was paid"
 
     payment_hash = (
-        "58b5d9b11aefe53a7bfef49c52bb5fbb7285f91f04f17a3b028f6949b2a8be7b"
+        "5f82041eceeaa30134f36900cdb9c973029ff545613640c9999b012a63ba8981"
     )
 
     res = requests.get(
         LNBITS_HOST + "/api/v1/payments/" + payment_hash,
-        headers={"X-Api-Key": SUPER_USER_API_KEY},
+        headers={"X-Api-Key": WORKIT_ADMINKEY},
         verify=False,
     )
 
@@ -223,15 +244,16 @@ def test_check_invoice():
     pprint.pprint(invoice)
 
 
+@pytest.mark.skip(reason="topup is not allowed for voltage")
 def test_topup():
     "top up wallet, fund it from lightning source"
 
     # specify the wallet you want to give funds to and the amount
-    body = {"id": TEST_USER_WALLET, "amount": 50}
+    body = {"id": DIEGO_ADMINKEY, "amount": 50}
 
     res = requests.put(
         LNBITS_HOST + "/admin/api/v1/topup/",
-        params={"usr": SUPER_USER},
+        params={"usr": WORKIT_ADMINKEY},
         json=body,
         verify=False,
     )
@@ -248,7 +270,7 @@ def test_create_user():
 
     res = requests.post(
         LNBITS_HOST + "/usermanager/api/v1/users",
-        headers={"X-Api-Key": SUPER_USER_API_KEY},
+        headers={"X-Api-Key": WORKIT_ADMINKEY},
         verify=False,
         json={
             "user_name": "pytest",
@@ -281,11 +303,12 @@ def test_get_users():
 
     res = requests.get(
         LNBITS_HOST + "/usermanager/api/v1/users",
-        headers={"X-Api-Key": SUPER_USER_API_KEY},
+        headers={"X-Api-Key": WORKIT_ADMINKEY},
         verify=False,
     )
     assert res.status_code == 200
     users = res.json()
+    pprint.pprint(users)
     for user in users:
         pprint.pprint(user)
         assert "admin" in user
@@ -300,7 +323,7 @@ def test_get_user_info():
 
     resUsers = requests.get(
         LNBITS_HOST + "/usermanager/api/v1/users",
-        headers={"X-Api-Key": SUPER_USER_API_KEY},
+        headers={"X-Api-Key": WORKIT_ADMINKEY},
         verify=False,
     )
     assert resUsers.status_code == 200
@@ -312,7 +335,7 @@ def test_get_user_info():
         # get user info
         resUser = requests.get(
             LNBITS_HOST + "/usermanager/api/v1/users/" + userId,
-            headers={"X-Api-Key": SUPER_USER_API_KEY},
+            headers={"X-Api-Key": WORKIT_ADMINKEY},
             verify=False,
         )
         assert resUser.status_code == 200
@@ -333,7 +356,7 @@ def test_get_user_wallet():
     """get wallet info for user"""
     resUsers = requests.get(
         LNBITS_HOST + "/usermanager/api/v1/users",
-        headers={"X-Api-Key": SUPER_USER_API_KEY},
+        headers={"X-Api-Key": WORKIT_ADMINKEY},
         verify=False,
     )
     assert resUsers.status_code == 200
@@ -345,7 +368,7 @@ def test_get_user_wallet():
         # get user info
         resUser = requests.get(
             LNBITS_HOST + "/usermanager/api/v1/users/" + userId,
-            headers={"X-Api-Key": SUPER_USER_API_KEY},
+            headers={"X-Api-Key": WORKIT_ADMINKEY},
             verify=False,
         )
         assert resUser.status_code == 200
