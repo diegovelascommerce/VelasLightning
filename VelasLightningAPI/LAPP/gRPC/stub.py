@@ -17,18 +17,16 @@ os.environ["GRPC_SSL_CIPHER_SUITES"] = "HIGH+ECDSA"
 cwd = os.path.dirname(__file__)
 print(cwd)
 # get the lnd cert
-cert = open(os.path.expanduser(
-    config['grpc']['tls']),
-    'rb').read()
+cert = open(os.path.expanduser(config["grpc"]["tls"]), "rb").read()
 
 # get the lnd admin.macaroon
-with open(os.path.expanduser(config['grpc']['macaroon']), 'rb') as f:  # noqa: E501
+with open(os.path.expanduser(config["grpc"]["macaroon"]), "rb") as f:  # noqa: E501
     macaroon_bytes = f.read()
-    macaroon = codecs.encode(macaroon_bytes, 'hex')
+    macaroon = codecs.encode(macaroon_bytes, "hex")
 
 
 def metadata_callback(context, callback):
-    callback([('macaroon', macaroon)], None)
+    callback([("macaroon", macaroon)], None)
 
 
 # build ssl credentials using the tls.cert
@@ -43,7 +41,8 @@ combined_creds = grpc.composite_channel_credentials(cert_creds, auth_creds)
 
 def get_stub():
     channel = grpc.secure_channel(
-        f"{config['grpc']['ip']}:{config['grpc']['port']}", combined_creds)
+        f"{config['grpc']['ip']}:{config['grpc']['port']}", combined_creds
+    )
     stub = lnrpc.LightningStub(channel)
     return stub
 
@@ -53,14 +52,15 @@ def getinfo(stub):
     return info
 
 
-def openchannel(stub,
-                nodeId: str,
-                amt: int,
-                private: bool,
-                target_conf: int,
-                min_confs: int,
-                zero_conf: bool):
-
+def openchannel(
+    stub,
+    nodeId: str,
+    amt: int,
+    private: bool,
+    target_conf: int,
+    min_confs: int,
+    zero_conf: bool,
+):
     request = ln.OpenChannelRequest(
         # sat_per_vbyte= < uint64 > ,
         node_pubkey=convertion.hex_to_bytes(nodeId),
@@ -110,14 +110,16 @@ def closechannel(stub, txId, vout, force):
     )
 
     for response in stub.CloseChannel(request):
-        if hasattr(response, 'close_pending'):
+        if hasattr(response, "close_pending"):
             pendingUpdate = response.close_pending
             revtxid = convertion.reverse_bytes(pendingUpdate.txid)
             txid = convertion.bytes_to_hex(revtxid)
             return txid
 
 
-def listchannels(stub, peer, active_only, inactive_only, public_only, private_only):  # noqa
+def listchannels(
+    stub, peer, active_only, inactive_only, public_only, private_only
+):  # noqa
     bpeer = convertion.hex_to_bytes(peer)
     request = ln.ListChannelsRequest(
         active_only=active_only,
@@ -131,17 +133,13 @@ def listchannels(stub, peer, active_only, inactive_only, public_only, private_on
 
 
 def decodepayreq(stub, pay_req):
-    request = ln.PayReqString(
-        pay_req=pay_req
-    )
+    request = ln.PayReqString(pay_req=pay_req)
     res = stub.DecodePayReq(request)
     return res
 
 
 def payinvoice(stub, pay_req):
-    request = ln.SendRequest(
-        payment_request=pay_req
-    )
+    request = ln.SendRequest(payment_request=pay_req)
     res = stub.SendPaymentSync(request)
     return res
 
@@ -152,18 +150,14 @@ def get_wallet_balance(stub):
 
 
 def addinvoice(stub, memo, amount):
-    request = ln.Invoice(
-        memo=memo,
-        value=int(amount)
-    )
+    request = ln.Invoice(memo=memo, value=int(amount))
     print(request)
     response = stub.AddInvoice(request)
     # return f"invoice: {memo}, {amount}"
     return response
 
+
 def lookupinvoice(stub, hash):
-    request = ln.PaymentHash(
-        r_hash_str=hash
-    )
+    request = ln.PaymentHash(r_hash_str=hash)
     response = stub.LookupInvoice(request)
     return response
