@@ -24,8 +24,8 @@ htmlcov/
 .coverage.*
 *,cover
 
-admin.macaroon
-tls.cert
 googleapis
 *.backup
 .DS_Store
+tls* 
+*macaroon
