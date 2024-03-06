@@ -2,5 +2,5 @@ from LAPP.gRPC import voltage
 
 stub = voltage.get_stub()
 
-response = voltage.getinfo(stub)
-print(response)
+info = voltage.getinfo(stub)
+print(info)
