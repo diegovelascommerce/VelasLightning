@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  btcd:
+    container_name: btcd
+    hostname: btcd
+    build: https://github.com/btcsuite/btcd.git
+    restart: unless-stopped
+    volumes:
+      - btcd-data:/root/.btcd
+      - ./btcd.conf:/root/.btcd/btcd.conf 
+    ports:
+      - 18333:18333
+      - 18334:18334
+    command: [
+        "--regtest",
+        "--listen=:18333",
+        "--rpclisten=:18334",
+        "--rpcuser=${RPC_USER}",
+        "--rpcpass=${RPC_PASS}",
+    ]
+
+volumes:
+  btcd-data:
+

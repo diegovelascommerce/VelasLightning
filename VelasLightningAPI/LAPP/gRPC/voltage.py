@@ -48,4 +48,22 @@ def get_stub():
 
 def getinfo(stub):
     info = stub.GetInfo(lightning_pb2.GetInfoRequest())
-    return info
+    print(info)
+
+
+def subscribe_channel_backups(stub):
+    request = lightning_pb2.ChannelBackupSubscription()
+    for response in stub.SubscribeChannelBackups(request):
+        print(response)
+
+
+def subscribe_channel_events(stub):
+    request = lightning_pb2.ChannelEventSubscription()
+    for response in stub.SubscribeChannelEvents(request):
+        print(response)
+
+
+def export_all_channel_backups(stub):
+    request = lightning_pb2.ChanBackupExportRequest()
+    response = stub.ExportAllChannelBackups(request)
+    print(response)
