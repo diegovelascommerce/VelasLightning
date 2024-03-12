@@ -1,25 +1,55 @@
 version: '3.8'
 
 services:
-  btcd:
-    container_name: btcd
-    hostname: btcd
-    build: https://github.com/btcsuite/btcd.git
+  btcsuite:
+    container_name: btcsuite
+    hostname: btcsuite
+    build: 
+      context: .
+      dockerfile: Dockerfile.btcsuite
     restart: unless-stopped
     volumes:
       - btcd-data:/root/.btcd
+      - btcwallet-data:/root/.btcwallet 
       - ./btcd.conf:/root/.btcd/btcd.conf 
+      # - ./rpc.btcd.cert:/root/.btcd/rpc.cert 
+      # - ./rpc.btcd.key:/root/.btcd/rpc.key 
     ports:
+      - 18332:18332
       - 18333:18333
       - 18334:18334
-    command: [
-        "--regtest",
-        "--listen=:18333",
-        "--rpclisten=:18334",
-        "--rpcuser=${RPC_USER}",
-        "--rpcpass=${RPC_PASS}",
-    ]
+    # command: [
+    #     "--simnet",
+    #     "--listen=:18333",
+    #     "--rpclisten=:18334",
+    #     "--rpcuser=${RPC_USER}",
+    #     "--rpcpass=${RPC_PASS}",
+    # ]
+
+  # btcwallet:
+  #   container_name: btcwallet
+  #   hostname: btcwallet
+  #   build: 
+  #     context: .
+  #     dockerfile: Dockerfile.btcwallet
+  #   restart: unless-stopped
+  #   volumes:
+  #     - btcwallet-data:/root/.btcwallet 
+  #   ports:
+  #     - 18332:18332
+    # command: [
+    #     "--simnet",
+    #     "--debuglevel=debug",
+    #     "--rpcconnect=btcd:18334",
+    #     "--cafile=/root/.btcwallet/rpc.cert", 
+    #     "--btcdusername=${RPC_USER}",
+    #     "--btcdpassword=${RPC_PASS}",
+    #     "--rpclisten=0.0.0.0:18332",
+    #     "--username=${RPC_USER}",
+    #     "--password=${RPC_PASS}"
+    # ]
 
 volumes:
   btcd-data:
+  btcwallet-data:
 

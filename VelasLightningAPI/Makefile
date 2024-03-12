@@ -45,4 +45,10 @@ ifeq ($(PATH), velas)
 else
 	@echo "Please set PATH=xxxxx"
 endif
- 
+
+.PHONY: docker 
+docker: 
+	cd docker && DOCKER_DEFAULT_PLATFORM=linux/arm64 docker compose up -d 
+
+
+

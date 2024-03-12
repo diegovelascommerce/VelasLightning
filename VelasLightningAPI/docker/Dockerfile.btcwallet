@@ -1,0 +1,19 @@
+FROM golang:1.18-alpine3.17 AS build-container
+
+ENV GO111MODULE=on
+
+RUN apk add git && git clone https://github.com/btcsuite/btcwallet /btcwallet
+
+WORKDIR /btcwallet
+RUN GOARCH=amd64 go install -v . ./cmd/...
+
+FROM amd64/alpine:3.17
+
+COPY --from=build-container /go/bin/**/* /bin
+
+VOLUME ["/root/.btcwallet"]
+
+EXPOSE 18332
+
+# ENTRYPOINT ["btcwallet"]        
+ENTRYPOINT ["tail", "-f", "/dev/null"]        
