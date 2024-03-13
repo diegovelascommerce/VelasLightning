@@ -18,6 +18,7 @@ COPY --from=build-container /go/bin/**/* /bin
 
 VOLUME ["/root/.btcd", "/root/.btcwallet"]
 
-EXPOSE 18333 18334 18332
+EXPOSE 18554 18555 18556
 
+# ENTRYPOINT ["btcd"]
 ENTRYPOINT ["tail", "-f", "/dev/null"]

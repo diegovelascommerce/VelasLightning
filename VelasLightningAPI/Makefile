@@ -46,9 +46,24 @@ else
 	@echo "Please set PATH=xxxxx"
 endif
 
-.PHONY: docker 
-docker: 
-	cd docker && DOCKER_DEFAULT_PLATFORM=linux/arm64 docker compose up -d 
+.PHONY: docker-up 
+docker-up: 
+	cd docker && DOCKER_DEFAULT_PLATFORM=linux/arm64/v8 docker compose up -d 
+	
+.PHONY: docker-down 
+docker-down: 
+	cd docker && docker compose down -v 
 
+.PHONY: docker-stop
+docker-stop:
+	cd docker && docker compose stop
+
+.PHONY: docker-start
+docker-start:
+	cd docker && docker compose start 
+
+.PHONY: docker-build 
+docker-build: 
+	cd docker && DOCKER_DEFAULT_PLATFORM=linux/arm64/v8 docker compose build
 
 
