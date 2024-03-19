@@ -2,15 +2,12 @@
 import os
 import codecs
 import grpc
-from dotenv import load_dotenv  # type: ignore
 
 from . import lightning_pb2
 from . import lightning_pb2_grpc as lightning_grpc
 
 
 def get_stub():
-    load_dotenv(override=True)
-
     GRPC_HOST = str(os.getenv("GRPC_HOST") or "")
     MACAROON_PATH = str(os.getenv("MACAROON_PATH") or "")
     TLS_PATH = str(os.getenv("TLS_PATH") or "")
@@ -66,4 +63,7 @@ def subscribe_channel_events(stub):
 def export_all_channel_backups(stub):
     request = lightning_pb2.ChanBackupExportRequest()
     response = stub.ExportAllChannelBackups(request)
-    print(response)
+
+    # print(response.multi_chan_backup.multi_chan_backup)
+    with open("channel.backup", "wb") as f:
+        f.write(response.multi_chan_backup.multi_chan_backup)

@@ -1,15 +1,15 @@
 meta {
-  name: get wallet
+  name: delete wallet
   type: http
-  seq: 3
+  seq: 15
 }
 
-delete {
+get {
   url: https://45.33.22.210:5001/api/v1/wallet
   body: none
   auth: none
 }
 
 headers {
-  X-Api-Key: 6e8fafbde855496594cb840c93889c4c
+  X-Api-Key: {{ api-token }}
 }
